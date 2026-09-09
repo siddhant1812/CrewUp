@@ -1,0 +1,26 @@
+---
+description: CrewUp is a real product — no dummy/fake UI or hard-coded demo data
+alwaysApply: true
+---
+
+# Real product, not dummy UI
+
+This CrewUp app is being built as a **real working product**, not a mockup or demo shell.
+
+## Requirements
+
+- Prefer real backend models, routes, and auth over hard-coded arrays or fake cards.
+- UI may match design mockups, but data must come from the API (or show a real empty state).
+- If a feature is not implemented yet, build the real path (schema + API + wired UI) or a clear empty/placeholder that says nothing exists yet — **do not invent fake projects, messages, stats, users, or files**.
+- Dashboard stats, Recent Projects, Messages, Profiles, etc. must reflect the signed-in user’s actual data.
+- When adding a new section from a design, implement persistence and wire the frontend unless the user explicitly asks for a visual-only sketch.
+
+## Examples
+
+```text
+❌ BAD: const PROJECTS = [{ name: "Downtown Office Build", ... }]
+✅ GOOD: fetch /api/projects and render results, or "No projects yet"
+
+❌ BAD: Messages badge hard-coded as "3"
+✅ GOOD: unread count from /api/messages/unread-count
+```
