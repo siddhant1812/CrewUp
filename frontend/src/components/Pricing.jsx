@@ -35,7 +35,7 @@ export default function Pricing() {
 
   async function handleCta(plan) {
     if (plan.id === 'starter') {
-      window.location.href = session?.user ? '/dashboard/settings' : '/signup'
+      window.location.href = session?.user ? '/dashboard/settings/subscription' : '/signup'
       return
     }
     if (!session?.user) {
@@ -50,7 +50,7 @@ export default function Pricing() {
         window.location.href = data.url
         return
       }
-      window.location.href = '/dashboard/settings'
+      window.location.href = '/dashboard/settings/subscription'
     } catch (err) {
       setError(err.message || 'Checkout failed.')
       setBusy('')
@@ -106,7 +106,7 @@ export default function Pricing() {
         ) : null}
         <p className="lead lead-center" style={{ marginTop: '1.25rem' }}>
           Manage cards and invoices in{' '}
-          <Link to="/dashboard/settings">Settings → Billing</Link>.
+          <Link to="/dashboard/settings/subscription">Settings → Subscription</Link>.
         </p>
       </div>
     </section>

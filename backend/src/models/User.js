@@ -46,6 +46,7 @@ const userSchema = new mongoose.Schema(
       enum: [
         "general_contractor",
         "subcontractor",
+        "find_work",
       ],
       default: "general_contractor",
     },
@@ -181,6 +182,68 @@ const userSchema = new mongoose.Schema(
     paymentMethodExpYear: {
       type: Number,
       default: null,
+    },
+
+    jobTitle: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    website: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    companyWebsite: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    companyPhone: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    companyAddress: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    licenseNumber: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    taxId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    payoutEmail: {
+      type: String,
+      default: "",
+      trim: true,
+      lowercase: true,
+    },
+
+    payoutMethod: {
+      type: String,
+      enum: ["", "bank", "paypal", "stripe"],
+      default: "",
+    },
+
+    bidPreferences: {
+      trades: { type: [String], default: [] },
+      serviceRadiusMiles: { type: Number, default: null },
+      minBudget: { type: String, default: "" },
+      notes: { type: String, default: "" },
     },
   },
   {

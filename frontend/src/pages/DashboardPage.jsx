@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import { mediaUrl } from '../api/auth'
-import { createProject, deleteProject, fetchDashboard, fetchProjects } from '../api/projects'
+import {
+  createProject,
+  deleteProject,
+  fetchDashboard,
+  fetchProjects,
+  updateProject,
+} from '../api/projects'
 
 const TITLES = {
   dashboard: {
@@ -12,30 +18,22 @@ const TITLES = {
     title: 'Projects',
     lead: 'Track active jobs, bids, and upcoming deadlines.',
   },
-  'find-contractors': {
-    title: 'Find Contractors',
-    lead: 'Search verified subcontractors by trade and location.',
-  },
-  messages: {
-    title: 'Messages',
-    lead: 'Chat with contractors and keep project conversations in one place.',
-  },
-  profile: {
-    title: 'My Profile',
-    lead: 'Manage your public profile, photo, and company details.',
-  },
   reviews: {
     title: 'Reviews',
-    lead: 'See ratings and feedback from your construction network.',
+    lead: 'Ratings and feedback from jobs you complete on CrewUp.',
   },
-  saved: {
-    title: 'Saved',
-    lead: 'Quick access to contractors and projects you bookmarked.',
-  },
-  settings: {
-    title: 'Settings',
-    lead: 'Update account preferences, notifications, and security.',
-  },
+}
+
+const STATUS_OPTIONS = [
+  { value: 'open', label: 'Bidding' },
+  { value: 'in_progress', label: 'Active' },
+  { value: 'draft', label: 'Draft' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Cancelled' },
+]
+
+function statusMeta(status) {
+  return STATUS_OPTIONS.find((s) => s.value === status) || { value: status, label: status || 'Open' }
 }
 
 function formatDue(value) {
@@ -53,7 +51,12 @@ function ProjectThumb({ project }) {
   return <span className="dash-table__thumb-fallback" aria-hidden="true" />
 }
 
-function ProjectsTable({ projects, emptyLabel, onDelete }) {
+function StatusPill({ status }) {
+  const meta = statusMeta(status)
+  return <span className={`status-pill status-pill--${meta.value}`}>{meta.label}</span>
+}
+
+function ProjectsTable({ projects, emptyLabel, onDelete, onStatus }) {
   if (!projects.length) {
     return <p className="dash-empty">{emptyLabel}</p>
   }
@@ -65,8 +68,8 @@ function ProjectsTable({ projects, emptyLabel, onDelete }) {
           <tr>
             <th>Project</th>
             <th>Location</th>
-            <th>Bids</th>
             <th>Due</th>
+            <th>Status</th>
             {onDelete ? <th /> : null}
           </tr>
         </thead>
@@ -80,8 +83,25 @@ function ProjectsTable({ projects, emptyLabel, onDelete }) {
                 </div>
               </td>
               <td>{p.location || '—'}</td>
-              <td>{p.bidsCount ?? 0}</td>
               <td>{formatDue(p.dueDate)}</td>
+              <td>
+                {onStatus ? (
+                  <select
+                    className={`status-select status-pill--${p.status}`}
+                    value={p.status || 'open'}
+                    onChange={(e) => onStatus(p.id, e.target.value)}
+                    aria-label={`Status for ${p.title}`}
+                  >
+                    {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <StatusPill status={p.status} />
+                )}
+              </td>
               {onDelete ? (
                 <td>
                   <button
@@ -151,26 +171,7 @@ function DashboardHome({ user }) {
       <div className="dash-welcome">
         <div className="dash-welcome__text">
           <h2>Welcome back, {firstName}!</h2>
-          <p>
-            You&apos;re signed in as <strong>{user.workEmail}</strong>
-            {user.company ? (
-              <>
-                {' '}
-                at <strong>{user.company}</strong>
-              </>
-            ) : null}
-            .
-          </p>
         </div>
-        {user.profilePhoto && (
-          <img
-            className="dash-welcome__photo"
-            src={mediaUrl(user.profilePhoto)}
-            alt=""
-            width="56"
-            height="56"
-          />
-        )}
       </div>
 
       <div className="dash-stats">
@@ -215,6 +216,7 @@ function ProjectsSection({ user }) {
     projectType: 'Commercial',
     budget: '',
     description: '',
+    status: 'open',
     image: null,
   })
 
@@ -252,7 +254,7 @@ function ProjectsSection({ user }) {
         budget: form.budget.trim(),
         description: form.description.trim(),
         image: form.image || undefined,
-        status: 'open',
+        status: form.status,
       })
       setForm({
         title: '',
@@ -261,6 +263,7 @@ function ProjectsSection({ user }) {
         projectType: 'Commercial',
         budget: '',
         description: '',
+        status: 'open',
         image: null,
       })
       setShowForm(false)
@@ -279,6 +282,20 @@ function ProjectsSection({ user }) {
       setProjects((prev) => prev.filter((p) => p.id !== id))
     } catch (err) {
       setError(err.message || 'Could not delete project.')
+    }
+  }
+
+  async function handleStatus(id, status) {
+    const previous = projects
+    setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)))
+    try {
+      const data = await updateProject(id, { status })
+      if (data.project) {
+        setProjects((prev) => prev.map((p) => (p.id === id ? data.project : p)))
+      }
+    } catch (err) {
+      setProjects(previous)
+      setError(err.message || 'Could not update status.')
     }
   }
 
@@ -305,7 +322,7 @@ function ProjectsSection({ user }) {
               <input
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                placeholder="Downtown Office Build"
+                placeholder="Project title"
                 required
               />
             </label>
@@ -343,6 +360,19 @@ function ProjectsSection({ user }) {
                 <option>Residential</option>
                 <option>Industrial</option>
                 <option>Infrastructure</option>
+              </select>
+            </label>
+            <label>
+              <span>Status</span>
+              <select
+                value={form.status}
+                onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+              >
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
               </select>
             </label>
             <label>
@@ -385,6 +415,7 @@ function ProjectsSection({ user }) {
             projects={projects}
             emptyLabel={`No projects yet for ${user.fullName}. Create your first project above.`}
             onDelete={handleDelete}
+            onStatus={handleStatus}
           />
         )}
       </div>
@@ -392,16 +423,11 @@ function ProjectsSection({ user }) {
   )
 }
 
-function SectionPlaceholder({ title, user }) {
+function ReviewsSection() {
   return (
-    <div className="dash-page__card">
-      <h2>{title}</h2>
-      <p>
-        Signed in as <strong>{user.fullName}</strong>
-        {user.company ? <> · {user.company}</> : null}
-      </p>
-      <p className="dash-page__hint">
-        This {title.toLowerCase()} view uses the same layout — logo on top, sidebar below.
+    <div className="dash-table-card">
+      <p className="dash-empty">
+        No reviews yet. Ratings will show here after jobs are completed on CrewUp.
       </p>
     </div>
   )
@@ -413,18 +439,20 @@ export default function DashboardPage({ section = 'dashboard' }) {
 
   return (
     <section className="dash-page">
-      <div className="dash-page__header">
-        <h1>{copy.title}</h1>
-        <p>{copy.lead}</p>
-      </div>
+      {section !== 'dashboard' ? (
+        <div className="dash-page__header">
+          <h1>{copy.title}</h1>
+          <p>{copy.lead}</p>
+        </div>
+      ) : null}
 
       {section === 'dashboard' ? (
         <DashboardHome user={user} />
       ) : section === 'projects' ? (
         <ProjectsSection user={user} />
-      ) : (
-        <SectionPlaceholder title={copy.title} user={user} />
-      )}
+      ) : section === 'reviews' ? (
+        <ReviewsSection />
+      ) : null}
     </section>
   )
 }

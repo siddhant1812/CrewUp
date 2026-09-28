@@ -77,3 +77,10 @@ export function deleteProject(id) {
     method: 'DELETE',
   })
 }
+
+export function updateProject(id, fields) {
+  return authRequest(`/api/projects/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(fields),
+  })
+}

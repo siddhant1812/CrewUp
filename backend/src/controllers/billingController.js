@@ -173,8 +173,8 @@ async function createCheckout(req, res) {
       customer: customerId,
       client_reference_id: String(user._id),
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${frontendUrl()}/dashboard/settings?billing=success`,
-      cancel_url: `${frontendUrl()}/dashboard/settings?billing=cancel`,
+      success_url: `${frontendUrl()}/dashboard/settings/subscription?billing=success`,
+      cancel_url: `${frontendUrl()}/dashboard/settings/subscription?billing=cancel`,
       payment_method_collection: "always",
       allow_promotion_codes: true,
       subscription_data: {
@@ -224,7 +224,7 @@ async function createPortal(req, res) {
 
     const portal = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${frontendUrl()}/dashboard/settings`,
+      return_url: `${frontendUrl()}/dashboard/settings/subscription`,
     });
 
     return res.json({

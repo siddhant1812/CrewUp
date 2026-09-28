@@ -29,6 +29,10 @@ router.post("/", (req, res) => {
 });
 router.get("/:id", getProject);
 router.patch("/:id", (req, res) => {
+  const contentType = String(req.headers["content-type"] || "");
+  if (!contentType.includes("multipart/form-data")) {
+    return updateProject(req, res);
+  }
   uploadProjectImage(req, res, (err) => {
     if (err) {
       return res.status(400).json({

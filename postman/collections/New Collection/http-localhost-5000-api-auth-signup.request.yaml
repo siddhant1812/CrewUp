@@ -1,0 +1,49 @@
+$kind: http-request
+name: http://localhost:5000/api/auth/signup
+description: ""
+url: http://localhost:5000/api/auth/signup
+method: POST
+body:
+  type: formdata
+  content:
+    - type: text
+      key: fullName
+      value: Test User
+      description: ""
+      disabled: false
+    - type: text
+      key: workEmail
+      value: testuser@example.com
+      description: ""
+      disabled: false
+    - type: text
+      key: company
+      value: Test Co
+      description: ""
+      disabled: false
+    - type: text
+      key: contractorType
+      value: general_contractor
+      description: ""
+      disabled: false
+    - type: text
+      key: password
+      value: password123
+      description: ""
+      disabled: false
+    - type: text
+      key: confirmPassword
+      value: password123
+      description: ""
+      disabled: false
+    - type: text
+      key: acceptTerms
+      value: "true"
+      description: ""
+      disabled: false
+    - type: text
+      key: profilePhoto
+      value: optional image
+      description: ""
+      disabled: false
+order: 1789127939200

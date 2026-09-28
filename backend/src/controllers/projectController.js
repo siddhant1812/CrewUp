@@ -4,6 +4,8 @@ const multer = require("multer");
 const mongoose = require("mongoose");
 const Project = require("../models/Project");
 const Conversation = require("../models/Conversation");
+const SavedItem = require("../models/SavedItem");
+const ProjectInvite = require("../models/ProjectInvite");
 
 const uploadDir = path.join(__dirname, "../../uploads/projects");
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -75,19 +77,20 @@ async function getDashboardStats(req, res) {
 
     const userId = req.user._id;
 
-    const [activeProjects, messageThreads, recentProjects] = await Promise.all([
-      Project.countDocuments({
-        createdBy: userId,
-        status: { $in: ["open", "in_progress", "draft"] },
-      }),
-      Conversation.countDocuments({
-        participants: userId,
-        archivedBy: { $ne: userId },
-      }),
-      Project.find({ createdBy: userId })
-        .sort({ updatedAt: -1 })
-        .limit(5),
-    ]);
+    const [activeProjects, messageThreads, recentProjects, savedContractors, projectInvites] =
+      await Promise.all([
+        Project.countDocuments({
+          createdBy: userId,
+          status: { $in: ["open", "in_progress", "draft"] },
+        }),
+        Conversation.countDocuments({
+          participants: userId,
+          archivedBy: { $ne: userId },
+        }),
+        Project.find({ createdBy: userId }).sort({ updatedAt: -1 }).limit(5),
+        SavedItem.countDocuments({ user: userId, itemType: "contractor" }),
+        ProjectInvite.countDocuments({ to: userId, status: "pending" }),
+      ]);
 
     let unreadMessages = 0;
     const conversations = await Conversation.find({
@@ -109,8 +112,8 @@ async function getDashboardStats(req, res) {
         activeProjects,
         messages: messageThreads,
         unreadMessages,
-        savedContractors: 0,
-        projectInvites: 0,
+        savedContractors,
+        projectInvites,
       },
       recentProjects: recentProjects.map(formatProject),
     });
@@ -258,13 +261,24 @@ async function updateProject(req, res) {
       "location",
       "projectType",
       "budget",
-      "status",
     ];
 
     for (const key of fields) {
       if (req.body[key] !== undefined) {
         project[key] = String(req.body[key]).trim();
       }
+    }
+
+    if (req.body.status !== undefined) {
+      const status = String(req.body.status).trim();
+      const allowed = ["draft", "open", "in_progress", "completed", "cancelled"];
+      if (!allowed.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid project status.",
+        });
+      }
+      project.status = status;
     }
 
     if (req.body.dueDate !== undefined) {

@@ -1,8 +1,144 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { getSession } from '../api/auth'
+import { fetchDashboard } from '../api/projects'
+
+const NAV = [
+  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/dashboard/projects', label: 'Projects' },
+  { to: '/dashboard/messages', label: 'Messages' },
+  { to: '/dashboard/contractors', label: 'Contractors' },
+  { to: '/dashboard/billing', label: 'Billing' },
+]
+
+function formatDue(value) {
+  if (!value) return '—'
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' })
+}
+
+function statusLabel(status) {
+  const map = {
+    open: 'Bidding',
+    in_progress: 'Active',
+    draft: 'Draft',
+    completed: 'Completed',
+    cancelled: 'Cancelled',
+  }
+  return map[status] || 'Open'
+}
+
+function statusClass(status) {
+  if (status === 'open') return 'bidding'
+  if (status === 'in_progress') return 'active'
+  return (status || 'open').replace('_', '-')
+}
+
+function DashboardPreview() {
+  const session = getSession()
+  const firstName = session?.user?.fullName?.split(' ')[0]
+  const [stats, setStats] = useState({
+    activeProjects: 0,
+    messages: 0,
+    savedContractors: 0,
+    projectInvites: 0,
+  })
+  const [projects, setProjects] = useState([])
+
+  useEffect(() => {
+    if (!session?.token) return
+    let cancelled = false
+    fetchDashboard()
+      .then((data) => {
+        if (cancelled) return
+        setStats({
+          activeProjects: data.stats?.activeProjects || 0,
+          messages: data.stats?.messages || 0,
+          savedContractors: data.stats?.savedContractors || 0,
+          projectInvites: data.stats?.projectInvites || 0,
+        })
+        setProjects(data.recentProjects || [])
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [session?.token])
+
+  const cards = [
+    [stats.activeProjects, 'Active Projects'],
+    [stats.messages, 'Messages'],
+    [stats.savedContractors, 'Saved Contractors'],
+    [stats.projectInvites, 'Project Invites'],
+  ]
+
+  return (
+    <div className="dash">
+      <aside className="dash__side">
+        <Link to="/dashboard" className="dash__logo" aria-label="Open dashboard">
+          CU
+        </Link>
+        {NAV.map((item) => (
+          <Link key={item.to} to={item.to} className={`dash__item${item.to === '/dashboard' ? ' active' : ''}`}>
+            <span className="dash__dot" />
+            {item.label}
+          </Link>
+        ))}
+      </aside>
+      <div className="dash__body">
+        <p className="dash__hello">
+          {firstName ? `Welcome back, ${firstName}!` : 'Welcome to CrewUp'}
+        </p>
+        <div className="dash__cards">
+          {cards.map(([n, label]) => (
+            <div key={label} className="dash__card">
+              <strong>{n}</strong>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+        <div className="dash__table">
+          <div className="dash__table-head">Recent Projects</div>
+          {projects.length === 0 ? (
+            <p className="dash__empty">No projects yet.</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Project</th>
+                  <th>Location</th>
+                  <th>Due</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projects.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.title}</td>
+                    <td>{p.location || '—'}</td>
+                    <td>{formatDue(p.dueDate)}</td>
+                    <td>
+                      <span className={`pill pill--${statusClass(p.status)}`}>
+                        {statusLabel(p.status)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const STEPS = [
   {
     n: 1,
     title: 'Create Your Profile',
-    text: 'Sign up as a general contractor or subcontractor and showcase your skills, licenses, and experience.',
+    text: 'Sign up as a contractor, subcontractor, or to find work, and showcase your skills, licenses, and experience.',
     icon: (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
         <circle cx="9" cy="6" r="2.75" stroke="currentColor" strokeWidth="1.4" />
@@ -47,75 +183,12 @@ const STEPS = [
   },
 ]
 
-const ROWS = [
-  { name: 'Riverside Office Reno', loc: 'Austin, TX', due: 'Mar 12', status: 'Active' },
-  { name: 'Oak Street Framing', loc: 'Dallas, TX', due: 'Mar 18', status: 'Bidding' },
-  { name: 'Harbor HVAC Retrofit', loc: 'Houston, TX', due: 'Apr 02', status: 'Active' },
-]
-
-function Dashboard() {
-  return (
-    <div className="dash" aria-hidden="true">
-      <aside className="dash__side">
-        <div className="dash__logo">CU</div>
-        {['Dashboard', 'Projects', 'Messages', 'Contractors', 'Billing'].map((item, i) => (
-          <div key={item} className={`dash__item${i === 0 ? ' active' : ''}`}>
-            <span className="dash__dot" />
-            {item}
-          </div>
-        ))}
-      </aside>
-      <div className="dash__body">
-        <p className="dash__hello">Welcome back, John!</p>
-        <div className="dash__cards">
-          {[
-            ['12', 'Active Projects'],
-            ['8', 'Messages'],
-            ['15', 'Saved Contractors'],
-            ['3', 'Project Invites'],
-          ].map(([n, label]) => (
-            <div key={label} className="dash__card">
-              <strong>{n}</strong>
-              <span>{label}</span>
-            </div>
-          ))}
-        </div>
-        <div className="dash__table">
-          <div className="dash__table-head">Recent Projects</div>
-          <table>
-            <thead>
-              <tr>
-                <th>Project</th>
-                <th>Location</th>
-                <th>Due</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ROWS.map((r) => (
-                <tr key={r.name}>
-                  <td>{r.name}</td>
-                  <td>{r.loc}</td>
-                  <td>{r.due}</td>
-                  <td>
-                    <span className={`pill pill--${r.status.toLowerCase()}`}>{r.status}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function HowItWorks() {
   return (
     <section className="section how" id="how-it-works">
       <div className="container how__grid">
         <div className="how__visual">
-          <Dashboard />
+          <DashboardPreview />
         </div>
         <div className="how__copy">
           <p className="eyebrow">How It Works</p>

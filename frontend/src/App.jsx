@@ -6,7 +6,22 @@ import ForgotPassword from './pages/ForgotPassword'
 import DashboardLayout from './components/DashboardLayout'
 import DashboardPage from './pages/DashboardPage'
 import Messages from './pages/Messages'
-import Settings from './pages/Settings'
+import Contractors from './pages/Contractors'
+import Billing from './pages/Billing'
+import SettingsLayout from './pages/settings/SettingsLayout'
+import {
+  AccountPanel,
+  ActivityPanel,
+  BidPreferencesPanel,
+  CompanyPanel,
+  DocumentsPanel,
+  IntegrationsPanel,
+  NotificationsPanel,
+  PaymentsPanel,
+  SecurityPanel,
+  SubscriptionPanel,
+  UsersPanel,
+} from './pages/settings/panels'
 import { getSession } from './api/auth'
 
 function RequireGuest({ children }) {
@@ -41,12 +56,27 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardPage section="dashboard" />} />
           <Route path="projects" element={<DashboardPage section="projects" />} />
-          <Route path="find-contractors" element={<DashboardPage section="find-contractors" />} />
+          <Route path="find-contractors" element={<Navigate to="/dashboard/contractors" replace />} />
+          <Route path="contractors" element={<Contractors />} />
           <Route path="messages" element={<Messages />} />
-          <Route path="profile" element={<DashboardPage section="profile" />} />
+          <Route path="billing" element={<Billing />} />
+          <Route path="profile" element={<Navigate to="/dashboard/settings/account" replace />} />
           <Route path="reviews" element={<DashboardPage section="reviews" />} />
-          <Route path="saved" element={<DashboardPage section="saved" />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="saved" element={<Navigate to="/dashboard/contractors" replace />} />
+          <Route path="settings" element={<SettingsLayout />}>
+            <Route index element={<Navigate to="/dashboard/settings/account" replace />} />
+            <Route path="account" element={<AccountPanel />} />
+            <Route path="company" element={<CompanyPanel />} />
+            <Route path="notifications" element={<NotificationsPanel />} />
+            <Route path="bid-preferences" element={<BidPreferencesPanel />} />
+            <Route path="payments" element={<PaymentsPanel />} />
+            <Route path="users" element={<UsersPanel />} />
+            <Route path="security" element={<SecurityPanel />} />
+            <Route path="integrations" element={<IntegrationsPanel />} />
+            <Route path="documents" element={<DocumentsPanel />} />
+            <Route path="subscription" element={<SubscriptionPanel />} />
+            <Route path="activity" element={<ActivityPanel />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

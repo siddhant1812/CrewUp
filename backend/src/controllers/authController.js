@@ -55,10 +55,8 @@ function publicUser(user) {
     workEmail: user.workEmail,
     company: user.company,
     contractorType: user.contractorType,
-    profilePhoto: user.profilePhoto || user.profileImage || "",
+    profilePhoto: user.profilePhoto || "",
     role: user.role,
-    plan: user.plan || "starter",
-    subscriptionStatus: user.subscriptionStatus || "none",
   };
 }
 
@@ -96,10 +94,10 @@ const register = async (req, res) => {
       });
     }
 
-    if (!["general_contractor", "subcontractor"].includes(contractorType)) {
+    if (!["general_contractor", "subcontractor", "find_work"].includes(contractorType)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid contractor type.",
+        message: "Invalid account type.",
       });
     }
 
@@ -151,8 +149,6 @@ const register = async (req, res) => {
       termsAccepted: true,
       termsAcceptedAt: new Date(),
       role: "business",
-      plan: "starter",
-      subscriptionStatus: "none",
     });
 
     const token = generateToken(user);
@@ -222,4 +218,8 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login, uploadProfilePhoto };
+module.exports = {
+  register,
+  login,
+  uploadProfilePhoto,
+};

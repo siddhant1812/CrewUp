@@ -5,8 +5,9 @@ import { signup, saveSession } from '../api/auth'
 import { startCheckout } from '../api/billing'
 
 const ROLES = [
-  { id: 'general_contractor', label: 'General Contractor' },
+  { id: 'general_contractor', label: 'Contractor' },
   { id: 'subcontractor', label: 'Subcontractor' },
+  { id: 'find_work', label: 'Find Work' },
 ]
 
 export default function SignUp() {
@@ -14,6 +15,7 @@ export default function SignUp() {
   const [searchParams] = useSearchParams()
   const requestedPlan = (searchParams.get('plan') || '').toLowerCase()
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [photoPreview, setPhotoPreview] = useState('')
   const [photoFile, setPhotoFile] = useState(null)
@@ -98,7 +100,7 @@ export default function SignUp() {
             return
           }
         } catch {
-          navigate('/dashboard/settings')
+          navigate('/dashboard/settings/subscription')
           return
         }
       }
@@ -183,11 +185,15 @@ export default function SignUp() {
 
         <fieldset className="field">
           <legend className="field__label">I am a</legend>
-          <div className="role-toggle">
+          <div
+            className="role-slider"
+            style={{ '--role-index': String(ROLES.findIndex((r) => r.id === form.role)) }}
+          >
+            <span className="role-slider__thumb" aria-hidden="true" />
             {ROLES.map((role) => (
               <label
                 key={role.id}
-                className={`role-toggle__option${form.role === role.id ? ' active' : ''}`}
+                className={`role-slider__option${form.role === role.id ? ' is-active' : ''}`}
               >
                 <input
                   type="radio"
@@ -228,15 +234,25 @@ export default function SignUp() {
 
         <label className="field">
           <span className="field__label">Confirm password</span>
-          <input
-            type={showPassword ? 'text' : 'password'}
-            name="confirm"
-            autoComplete="new-password"
-            placeholder="Re-enter password"
-            value={form.confirm}
-            onChange={update('confirm')}
-            required
-          />
+          <div className="field__password">
+            <input
+              type={showConfirm ? 'text' : 'password'}
+              name="confirm"
+              autoComplete="new-password"
+              placeholder="Re-enter password"
+              value={form.confirm}
+              onChange={update('confirm')}
+              required
+            />
+            <button
+              type="button"
+              className="field__toggle"
+              onClick={() => setShowConfirm((v) => !v)}
+              aria-label={showConfirm ? 'Hide confirm password' : 'Show confirm password'}
+            >
+              {showConfirm ? 'Hide' : 'Show'}
+            </button>
+          </div>
         </label>
 
         <label className="check check--block">

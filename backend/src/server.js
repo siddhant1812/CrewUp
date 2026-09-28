@@ -10,6 +10,8 @@ const authRoutes = require("./routes/authRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const projectRoutes = require("./routes/projectRoutes");
 const billingRoutes = require("./routes/billingRoutes");
+const settingsRoutes = require("./routes/settingsRoutes");
+const contractorRoutes = require("./routes/contractorRoutes");
 const { stripeWebhook } = require("./controllers/billingController");
 
 const app = express();
@@ -27,6 +29,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/billing", billingRoutes);
+app.use("/api/settings", settingsRoutes);
+app.use("/api/contractors", contractorRoutes);
 
 app.get("/", (req, res) => {
   res.json({
@@ -53,7 +57,7 @@ async function start() {
   }
 
   app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
   });
 }
 

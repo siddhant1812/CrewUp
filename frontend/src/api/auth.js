@@ -87,3 +87,10 @@ export function getSession() {
     return null
   }
 }
+
+export function updateSessionUser(partial) {
+  const session = getSession()
+  if (!session) return
+  const remember = Boolean(localStorage.getItem('crewup_token'))
+  saveSession(session.token, { ...session.user, ...partial }, remember)
+}

@@ -4,22 +4,33 @@ import Logo from './Logo'
 import Sidebar from './Sidebar'
 import { clearSession, getSession, mediaUrl } from '../api/auth'
 
-const DEFAULT_AVATAR =
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80'
+function initials(name) {
+  return (name || '?')
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() || '')
+    .join('')
+}
 
 export default function DashboardLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [session, setSession] = useState(() => getSession())
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [unread, setUnread] = useState(0)
 
   useEffect(() => {
     const sync = () => setSession(getSession())
+    const onUnread = (e) => {
+      if (typeof e.detail?.count === 'number') setUnread(e.detail.count)
+    }
     window.addEventListener('crewup-auth', sync)
     window.addEventListener('storage', sync)
+    window.addEventListener('crewup-unread', onUnread)
     return () => {
       window.removeEventListener('crewup-auth', sync)
       window.removeEventListener('storage', sync)
+      window.removeEventListener('crewup-unread', onUnread)
     }
   }, [])
 
@@ -28,7 +39,7 @@ export default function DashboardLayout() {
   }
 
   const user = session.user
-  const photo = mediaUrl(user.profilePhoto) || DEFAULT_AVATAR
+  const photo = mediaUrl(user.profilePhoto)
 
   function handleLogout() {
     clearSession()
@@ -69,11 +80,19 @@ export default function DashboardLayout() {
                 strokeLinecap="round"
               />
             </svg>
-            <span className="user-bar__badge">2</span>
+            {unread > 0 ? (
+              <span className="user-bar__badge">{unread > 99 ? '99+' : unread}</span>
+            ) : null}
           </button>
 
           <div className="user-bar__avatar-wrap">
-            <img src={photo} alt="" className="user-bar__avatar" width="40" height="40" />
+            {photo ? (
+              <img src={photo} alt="" className="user-bar__avatar" width="40" height="40" />
+            ) : (
+              <span className="user-bar__avatar user-bar__avatar--fallback">
+                {initials(user.fullName)}
+              </span>
+            )}
             <span className="user-bar__online" aria-hidden="true" />
           </div>
           <span className="user-bar__name">{user.fullName}</span>

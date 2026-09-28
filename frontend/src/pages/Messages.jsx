@@ -662,7 +662,9 @@ export default function Messages() {
                     <dd>
                       {other?.contractorType === 'subcontractor'
                         ? 'Subcontractor'
-                        : 'General Contractor'}
+                        : other?.contractorType === 'find_work'
+                          ? 'Find Work'
+                          : 'Contractor'}
                     </dd>
                   </div>
                   <div>
@@ -809,7 +811,11 @@ export default function Messages() {
                       <strong>{displayName(c)}</strong>
                       <em>
                         {c.fullName}
-                        {c.contractorType === 'subcontractor' ? ' · Sub' : ' · GC'}
+                        {c.contractorType === 'subcontractor'
+                          ? ' · Sub'
+                          : c.contractorType === 'find_work'
+                            ? ' · Work'
+                            : ' · GC'}
                       </em>
                     </span>
                   </button>

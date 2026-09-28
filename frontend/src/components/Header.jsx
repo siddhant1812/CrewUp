@@ -6,18 +6,34 @@ import { clearSession, getSession, mediaUrl } from '../api/auth'
 const LINKS = [
   { label: 'How It Works', href: '/#how-it-works' },
   { label: 'Find Work', href: '/#find-work' },
-  { label: 'Find Contractors', href: '/dashboard/find-contractors' },
+  { label: 'Find Contractors', href: '/dashboard/contractors' },
   { label: 'Pricing', href: '/#pricing' },
   { label: 'Resources', href: '/#resources', dropdown: true },
 ]
 
-const DEFAULT_AVATAR =
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80'
+function initials(name) {
+  return (name || '?')
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() || '')
+    .join('')
+}
+
+function Avatar({ user }) {
+  const src = mediaUrl(user.profilePhoto)
+  if (src) {
+    return <img src={src} alt="" className="user-bar__avatar" width="40" height="40" />
+  }
+  return (
+    <span className="user-bar__avatar user-bar__avatar--fallback">
+      {initials(user.fullName)}
+    </span>
+  )
+}
 
 function UserMenu({ user, onLogout }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
-  const photo = mediaUrl(user.profilePhoto) || DEFAULT_AVATAR
 
   useEffect(() => {
     function onDocClick(e) {
@@ -45,7 +61,6 @@ function UserMenu({ user, onLogout }) {
             strokeLinecap="round"
           />
         </svg>
-        <span className="user-bar__badge">2</span>
       </button>
 
       <button
@@ -56,7 +71,7 @@ function UserMenu({ user, onLogout }) {
         onClick={() => setOpen((v) => !v)}
       >
         <span className="user-bar__avatar-wrap">
-          <img src={photo} alt="" className="user-bar__avatar" width="40" height="40" />
+          <Avatar user={user} />
           <span className="user-bar__online" aria-hidden="true" />
         </span>
         <span className="user-bar__name">{user.fullName}</span>
@@ -190,13 +205,7 @@ export default function Header({ menuOpen, setMenuOpen }) {
               <>
                 <div className="user-bar user-bar--drawer">
                   <span className="user-bar__avatar-wrap">
-                    <img
-                      src={mediaUrl(user.profilePhoto) || DEFAULT_AVATAR}
-                      alt=""
-                      className="user-bar__avatar"
-                      width="40"
-                      height="40"
-                    />
+                    <Avatar user={user} />
                     <span className="user-bar__online" aria-hidden="true" />
                   </span>
                   <span className="user-bar__name">{user.fullName}</span>
