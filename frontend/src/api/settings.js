@@ -41,6 +41,15 @@ export function fetchSettings() {
   return authRequest('/api/settings')
 }
 
+export function uploadProfilePhoto(file) {
+  const form = new FormData()
+  form.append('profilePhoto', file)
+  return authRequest('/api/settings/photo', {
+    method: 'POST',
+    body: form,
+  })
+}
+
 export function patchSettings(section, body) {
   return authRequest(`/api/settings/${section}`, {
     method: 'PATCH',

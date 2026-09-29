@@ -9,6 +9,7 @@ import {
   resumeSubscription,
   startCheckout,
 } from '../../api/billing'
+import PhoneInput, { isValidPhone } from '../../components/PhoneInput'
 import {
   deleteDocument,
   fetchActivity,
@@ -33,12 +34,13 @@ function PageHead({ title, crumb, lead }) {
   )
 }
 
-function Field({ label, children }) {
+function Field({ label, children, plain = false }) {
+  const Tag = plain ? 'div' : 'label'
   return (
-    <label className="set-field">
+    <Tag className="set-field">
       <span>{label}</span>
       {children}
-    </label>
+    </Tag>
   )
 }
 
@@ -74,6 +76,10 @@ export function AccountPanel() {
 
   async function onSubmit(e) {
     e.preventDefault()
+    if (!isValidPhone(profile.phoneNumber)) {
+      setError('Enter a 10-digit phone number, or leave it blank.')
+      return
+    }
     setSaving(true)
     setError('')
     setNotice('')
@@ -121,10 +127,10 @@ export function AccountPanel() {
             <Field label="Work email">
               <input value={profile.workEmail || ''} disabled />
             </Field>
-            <Field label="Phone">
-              <input
+            <Field label="Phone" plain>
+              <PhoneInput
                 value={profile.phoneNumber || ''}
-                onChange={(e) => setProfile({ ...profile, phoneNumber: e.target.value })}
+                onChange={(phoneNumber) => setProfile({ ...profile, phoneNumber })}
               />
             </Field>
             <Field label="Job title">
@@ -163,6 +169,10 @@ export function CompanyPanel() {
 
   async function onSubmit(e) {
     e.preventDefault()
+    if (!isValidPhone(profile.companyPhone)) {
+      setError('Enter a 10-digit company phone number, or leave it blank.')
+      return
+    }
     setSaving(true)
     setError('')
     try {
@@ -203,10 +213,10 @@ export function CompanyPanel() {
                 onChange={(e) => setProfile({ ...profile, company: e.target.value })}
               />
             </Field>
-            <Field label="Company phone">
-              <input
+            <Field label="Company phone" plain>
+              <PhoneInput
                 value={profile.companyPhone || ''}
-                onChange={(e) => setProfile({ ...profile, companyPhone: e.target.value })}
+                onChange={(companyPhone) => setProfile({ ...profile, companyPhone })}
               />
             </Field>
             <Field label="Company website">

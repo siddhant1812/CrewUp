@@ -5,6 +5,7 @@ import SignUp from './pages/SignUp'
 import ForgotPassword from './pages/ForgotPassword'
 import DashboardLayout from './components/DashboardLayout'
 import DashboardPage from './pages/DashboardPage'
+import ProjectDetail from './pages/ProjectDetail'
 import Messages from './pages/Messages'
 import Contractors from './pages/Contractors'
 import Billing from './pages/Billing'
@@ -56,6 +57,7 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardPage section="dashboard" />} />
           <Route path="projects" element={<DashboardPage section="projects" />} />
+          <Route path="projects/:id" element={<ProjectDetail />} />
           <Route path="find-contractors" element={<Navigate to="/dashboard/contractors" replace />} />
           <Route path="contractors" element={<Contractors />} />
           <Route path="messages" element={<Messages />} />

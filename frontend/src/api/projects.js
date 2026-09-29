@@ -52,6 +52,28 @@ export function fetchProjects(status = '') {
   return authRequest(`/api/projects${qs}`)
 }
 
+export function fetchOpenProjects() {
+  return authRequest('/api/projects/open')
+}
+
+export function fetchProject(id) {
+  return authRequest(`/api/projects/${id}`)
+}
+
+export function submitProposal(projectId, body) {
+  return authRequest(`/api/projects/${projectId}/proposals`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export function respondProposal(projectId, proposalId, status) {
+  return authRequest(`/api/projects/${projectId}/proposals/${proposalId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
+}
+
 export function createProject(fields) {
   const form = new FormData()
   Object.entries(fields).forEach(([key, value]) => {

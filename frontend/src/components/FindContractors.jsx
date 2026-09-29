@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { getSession } from '../api/auth'
 
 const TRADES = [
   { name: 'Electrical', d: 'M13 2L4 14h7l-1 8 10-14h-7z' },
@@ -18,22 +20,47 @@ const TRADES = [
 const IMG =
   'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1100&q=80'
 
+function isContractorUser() {
+  return getSession()?.user?.contractorType === 'general_contractor'
+}
+
 export default function FindContractors() {
+  const [forContractor, setForContractor] = useState(isContractorUser)
+
+  useEffect(() => {
+    const sync = () => setForContractor(isContractorUser())
+    window.addEventListener('crewup-auth', sync)
+    window.addEventListener('storage', sync)
+    return () => {
+      window.removeEventListener('crewup-auth', sync)
+      window.removeEventListener('storage', sync)
+    }
+  }, [])
+
+  const destination = forContractor ? '/dashboard/projects' : '/dashboard/find-contractors'
+
   return (
     <section className="section find-contractors" id="find-contractors">
       <div className="container find-contractors__grid">
         <div className="find-contractors__copy">
-          <p className="eyebrow">Find Contractors</p>
-          <h2 className="h2">Find Qualified Subcontractors Fast</h2>
+          <p className="eyebrow">{forContractor ? 'Find Work' : 'Find Contractors'}</p>
+          <h2 className="h2">
+            {forContractor ? 'Find Your Next Opportunity' : 'Find Qualified Subcontractors Fast'}
+          </h2>
           <p className="lead">
-            Search verified tradespeople by specialty, location, and availability — then hire
-            with confidence.
+            {forContractor
+              ? 'Browse open projects by trade, location, and schedule — then connect with the people who posted them.'
+              : 'Search verified tradespeople by specialty, location, and availability — then hire with confidence.'}
           </p>
           <div className="trades">
             {TRADES.map((t) => (
               <Link
                 key={t.name}
-                to={`/dashboard/find-contractors?trade=${encodeURIComponent(t.name)}`}
+                to={
+                  forContractor
+                    ? destination
+                    : `${destination}?trade=${encodeURIComponent(t.name)}`
+                }
                 className="trade"
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -43,8 +70,8 @@ export default function FindContractors() {
               </Link>
             ))}
           </div>
-          <Link to="/dashboard/find-contractors" className="btn btn-primary btn-lg">
-            Find Contractors
+          <Link to={destination} className="btn btn-primary btn-lg">
+            {forContractor ? 'Find Work' : 'Find Contractors'}
           </Link>
         </div>
         <div className="find-contractors__media">

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Link, useOutletContext } from 'react-router-dom'
+import { Link, useNavigate, useOutletContext } from 'react-router-dom'
 import { mediaUrl } from '../api/auth'
 import {
   createProject,
   deleteProject,
   fetchDashboard,
+  fetchOpenProjects,
   fetchProjects,
   updateProject,
 } from '../api/projects'
@@ -57,6 +58,8 @@ function StatusPill({ status }) {
 }
 
 function ProjectsTable({ projects, emptyLabel, onDelete, onStatus }) {
+  const navigate = useNavigate()
+
   if (!projects.length) {
     return <p className="dash-empty">{emptyLabel}</p>
   }
@@ -75,7 +78,11 @@ function ProjectsTable({ projects, emptyLabel, onDelete, onStatus }) {
         </thead>
         <tbody>
           {projects.map((p) => (
-            <tr key={p.id}>
+            <tr
+              key={p.id}
+              className="dash-table__click"
+              onClick={() => navigate(`/dashboard/projects/${p.id}`)}
+            >
               <td>
                 <div className="dash-table__project">
                   <ProjectThumb project={p} />
@@ -90,6 +97,7 @@ function ProjectsTable({ projects, emptyLabel, onDelete, onStatus }) {
                     className={`status-select status-pill--${p.status}`}
                     value={p.status || 'open'}
                     onChange={(e) => onStatus(p.id, e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
                     aria-label={`Status for ${p.title}`}
                   >
                     {STATUS_OPTIONS.map((opt) => (
@@ -107,7 +115,10 @@ function ProjectsTable({ projects, emptyLabel, onDelete, onStatus }) {
                   <button
                     type="button"
                     className="dash-table__delete"
-                    onClick={() => onDelete(p.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDelete(p.id)
+                    }}
                   >
                     Delete
                   </button>
@@ -204,6 +215,7 @@ function DashboardHome({ user }) {
 
 function ProjectsSection({ user }) {
   const [projects, setProjects] = useState([])
+  const [openJobs, setOpenJobs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -226,6 +238,12 @@ function ProjectsSection({ user }) {
     try {
       const data = await fetchProjects()
       setProjects(data.projects || [])
+      try {
+        const open = await fetchOpenProjects()
+        setOpenJobs(open.projects || [])
+      } catch {
+        setOpenJobs([])
+      }
     } catch (err) {
       setError(err.message || 'Failed to load projects.')
     } finally {
@@ -418,6 +436,17 @@ function ProjectsSection({ user }) {
             onStatus={handleStatus}
           />
         )}
+      </div>
+
+      <div className="dash-table-card" style={{ marginTop: '1rem' }}>
+        <div className="dash-table-card__head">
+          <h3>Open jobs to bid on</h3>
+          <span className="dash-muted">{openJobs.length} open</span>
+        </div>
+        <ProjectsTable
+          projects={openJobs}
+          emptyLabel="No open jobs from other users yet. When someone posts a project, you can apply from here."
+        />
       </div>
     </div>
   )

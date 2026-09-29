@@ -6,6 +6,8 @@ const Project = require("../models/Project");
 const Conversation = require("../models/Conversation");
 const SavedItem = require("../models/SavedItem");
 const ProjectInvite = require("../models/ProjectInvite");
+const Proposal = require("../models/Proposal");
+const { formatProposal } = require("./proposalController");
 
 const uploadDir = path.join(__dirname, "../../uploads/projects");
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -161,16 +163,29 @@ async function getProject(req, res) {
       });
     }
 
-    if (String(project.createdBy) !== String(req.user._id)) {
+    const isOwner = String(project.createdBy) === String(req.user._id);
+    if (!isOwner && !["open", "in_progress"].includes(project.status)) {
       return res.status(403).json({
         success: false,
         message: "Not allowed.",
       });
     }
 
+    const proposalFilter = { project: project._id };
+    if (!isOwner) proposalFilter.applicant = req.user._id;
+
+    const proposals = await Proposal.find(proposalFilter)
+      .populate(
+        "applicant",
+        "fullName company contractorType location jobTitle profilePhoto profileImage workEmail"
+      )
+      .sort({ createdAt: -1 });
+
     return res.json({
       success: true,
+      isOwner,
       project: formatProject(project),
+      proposals: proposals.map(formatProposal),
     });
   } catch (error) {
     console.error("getProject:", error);
@@ -327,6 +342,7 @@ async function deleteProject(req, res) {
       });
     }
 
+    await Proposal.deleteMany({ project: project._id });
     await project.deleteOne();
 
     return res.json({

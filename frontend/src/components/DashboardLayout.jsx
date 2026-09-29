@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 import Sidebar from './Sidebar'
+import AccountDrawer from './AccountDrawer'
 import { clearSession, getSession, mediaUrl } from '../api/auth'
 
 function initials(name) {
@@ -18,6 +19,11 @@ export default function DashboardLayout() {
   const [session, setSession] = useState(() => getSession())
   const [mobileOpen, setMobileOpen] = useState(false)
   const [unread, setUnread] = useState(0)
+  const [accountOpen, setAccountOpen] = useState(false)
+
+  useEffect(() => {
+    setAccountOpen(false)
+  }, [location.pathname])
 
   useEffect(() => {
     const sync = () => setSession(getSession())
@@ -85,22 +91,34 @@ export default function DashboardLayout() {
             ) : null}
           </button>
 
-          <div className="user-bar__avatar-wrap">
-            {photo ? (
-              <img src={photo} alt="" className="user-bar__avatar" width="40" height="40" />
-            ) : (
-              <span className="user-bar__avatar user-bar__avatar--fallback">
-                {initials(user.fullName)}
-              </span>
-            )}
-            <span className="user-bar__online" aria-hidden="true" />
-          </div>
-          <span className="user-bar__name">{user.fullName}</span>
-          <button type="button" className="dash-topbar__logout" onClick={handleLogout}>
-            Log out
+          <button
+            type="button"
+            className="user-bar__profile"
+            aria-expanded={accountOpen}
+            aria-haspopup="dialog"
+            onClick={() => setAccountOpen(true)}
+          >
+            <div className="user-bar__avatar-wrap">
+              {photo ? (
+                <img src={photo} alt="" className="user-bar__avatar" width="40" height="40" />
+              ) : (
+                <span className="user-bar__avatar user-bar__avatar--fallback">
+                  {initials(user.fullName)}
+                </span>
+              )}
+              <span className="user-bar__online" aria-hidden="true" />
+            </div>
+            <span className="user-bar__name">{user.fullName}</span>
           </button>
         </div>
       </header>
+
+      <AccountDrawer
+        user={user}
+        open={accountOpen}
+        onClose={() => setAccountOpen(false)}
+        onLogout={handleLogout}
+      />
 
       <div className="dash-body">
         <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />

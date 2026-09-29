@@ -2,6 +2,8 @@ const express = require("express");
 const { protect } = require("../middleware/authMiddleware");
 const {
   uploadDocument,
+  uploadProfilePhoto,
+  updateProfilePhoto,
   getSettings,
   updateAccount,
   updateCompany,
@@ -23,6 +25,17 @@ const router = express.Router();
 router.use(protect);
 
 router.get("/", getSettings);
+router.post("/photo", (req, res) => {
+  uploadProfilePhoto(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message || "Invalid profile photo.",
+      });
+    }
+    return updateProfilePhoto(req, res);
+  });
+});
 router.patch("/account", updateAccount);
 router.patch("/company", updateCompany);
 router.patch("/notifications", updateNotifications);

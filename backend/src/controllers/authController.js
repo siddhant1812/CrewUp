@@ -55,8 +55,12 @@ function publicUser(user) {
     workEmail: user.workEmail,
     company: user.company,
     contractorType: user.contractorType,
-    profilePhoto: user.profilePhoto || "",
+    profilePhoto: user.profilePhoto || user.profileImage || "",
     role: user.role,
+    plan: user.plan || "starter",
+    subscriptionStatus: user.subscriptionStatus || "none",
+    jobTitle: user.jobTitle || "",
+    location: user.location || "",
   };
 }
 
@@ -223,3 +227,9 @@ module.exports = {
   login,
   uploadProfilePhoto,
 };
+
+
+
+
+
+

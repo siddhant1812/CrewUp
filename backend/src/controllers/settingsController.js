@@ -44,6 +44,20 @@ function formatBytes(n) {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function normalizePhone(value) {
+  const compact = String(value || "")
+    .trim()
+    .replace(/[^\d+]/g, "");
+  if (!compact) return "";
+  const withPlus = compact.startsWith("+") ? compact : `+1${compact}`;
+  if (!/^\+\d{11,13}$/.test(withPlus)) {
+    const err = new Error("Enter a valid country code and 10-digit phone number.");
+    err.status = 400;
+    throw err;
+  }
+  return withPlus;
+}
+
 function settingsProfile(user) {
   return {
     id: String(user._id),
@@ -104,7 +118,7 @@ async function updateAccount(req, res) {
       }
       user.fullName = name;
     }
-    if (phoneNumber !== undefined) user.phoneNumber = String(phoneNumber).trim();
+    if (phoneNumber !== undefined) user.phoneNumber = normalizePhone(phoneNumber);
     if (jobTitle !== undefined) user.jobTitle = String(jobTitle).trim();
     if (location !== undefined) user.location = String(location).trim();
     if (website !== undefined) user.website = String(website).trim();
@@ -114,6 +128,9 @@ async function updateAccount(req, res) {
 
     return res.json({ success: true, profile: settingsProfile(user) });
   } catch (error) {
+    if (error.status === 400) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     console.error("updateAccount:", error);
     return res.status(500).json({ success: false, message: "Failed to update account." });
   }
@@ -134,7 +151,7 @@ async function updateCompany(req, res) {
 
     if (company !== undefined) user.company = String(company).trim();
     if (companyWebsite !== undefined) user.companyWebsite = String(companyWebsite).trim();
-    if (companyPhone !== undefined) user.companyPhone = String(companyPhone).trim();
+    if (companyPhone !== undefined) user.companyPhone = normalizePhone(companyPhone);
     if (companyAddress !== undefined) user.companyAddress = String(companyAddress).trim();
     if (licenseNumber !== undefined) user.licenseNumber = String(licenseNumber).trim();
     if (taxId !== undefined) user.taxId = String(taxId).trim();
@@ -144,6 +161,9 @@ async function updateCompany(req, res) {
 
     return res.json({ success: true, profile: settingsProfile(user) });
   } catch (error) {
+    if (error.status === 400) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     console.error("updateCompany:", error);
     return res.status(500).json({ success: false, message: "Failed to update company." });
   }
@@ -432,6 +452,47 @@ async function deleteDocument(req, res) {
   }
 }
 
+const photoDir = path.join(__dirname, "../../uploads/profiles");
+fs.mkdirSync(photoDir, { recursive: true });
+
+const photoUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, photoDir),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
+      cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+    },
+  }),
+  limits: { fileSize: 3 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Profile photo must be an image."));
+    }
+    cb(null, true);
+  },
+});
+
+const uploadProfilePhoto = photoUpload.single("profilePhoto");
+
+async function updateProfilePhoto(req, res) {
+  try {
+    if (!ensureDb(res)) return;
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Choose a photo to upload." });
+    }
+
+    const user = await User.findById(req.user._id);
+    user.profilePhoto = `/uploads/profiles/${req.file.filename}`;
+    await user.save();
+    await logActivity(user._id, "account", "Profile photo updated");
+
+    return res.json({ success: true, profile: settingsProfile(user) });
+  } catch (error) {
+    console.error("updateProfilePhoto:", error);
+    return res.status(500).json({ success: false, message: "Failed to update photo." });
+  }
+}
+
 async function listActivity(req, res) {
   try {
     if (!ensureDb(res)) return;
@@ -469,4 +530,6 @@ module.exports = {
   uploadAccountDocument,
   deleteDocument,
   listActivity,
+  uploadProfilePhoto,
+  updateProfilePhoto,
 };

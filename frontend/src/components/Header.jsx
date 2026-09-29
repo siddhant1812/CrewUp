@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
+import AccountDrawer from './AccountDrawer'
 import { clearSession, getSession, mediaUrl } from '../api/auth'
 
 const LINKS = [
@@ -31,20 +32,9 @@ function Avatar({ user }) {
   )
 }
 
-function UserMenu({ user, onLogout }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-
-  useEffect(() => {
-    function onDocClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
-    }
-    document.addEventListener('mousedown', onDocClick)
-    return () => document.removeEventListener('mousedown', onDocClick)
-  }, [])
-
+function UserMenu({ user, accountOpen, onOpenAccount }) {
   return (
-    <div className="user-bar" ref={ref}>
+    <div className="user-bar">
       <button type="button" className="user-bar__bell" aria-label="Notifications">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
@@ -66,52 +56,16 @@ function UserMenu({ user, onLogout }) {
       <button
         type="button"
         className="user-bar__profile"
-        aria-expanded={open}
-        aria-haspopup="menu"
-        onClick={() => setOpen((v) => !v)}
+        aria-expanded={accountOpen}
+        aria-haspopup="dialog"
+        onClick={onOpenAccount}
       >
         <span className="user-bar__avatar-wrap">
           <Avatar user={user} />
           <span className="user-bar__online" aria-hidden="true" />
         </span>
         <span className="user-bar__name">{user.fullName}</span>
-        <svg
-          className={`user-bar__chevron${open ? ' open' : ''}`}
-          width="12"
-          height="8"
-          viewBox="0 0 12 8"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M1 1.5l5 5 5-5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
       </button>
-
-      {open && (
-        <div className="user-bar__menu" role="menu">
-          <div className="user-bar__menu-meta">
-            <strong>{user.fullName}</strong>
-            <span>{user.workEmail}</span>
-          </div>
-          <Link
-            to="/dashboard"
-            role="menuitem"
-            className="user-bar__menu-link"
-            onClick={() => setOpen(false)}
-          >
-            Dashboard
-          </Link>
-          <button type="button" role="menuitem" onClick={onLogout}>
-            Log out
-          </button>
-        </div>
-      )}
     </div>
   )
 }
@@ -119,6 +73,7 @@ function UserMenu({ user, onLogout }) {
 export default function Header({ menuOpen, setMenuOpen }) {
   const navigate = useNavigate()
   const [session, setSession] = useState(() => getSession())
+  const [accountOpen, setAccountOpen] = useState(false)
 
   useEffect(() => {
     const sync = () => setSession(getSession())
@@ -167,7 +122,11 @@ export default function Header({ menuOpen, setMenuOpen }) {
 
         <div className="header__actions">
           {user ? (
-            <UserMenu user={user} onLogout={handleLogout} />
+            <UserMenu
+              user={user}
+              accountOpen={accountOpen}
+              onOpenAccount={() => setAccountOpen(true)}
+            />
           ) : (
             <>
               <Link to="/login" className="link-login">Log In</Link>
@@ -203,13 +162,20 @@ export default function Header({ menuOpen, setMenuOpen }) {
           <div className="header__drawer-actions">
             {user ? (
               <>
-                <div className="user-bar user-bar--drawer">
+                <button
+                  type="button"
+                  className="user-bar user-bar--drawer"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    setAccountOpen(true)
+                  }}
+                >
                   <span className="user-bar__avatar-wrap">
                     <Avatar user={user} />
                     <span className="user-bar__online" aria-hidden="true" />
                   </span>
                   <span className="user-bar__name">{user.fullName}</span>
-                </div>
+                </button>
                 <button type="button" className="btn btn-outline" onClick={handleLogout}>
                   Log out
                 </button>
@@ -225,6 +191,15 @@ export default function Header({ menuOpen, setMenuOpen }) {
           </div>
         </div>
       )}
+
+      {user ? (
+        <AccountDrawer
+          user={user}
+          open={accountOpen}
+          onClose={() => setAccountOpen(false)}
+          onLogout={handleLogout}
+        />
+      ) : null}
     </header>
   )
 }
