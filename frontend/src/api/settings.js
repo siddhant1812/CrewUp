@@ -1,39 +1,5 @@
-import { getSession, mediaUrl } from './auth'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-
-async function authRequest(path, options = {}) {
-  const session = getSession()
-  if (!session?.token) {
-    const err = new Error('Not authenticated')
-    err.status = 401
-    throw err
-  }
-
-  const isForm = typeof FormData !== 'undefined' && options.body instanceof FormData
-  const headers = {
-    Authorization: `Bearer ${session.token}`,
-    ...(options.headers || {}),
-  }
-  if (!isForm && options.body != null) {
-    headers['Content-Type'] = 'application/json'
-  }
-
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
-  let data = null
-  try {
-    data = await res.json()
-  } catch {
-    data = null
-  }
-  if (!res.ok) {
-    const err = new Error(data?.message || `Request failed (${res.status})`)
-    err.status = res.status
-    err.data = data
-    throw err
-  }
-  return data
-}
+import { mediaUrl } from './auth'
+import { authRequest } from './client'
 
 export { mediaUrl }
 
@@ -46,14 +12,14 @@ export function uploadProfilePhoto(file) {
   form.append('profilePhoto', file)
   return authRequest('/api/settings/photo', {
     method: 'POST',
-    body: form,
+    data: form,
   })
 }
 
 export function patchSettings(section, body) {
   return authRequest(`/api/settings/${section}`, {
     method: 'PATCH',
-    body: JSON.stringify(body),
+    data: body,
   })
 }
 
@@ -68,7 +34,7 @@ export function fetchTeam() {
 export function inviteTeam(body) {
   return authRequest('/api/settings/team', {
     method: 'POST',
-    body: JSON.stringify(body),
+    data: body,
   })
 }
 
@@ -85,7 +51,7 @@ export function uploadDocument(file) {
   form.append('file', file)
   return authRequest('/api/settings/documents', {
     method: 'POST',
-    body: form,
+    data: form,
   })
 }
 

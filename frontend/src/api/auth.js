@@ -1,37 +1,9 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+import { API_BASE, request } from './client'
 
 function storage() {
   if (localStorage.getItem('crewup_token')) return localStorage
   if (sessionStorage.getItem('crewup_token')) return sessionStorage
   return localStorage
-}
-
-async function request(path, options = {}) {
-  const isForm = typeof FormData !== 'undefined' && options.body instanceof FormData
-  const headers = { ...(options.headers || {}) }
-  if (!isForm) headers['Content-Type'] = 'application/json'
-
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers,
-  })
-
-  let data = null
-  try {
-    data = await res.json()
-  } catch {
-    data = null
-  }
-
-  if (!res.ok) {
-    const message = data?.message || `Request failed (${res.status})`
-    const err = new Error(message)
-    err.status = res.status
-    err.data = data
-    throw err
-  }
-
-  return data
 }
 
 export function mediaUrl(path) {
@@ -43,14 +15,14 @@ export function mediaUrl(path) {
 export function signup(formData) {
   return request('/api/auth/signup', {
     method: 'POST',
-    body: formData,
+    data: formData,
   })
 }
 
 export function login(body) {
   return request('/api/auth/login', {
     method: 'POST',
-    body: JSON.stringify(body),
+    data: body,
   })
 }
 
