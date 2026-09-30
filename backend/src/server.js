@@ -23,7 +23,7 @@ let authLimiter = (_req, _res, next) => next();
 
 app.set("trust proxy", 1);
 app.use(securityHeaders());
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: "*", credentials: true }));
 app.post(
   "/api/billing/webhook",
   express.raw({ type: "application/json" }),

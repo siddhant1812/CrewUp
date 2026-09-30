@@ -3,7 +3,7 @@ const {
   register,
   login,
   uploadProfilePhoto,
-} = require("../controllers/authController");
+} = require("../controllers/AuthController");
 
 const router = express.Router();
 
