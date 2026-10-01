@@ -5,6 +5,32 @@ services:
     rootDir: backend
     buildCommand: npm install
     startCommand: node src/server.js
+    plan: free                    # or starter if you want it always on
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000              # Render injects PORT, but this is fine as fallback
+
+      # --- Required (set these as secrets in the dashboard) ---
+      - key: MONGO_URI
+        sync: false               # you will fill this in the Render UI
+      - key: JWT_SECRET
+        sync: false
+
+      # --- Optional but recommended ---
+      - key: FRONTEND_URL
+        value: https://crew-up-97xi.vercel.app   # or your real Vercel URL
+      - key: REDIS_URL
+        sync: false               # leave empty if you don’t use Redis
+
+      # --- Stripe (needed for billing plans) ---
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_BUSINESS
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
