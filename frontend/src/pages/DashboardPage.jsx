@@ -228,6 +228,7 @@ function ProjectsSection({ user }) {
     projectType: 'Commercial',
     budget: '',
     description: '',
+    trades: '',
     status: 'open',
     image: null,
   })
@@ -271,6 +272,10 @@ function ProjectsSection({ user }) {
         projectType: form.projectType,
         budget: form.budget.trim(),
         description: form.description.trim(),
+        trades: form.trades
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
         image: form.image || undefined,
         status: form.status,
       })
@@ -281,6 +286,7 @@ function ProjectsSection({ user }) {
         projectType: 'Commercial',
         budget: '',
         description: '',
+        trades: '',
         status: 'open',
         image: null,
       })
@@ -405,6 +411,14 @@ function ProjectsSection({ user }) {
             </label>
           </div>
           <label className="dash-project-form__full">
+            <span>Trades needed</span>
+            <input
+              value={form.trades}
+              onChange={(e) => setForm((f) => ({ ...f, trades: e.target.value }))}
+              placeholder="Electrical, Plumbing, HVAC"
+            />
+          </label>
+          <label className="dash-project-form__full">
             <span>Description</span>
             <textarea
               rows={3}
@@ -441,7 +455,7 @@ function ProjectsSection({ user }) {
       <div className="dash-table-card" style={{ marginTop: '1rem' }}>
         <div className="dash-table-card__head">
           <h3>Open jobs to bid on</h3>
-          <span className="dash-muted">{openJobs.length} open</span>
+          <Link to="/jobs">Browse all</Link>
         </div>
         <ProjectsTable
           projects={openJobs}

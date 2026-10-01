@@ -37,7 +37,7 @@ export default function FindContractors() {
     }
   }, [])
 
-  const destination = forContractor ? '/dashboard/projects' : '/dashboard/find-contractors'
+  const destination = forContractor ? '/jobs' : '/dashboard/contractors'
 
   return (
     <section className="section find-contractors" id="find-contractors">

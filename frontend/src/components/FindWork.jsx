@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const FEATURES = [
   'Search by trade',
   'Search by location',
@@ -40,7 +42,7 @@ export default function FindWork() {
               </li>
             ))}
           </ul>
-          <a href="#browse-jobs" className="btn btn-primary btn-lg">Browse Jobs</a>
+          <Link to="/jobs" className="btn btn-primary btn-lg">Browse Jobs</Link>
         </div>
       </div>
     </section>

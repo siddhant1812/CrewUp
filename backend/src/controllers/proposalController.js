@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Project = require("../models/Project");
 const Proposal = require("../models/Proposal");
 const { logActivity } = require("../models/Activity");
+const { buildJobFilter, formatPublicJob } = require("./jobController");
 
 function ensureDb(res) {
   if (mongoose.connection.readyState !== 1) {
@@ -54,28 +55,19 @@ async function listOpenProjects(req, res) {
   try {
     if (!ensureDb(res)) return;
 
-    const projects = await Project.find({
-      createdBy: { $ne: req.user._id },
-      status: "open",
-    })
+    const projects = await Project.find(
+      buildJobFilter({
+        ...req.query,
+        excludeUserId: req.user._id,
+      })
+    )
+      .populate("createdBy", "fullName company")
       .sort({ updatedAt: -1 })
       .limit(50);
 
     return res.json({
       success: true,
-      projects: projects.map((p) => ({
-        id: String(p._id),
-        title: p.title,
-        description: p.description || "",
-        location: p.location || "",
-        projectType: p.projectType || "Commercial",
-        budget: p.budget || "",
-        dueDate: p.dueDate,
-        image: p.image || "",
-        status: p.status,
-        bidsCount: p.bidsCount || 0,
-        createdAt: p.createdAt,
-      })),
+      projects: projects.map(formatPublicJob),
     });
   } catch (error) {
     console.error("listOpenProjects:", error);

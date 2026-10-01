@@ -12,7 +12,7 @@ export default function FooterCta() {
           </p>
         </div>
         <div className="footer-cta__actions">
-          <Link to="/#find-work" className="btn btn-white btn-lg">
+          <Link to="/jobs" className="btn btn-white btn-lg">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
               <circle cx="8" cy="8" r="5.25" stroke="currentColor" strokeWidth="1.6" />
               <path d="M12.2 12.2L15.5 15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />

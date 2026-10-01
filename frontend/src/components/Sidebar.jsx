@@ -6,6 +6,7 @@ import { fetchUnreadCount } from '../api/messages'
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', end: true },
   { to: '/dashboard/projects', label: 'Projects' },
+  { to: '/jobs', label: 'Browse Jobs' },
   { to: '/dashboard/messages', label: 'Messages', badgeKey: 'messages' },
   { to: '/dashboard/contractors', label: 'Contractors' },
   { to: '/dashboard/billing', label: 'Billing' },

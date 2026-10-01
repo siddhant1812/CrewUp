@@ -6,7 +6,7 @@ import { clearSession, getSession, mediaUrl } from '../api/auth'
 
 const LINKS = [
   { label: 'How It Works', href: '/#how-it-works' },
-  { label: 'Find Work', href: '/#find-work' },
+  { label: 'Find Work', href: '/jobs' },
   { label: 'Find Contractors', href: '/dashboard/contractors' },
   { label: 'Pricing', href: '/#pricing' },
   { label: 'Resources', href: '/#resources', dropdown: true },
@@ -103,7 +103,7 @@ export default function Header({ menuOpen, setMenuOpen }) {
 
         <nav className="header__nav" aria-label="Primary">
           {LINKS.map((l) =>
-            l.href.startsWith('/dashboard') ? (
+            l.href.startsWith('/dashboard') || l.href === '/jobs' ? (
               <Link key={l.label} to={l.href} className="header__link">
                 {l.label}
               </Link>
@@ -149,7 +149,7 @@ export default function Header({ menuOpen, setMenuOpen }) {
       {menuOpen && (
         <div className="header__drawer">
           {LINKS.map((l) =>
-            l.href.startsWith('/dashboard') ? (
+            l.href.startsWith('/dashboard') || l.href === '/jobs' ? (
               <Link key={l.label} to={l.href} onClick={() => setMenuOpen(false)}>
                 {l.label}
               </Link>
