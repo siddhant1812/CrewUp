@@ -2,8 +2,7 @@ import axios from 'axios'
 import { getSession } from './auth'
 
 export const API_BASE =
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? 'http://localhost:5000' : 'https://crewup-3.onrender.com')
+  import.meta.env.VITE_API_URL ||'http://localhost:5000' 
 
 const http = axios.create({
   baseURL: API_BASE,

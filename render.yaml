@@ -21,7 +21,7 @@ services:
 
       # --- Optional but recommended ---
       - key: FRONTEND_URL
-        value: https://crew-up-97xi.vercel.app   # or your real Vercel URL
+        value: https://crew-up-two.vercel.app
       - key: REDIS_URL
         sync: false               # leave empty if you don’t use Redis
 
