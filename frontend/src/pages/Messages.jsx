@@ -10,6 +10,7 @@ import {
   sendMessage,
   toggleArchive,
 } from '../api/messages'
+import { getSocket } from '../api/socket'
 
 const PAGE_SIZE = 8
 
@@ -134,6 +135,7 @@ export default function Messages() {
   const [newMessage, setNewMessage] = useState('')
   const [starting, setStarting] = useState(false)
   const [newError, setNewError] = useState('')
+  const [typingName, setTypingName] = useState('')
 
   const feedRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -233,12 +235,95 @@ export default function Messages() {
   }, [activeId, loadThread])
 
   useEffect(() => {
-    const id = setInterval(() => {
+    const socket = getSocket()
+    if (!socket) return undefined
+
+    function onNewMessage(payload) {
+      if (!payload?.conversationId || !payload.message) return
+
+      setConversations((prev) => {
+        const next = prev.map((c) =>
+          c.id === payload.conversationId
+            ? {
+                ...c,
+                preview: payload.preview || c.preview,
+                lastMessageAt: payload.message.time || c.lastMessageAt,
+                unread:
+                  payload.conversationId === activeId
+                    ? 0
+                    : payload.unread ?? c.unread,
+              }
+            : c
+        )
+        const exists = next.some((c) => c.id === payload.conversationId)
+        if (!exists) return prev
+        return next.sort((a, b) => {
+          const ta = new Date(a.lastMessageAt || 0).getTime()
+          const tb = new Date(b.lastMessageAt || 0).getTime()
+          return tb - ta
+        })
+      })
+
+      if (payload.conversationId === activeId) {
+        setMessages((prev) =>
+          prev.some((m) => m.id === payload.message.id)
+            ? prev
+            : [...prev, payload.message]
+        )
+        if (payload.message.attachments?.length) {
+          setSharedFiles((prev) => {
+            const incoming = payload.message.attachments.map((f) => ({
+              ...f,
+              date: payload.message.time,
+            }))
+            return [...incoming, ...prev]
+          })
+        }
+        markConversationRead(payload.conversationId).catch(() => {})
+      } else {
+        setConversations((prev) => {
+          if (prev.some((c) => c.id === payload.conversationId)) return prev
+          loadConversations({ silent: true })
+          return prev
+        })
+      }
+    }
+
+    function onTyping(payload) {
+      if (payload?.conversationId !== activeId || payload.userId === me?.id) return
+      setTypingName(payload.typing ? payload.name || 'Someone' : '')
+    }
+
+    function onNewConversation() {
       loadConversations({ silent: true })
-      if (activeId) loadThread(activeId, { silent: true })
-    }, 4000)
-    return () => clearInterval(id)
-  }, [loadConversations, loadThread, activeId])
+    }
+
+    socket.on('message:new', onNewMessage)
+    socket.on('typing', onTyping)
+    socket.on('conversation:new', onNewConversation)
+
+    const fallback = setInterval(() => {
+      loadConversations({ silent: true })
+    }, 45000)
+
+    return () => {
+      socket.off('message:new', onNewMessage)
+      socket.off('typing', onTyping)
+      socket.off('conversation:new', onNewConversation)
+      clearInterval(fallback)
+    }
+  }, [activeId, loadConversations, me?.id])
+
+  useEffect(() => {
+    const socket = getSocket()
+    if (!socket || !activeId) return undefined
+    socket.emit('join-conversation', activeId)
+    setTypingName('')
+    return () => {
+      socket.emit('leave-conversation', activeId)
+      socket.emit('typing', { conversationId: activeId, typing: false })
+    }
+  }, [activeId])
 
   useEffect(() => {
     if (!feedRef.current) return
@@ -547,6 +632,7 @@ export default function Messages() {
                     </div>
                   )
                 })}
+                {typingName ? <p className="msg-empty">{typingName} is typing…</p> : null}
               </div>
 
               {sendError && <p className="msg-send-error">{sendError}</p>}
@@ -592,7 +678,19 @@ export default function Messages() {
                   type="text"
                   placeholder="Write a message..."
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
+                  onChange={(e) => {
+                    setDraft(e.target.value)
+                    const socket = getSocket()
+                    if (socket && activeId) {
+                      socket.emit('typing', { conversationId: activeId, typing: true })
+                    }
+                  }}
+                  onBlur={() => {
+                    const socket = getSocket()
+                    if (socket && activeId) {
+                      socket.emit('typing', { conversationId: activeId, typing: false })
+                    }
+                  }}
                   disabled={sending}
                 />
                 <button type="submit" className="msg-send" aria-label="Send" disabled={sending}>

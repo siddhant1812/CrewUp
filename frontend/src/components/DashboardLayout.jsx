@@ -4,6 +4,7 @@ import Logo from './Logo'
 import Sidebar from './Sidebar'
 import AccountDrawer from './AccountDrawer'
 import { clearSession, getSession, mediaUrl } from '../api/auth'
+import { connectSocket, disconnectSocket } from '../api/socket'
 
 function initials(name) {
   return (name || '?')
@@ -40,6 +41,38 @@ export default function DashboardLayout() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!session?.token) {
+      disconnectSocket()
+      return undefined
+    }
+
+    const socket = connectSocket()
+    if (!socket) return undefined
+
+    function onUnreadCount(payload) {
+      if (typeof payload?.count === 'number') {
+        window.dispatchEvent(
+          new CustomEvent('crewup-unread', { detail: { count: payload.count } })
+        )
+      }
+    }
+
+    function onIncoming() {
+      window.dispatchEvent(new Event('crewup-messages-refresh'))
+    }
+
+    socket.on('unread:count', onUnreadCount)
+    socket.on('message:new', onIncoming)
+    socket.on('conversation:new', onIncoming)
+
+    return () => {
+      socket.off('unread:count', onUnreadCount)
+      socket.off('message:new', onIncoming)
+      socket.off('conversation:new', onIncoming)
+    }
+  }, [session?.token])
+
   if (!session?.user) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />
   }
@@ -48,6 +81,7 @@ export default function DashboardLayout() {
   const photo = mediaUrl(user.profilePhoto)
 
   function handleLogout() {
+    disconnectSocket()
     clearSession()
     navigate('/login')
   }

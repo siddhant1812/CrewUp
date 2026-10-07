@@ -45,7 +45,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
     }
     window.addEventListener('crewup-messages-refresh', onRefresh)
     window.addEventListener('crewup-unread', onUnread)
-    const interval = setInterval(load, 15000)
+    const interval = setInterval(load, 60000)
     return () => {
       cancelled = true
       window.removeEventListener('crewup-messages-refresh', onRefresh)

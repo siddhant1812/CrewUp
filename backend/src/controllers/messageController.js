@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const Conversation = require("../models/Conversation");
 const Message = require("../models/Message");
 const User = require("../models/User");
+const { emitToUser } = require("../realtime/io");
 
 const uploadDir = path.join(__dirname, "../../uploads/messages");
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -129,6 +130,43 @@ function formatConversation(conversation, userId) {
     updatedAt: conversation.updatedAt,
     createdAt: conversation.createdAt,
   };
+}
+
+async function unreadTotalFor(userId) {
+  const conversations = await Conversation.find({
+    participants: userId,
+    archivedBy: { $ne: userId },
+  }).select("unread");
+
+  let total = 0;
+  for (const conversation of conversations) {
+    total += unreadFor(conversation, userId);
+  }
+  return total;
+}
+
+function participantId(value) {
+  return String(value?._id || value);
+}
+
+async function emitUnreadCounts(conversation) {
+  for (const participant of conversation.participants) {
+    const id = participantId(participant);
+    const count = await unreadTotalFor(id);
+    emitToUser(id, "unread:count", { count });
+  }
+}
+
+function emitNewMessage(conversation, populated, preview) {
+  for (const participant of conversation.participants) {
+    const id = participantId(participant);
+    emitToUser(id, "message:new", {
+      conversationId: String(conversation._id),
+      message: formatMessage(populated, id),
+      preview,
+      unread: unreadFor(conversation, id),
+    });
+  }
 }
 
 function formatMessage(message, userId) {
@@ -472,6 +510,17 @@ async function createConversation(req, res) {
         (id) => String(id) !== String(req.user._id) && String(id) !== String(other._id)
       );
       await conversation.save();
+
+      const populated = await Message.findById(message._id).populate(
+        "sender",
+        "fullName company contractorType profilePhoto profileImage location createdAt"
+      );
+      emitNewMessage(conversation, populated, text);
+      emitUnreadCounts(conversation).catch(() => {});
+    } else {
+      emitToUser(other._id, "conversation:new", {
+        conversationId: String(conversation._id),
+      });
     }
 
     return res.status(201).json({
@@ -614,6 +663,9 @@ async function sendMessage(req, res) {
       "fullName company contractorType profilePhoto profileImage location createdAt"
     );
 
+    emitNewMessage(conversation, populated, preview);
+    emitUnreadCounts(conversation).catch(() => {});
+
     return res.status(201).json({
       success: true,
       message: formatMessage(populated, req.user._id),
@@ -657,6 +709,8 @@ async function markRead(req, res) {
       },
       { $addToSet: { readBy: req.user._id } }
     );
+
+    emitUnreadCounts(conversation).catch(() => {});
 
     return res.json({ success: true });
   } catch (error) {

@@ -1,9 +1,11 @@
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
+const http = require("http");
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const { attachSocket } = require("./realtime/io");
 
 const connectDB = require("./config/db");
 const { connectRedis, getRedisStatus } = require("./config/redis");
@@ -75,7 +77,9 @@ async function start() {
     process.exit(1);
   }
 
-  app.listen(PORT, () => {
+  const server = http.createServer(app);
+  attachSocket(server);
+  server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 }
