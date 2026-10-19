@@ -3,6 +3,7 @@ const Project = require("../models/Project");
 const Proposal = require("../models/Proposal");
 const { logActivity } = require("../models/Activity");
 const { buildJobFilter, formatPublicJob } = require("./jobController");
+const { can } = require("../auth/permissions");
 
 function ensureDb(res) {
   if (mongoose.connection.readyState !== 1) {
@@ -126,6 +127,13 @@ async function createProposal(req, res) {
     if (!project) {
       return res.status(404).json({ success: false, message: "Project not found." });
     }
+    if (!can(req.user, "applyToJobs")) {
+      return res.status(403).json({
+        success: false,
+        message: "Only subcontractors and find-work accounts can apply to jobs.",
+      });
+    }
+
     if (String(project.createdBy) === String(req.user._id)) {
       return res.status(400).json({
         success: false,

@@ -29,6 +29,7 @@ export default function SignUp() {
     terms: false,
   })
   const [error, setError] = useState('')
+  const isFindWork = form.role === 'find_work'
 
   function update(field) {
     return (e) => {
@@ -83,7 +84,7 @@ export default function SignUp() {
       const body = new FormData()
       body.append('fullName', form.name.trim())
       body.append('workEmail', form.email.trim())
-      body.append('company', form.company.trim())
+      if (!isFindWork) body.append('company', form.company.trim())
       body.append('contractorType', form.role)
       body.append('password', form.password)
       body.append('confirmPassword', form.confirm)
@@ -157,31 +158,33 @@ export default function SignUp() {
         </label>
 
         <label className="field">
-          <span className="field__label">Work email</span>
+          <span className="field__label">{isFindWork ? 'Email' : 'Work email'}</span>
           <input
             type="email"
             name="email"
             autoComplete="email"
-            placeholder="you@company.com"
+            placeholder={isFindWork ? 'you@email.com' : 'you@company.com'}
             value={form.email}
             onChange={update('email')}
             required
           />
         </label>
 
-        <label className="field">
-          <span className="field__label">
-            Company <span className="field__optional">(optional)</span>
-          </span>
-          <input
-            type="text"
-            name="company"
-            autoComplete="organization"
-            placeholder="Your company name"
-            value={form.company}
-            onChange={update('company')}
-          />
-        </label>
+        {!isFindWork ? (
+          <label className="field">
+            <span className="field__label">
+              Company <span className="field__optional">(optional)</span>
+            </span>
+            <input
+              type="text"
+              name="company"
+              autoComplete="organization"
+              placeholder="Your company name"
+              value={form.company}
+              onChange={update('company')}
+            />
+          </label>
+        ) : null}
 
         <fieldset className="field">
           <legend className="field__label">I am a</legend>

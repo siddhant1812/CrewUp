@@ -353,6 +353,17 @@ ol {
   box-shadow: var(--shadow);
   overflow: hidden;
   min-height: 340px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.dash:hover {
+  box-shadow: var(--shadow), 0 6px 18px rgba(0, 102, 255, 0.35);
+}
+
+.dash:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
 }
 
 .dash__side {

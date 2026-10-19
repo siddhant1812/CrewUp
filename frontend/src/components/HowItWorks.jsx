@@ -74,16 +74,14 @@ function DashboardPreview() {
   ]
 
   return (
-    <div className="dash">
+    <Link to="/dashboard" className="dash" aria-label="Open dashboard">
       <aside className="dash__side">
-        <Link to="/dashboard" className="dash__logo" aria-label="Open dashboard">
-          CU
-        </Link>
+        <span className="dash__logo">CU</span>
         {NAV.map((item) => (
-          <Link key={item.to} to={item.to} className={`dash__item${item.to === '/dashboard' ? ' active' : ''}`}>
+          <span key={item.to} className={`dash__item${item.to === '/dashboard' ? ' active' : ''}`}>
             <span className="dash__dot" />
             {item.label}
-          </Link>
+          </span>
         ))}
       </aside>
       <div className="dash__body">
@@ -130,7 +128,7 @@ function DashboardPreview() {
           )}
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 

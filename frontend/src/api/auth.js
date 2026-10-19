@@ -60,6 +60,54 @@ export function getSession() {
   }
 }
 
+function fallbackPermissions(user) {
+  const admin = user?.role === 'admin'
+  const contractor = admin || user?.contractorType === 'general_contractor'
+  const worker = admin || user?.contractorType === 'subcontractor' || user?.contractorType === 'find_work'
+  return {
+    postProjects: contractor,
+    manageProjects: contractor,
+    hire: contractor,
+    inviteContractors: contractor,
+    manageTeam: contractor,
+    applyToJobs: worker,
+    browseJobs: true,
+    message: true,
+    viewContractors: true,
+    saveContractors: true,
+    billing: true,
+    settings: true,
+  }
+}
+
+export function permissionsOf(user = getSession()?.user) {
+  return user?.permissions || fallbackPermissions(user)
+}
+
+export function accountKindOf(user = getSession()?.user) {
+  if (user?.accountKind) return user.accountKind
+  if (user?.role === 'admin') return 'admin'
+  if (user?.contractorType === 'general_contractor') return 'contractor'
+  if (user) return 'worker'
+  return 'guest'
+}
+
+export function canDo(permission, user = getSession()?.user) {
+  return Boolean(permissionsOf(user)[permission])
+}
+
+export function canPostProjects(user = getSession()?.user) {
+  return canDo('postProjects', user)
+}
+
+export function canApplyToJobs(user = getSession()?.user) {
+  return canDo('applyToJobs', user)
+}
+
+export function canHire(user = getSession()?.user) {
+  return canDo('hire', user)
+}
+
 export function updateSessionUser(partial) {
   const session = getSession()
   if (!session) return

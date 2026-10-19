@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { mediaUrl } from '../api/auth'
+import { canHire, getSession, mediaUrl } from '../api/auth'
 import { createConversation } from '../api/messages'
 import { fetchProjects } from '../api/projects'
 import {
@@ -31,6 +31,7 @@ function Avatar({ user }) {
 
 export default function Contractors() {
   const navigate = useNavigate()
+  const canInvite = canHire(getSession()?.user)
   const [query, setQuery] = useState('')
   const [type, setType] = useState('')
   const [list, setList] = useState([])
@@ -81,9 +82,11 @@ export default function Contractors() {
   }, [])
 
   useEffect(() => {
-    fetchProjects()
-      .then((d) => setProjects(d.projects || []))
-      .catch(() => setProjects([]))
+    if (canInvite) {
+      fetchProjects()
+        .then((d) => setProjects(d.projects || []))
+        .catch(() => setProjects([]))
+    }
     fetchInvites('received')
       .then((d) => setInvites((d.invites || []).filter((i) => i.status === 'pending')))
       .catch(() => setInvites([]))
@@ -254,7 +257,7 @@ export default function Contractors() {
                   >
                     Message
                   </button>
-                  {projects.length > 0 && (
+                  {canInvite && projects.length > 0 && (
                     <button type="button" className="btn btn-primary btn-sm" onClick={() => setInviteFor(c)}>
                       Invite
                     </button>

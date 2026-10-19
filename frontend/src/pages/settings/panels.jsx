@@ -127,6 +127,20 @@ export function AccountPanel() {
             <Field label="Work email">
               <input value={profile.workEmail || ''} disabled />
             </Field>
+            <Field label="Account type">
+              <input
+                value={
+                  profile.contractorType === 'subcontractor'
+                    ? 'Subcontractor — apply to jobs'
+                    : profile.contractorType === 'find_work'
+                      ? 'Find Work — apply to jobs'
+                      : profile.accountKind === 'admin'
+                        ? 'Admin'
+                        : 'General contractor — post and hire'
+                }
+                disabled
+              />
+            </Field>
             <Field label="Phone" plain>
               <PhoneInput
                 value={profile.phoneNumber || ''}

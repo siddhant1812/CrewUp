@@ -1,14 +1,15 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { clearSession } from '../api/auth'
+import { canDo, clearSession, getSession } from '../api/auth'
 import { fetchUnreadCount } from '../api/messages'
 
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', end: true },
-  { to: '/dashboard/projects', label: 'Projects' },
-  { to: '/jobs', label: 'Browse Jobs' },
+  { to: '/dashboard/projects', label: 'My Projects', permission: 'manageProjects' },
+  { to: '/jobs', label: 'Browse Jobs', permission: 'browseJobs' },
   { to: '/dashboard/messages', label: 'Messages', badgeKey: 'messages' },
-  { to: '/dashboard/contractors', label: 'Contractors' },
+  { to: '/dashboard/contractors', label: 'Find Crew', permission: 'hire' },
+  { to: '/dashboard/contractors', label: 'Companies', hideIf: 'hire' },
   { to: '/dashboard/billing', label: 'Billing' },
   {
     to: '/dashboard/settings/account',
@@ -20,7 +21,13 @@ const NAV = [
 export default function Sidebar({ mobileOpen, onClose }) {
   const navigate = useNavigate()
   const location = useLocation()
+  const user = getSession()?.user
   const [unread, setUnread] = useState(0)
+  const links = NAV.filter((item) => {
+    if (item.permission && !canDo(item.permission, user)) return false
+    if (item.hideIf && canDo(item.hideIf, user)) return false
+    return true
+  })
 
   useEffect(() => {
     let cancelled = false
@@ -75,12 +82,12 @@ export default function Sidebar({ mobileOpen, onClose }) {
           <span className="sidebar__cu">CU</span>
         </div>
         <nav className="sidebar__nav">
-          {NAV.map((item) => {
+          {links.map((item) => {
             const badge =
               item.badgeKey === 'messages' && unread > 0 ? unread : null
             return (
               <NavLink
-                key={item.to}
+                key={item.label}
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) => {

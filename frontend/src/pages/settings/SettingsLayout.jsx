@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { canDo } from '../../api/auth'
 
 const ITEMS = [
   { to: '/dashboard/settings/account', label: 'Account Information', icon: 'user' },
@@ -108,10 +109,14 @@ function Icon({ name }) {
 }
 
 export default function SettingsLayout() {
+  const items = ITEMS.filter(
+    (item) => item.to !== '/dashboard/settings/users' || canDo('manageTeam')
+  )
+
   return (
     <section className="set">
       <aside className="set-nav" aria-label="Settings">
-        {ITEMS.map((item) => (
+        {items.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

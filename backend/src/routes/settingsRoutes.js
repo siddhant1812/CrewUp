@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorizePermission } = require("../middleware/authMiddleware");
 const {
   uploadDocument,
   uploadProfilePhoto,
@@ -44,8 +44,8 @@ router.patch("/payouts", updatePayouts);
 router.patch("/password", changePassword);
 router.patch("/two-factor", toggleTwoFactor);
 router.get("/team", listTeam);
-router.post("/team", inviteTeam);
-router.delete("/team/:id", removeTeam);
+router.post("/team", authorizePermission("manageTeam"), inviteTeam);
+router.delete("/team/:id", authorizePermission("manageTeam"), removeTeam);
 router.get("/documents", listDocuments);
 router.post("/documents", (req, res) => {
   uploadDocument(req, res, (err) => {

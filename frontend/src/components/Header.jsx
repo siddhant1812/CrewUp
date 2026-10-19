@@ -2,15 +2,20 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 import AccountDrawer from './AccountDrawer'
-import { clearSession, getSession, mediaUrl } from '../api/auth'
+import { canHire, clearSession, getSession, mediaUrl } from '../api/auth'
 
-const LINKS = [
-  { label: 'How It Works', href: '/#how-it-works' },
-  { label: 'Find Work', href: '/jobs' },
-  { label: 'Find Contractors', href: '/dashboard/contractors' },
-  { label: 'Pricing', href: '/#pricing' },
-  { label: 'Resources', href: '/#resources', dropdown: true },
-]
+function navLinks(user) {
+  return [
+    { label: 'How It Works', href: '/#how-it-works' },
+    { label: 'Find Work', href: '/jobs' },
+    {
+      label: canHire(user) ? 'Find Crew' : 'Companies',
+      href: '/dashboard/contractors',
+    },
+    { label: 'Pricing', href: '/#pricing' },
+    { label: 'Resources', href: '/#resources', dropdown: true },
+  ]
+}
 
 function initials(name) {
   return (name || '?')
@@ -93,6 +98,7 @@ export default function Header({ menuOpen, setMenuOpen }) {
   }
 
   const user = session?.user
+  const links = navLinks(user)
 
   return (
     <header className="header">
@@ -102,7 +108,7 @@ export default function Header({ menuOpen, setMenuOpen }) {
         </Link>
 
         <nav className="header__nav" aria-label="Primary">
-          {LINKS.map((l) =>
+          {links.map((l) =>
             l.href.startsWith('/dashboard') || l.href === '/jobs' ? (
               <Link key={l.label} to={l.href} className="header__link">
                 {l.label}
@@ -148,7 +154,7 @@ export default function Header({ menuOpen, setMenuOpen }) {
 
       {menuOpen && (
         <div className="header__drawer">
-          {LINKS.map((l) =>
+          {links.map((l) =>
             l.href.startsWith('/dashboard') || l.href === '/jobs' ? (
               <Link key={l.label} to={l.href} onClick={() => setMenuOpen(false)}>
                 {l.label}

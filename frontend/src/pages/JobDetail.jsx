@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Header from '../components/Header'
 import FooterCta from '../components/FooterCta'
-import { getSession, mediaUrl } from '../api/auth'
+import { canApplyToJobs, canPostProjects, getSession, mediaUrl } from '../api/auth'
 import { fetchJob } from '../api/jobs'
 
 function formatDue(value) {
@@ -40,12 +40,17 @@ export default function JobDetail() {
   }, [id])
 
   function apply() {
+    const session = getSession()
     const next = `/dashboard/projects/${id}`
-    if (getSession()?.token) {
-      navigate(next)
+    if (!session?.token) {
+      navigate('/login', { state: { from: next } })
       return
     }
-    navigate('/login', { state: { from: next } })
+    if (!canApplyToJobs(session.user)) {
+      navigate(canPostProjects(session.user) ? '/dashboard/projects' : '/dashboard')
+      return
+    }
+    navigate(next)
   }
 
   const image = mediaUrl(job?.image)
@@ -111,7 +116,9 @@ export default function JobDetail() {
 
                 <div className="job-detail__actions">
                   <button type="button" className="btn btn-primary btn-lg" onClick={apply}>
-                    Apply now
+                    {getSession()?.token && !canApplyToJobs(getSession()?.user)
+                      ? 'Go to my projects'
+                      : 'Apply now'}
                   </button>
                   <Link to="/jobs" className="btn btn-outline btn-lg">
                     Back to jobs

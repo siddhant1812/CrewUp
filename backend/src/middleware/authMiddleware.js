@@ -1,5 +1,10 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const {
+  accountKind,
+  buildPermissions,
+  authorizePermission,
+} = require("../auth/permissions");
 
 const protect = async (req, res, next) => {
   try {
@@ -31,6 +36,8 @@ const protect = async (req, res, next) => {
     }
 
     req.user = user;
+    req.accountKind = accountKind(user);
+    req.permissions = buildPermissions(user);
     next();
   } catch (error) {
     return res.status(401).json({
@@ -42,4 +49,5 @@ const protect = async (req, res, next) => {
 
 module.exports = {
   protect,
+  authorizePermission,
 };

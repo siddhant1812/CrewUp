@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useOutletContext } from 'react-router-dom'
-import { mediaUrl } from '../api/auth'
+import { accountKindOf, canPostProjects, mediaUrl } from '../api/auth'
 import {
   createProject,
   deleteProject,
@@ -17,11 +17,7 @@ const TITLES = {
   },
   projects: {
     title: 'Projects',
-    lead: 'Track active jobs, bids, and upcoming deadlines.',
-  },
-  reviews: {
-    title: 'Reviews',
-    lead: 'Ratings and feedback from jobs you complete on CrewUp.',
+    lead: 'Track jobs you posted, or browse open work to bid on.',
   },
 }
 
@@ -134,15 +130,20 @@ function ProjectsTable({ projects, emptyLabel, onDelete, onStatus }) {
 
 function DashboardHome({ user }) {
   const firstName = user.fullName.split(' ')[0]
+  const kind = accountKindOf(user)
+  const isWorker = kind === 'worker'
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [stats, setStats] = useState({
     activeProjects: 0,
+    openJobs: 0,
+    myBids: 0,
     messages: 0,
     savedContractors: 0,
     projectInvites: 0,
   })
   const [recentProjects, setRecentProjects] = useState([])
+  const [recommendedJobs, setRecommendedJobs] = useState([])
 
   useEffect(() => {
     let cancelled = false
@@ -154,11 +155,14 @@ function DashboardHome({ user }) {
         if (cancelled) return
         setStats({
           activeProjects: data.stats?.activeProjects || 0,
+          openJobs: data.stats?.openJobs || 0,
+          myBids: data.stats?.myBids || 0,
           messages: data.stats?.messages || 0,
           savedContractors: data.stats?.savedContractors || 0,
           projectInvites: data.stats?.projectInvites || 0,
         })
         setRecentProjects(data.recentProjects || [])
+        setRecommendedJobs(data.recommendedJobs || [])
       } catch (err) {
         if (!cancelled) setError(err.message || 'Failed to load dashboard.')
       } finally {
@@ -170,19 +174,40 @@ function DashboardHome({ user }) {
     }
   }, [])
 
-  const statCards = [
-    { value: stats.activeProjects, label: 'Active Projects' },
-    { value: stats.messages, label: 'Messages' },
-    { value: stats.savedContractors, label: 'Saved Contractors' },
-    { value: stats.projectInvites, label: 'Project Invites' },
-  ]
+  const statCards = isWorker
+    ? [
+        { value: stats.openJobs, label: 'Open Jobs' },
+        { value: stats.myBids, label: 'Your Bids' },
+        { value: stats.messages, label: 'Messages' },
+        { value: stats.projectInvites, label: 'Invites' },
+      ]
+    : [
+        { value: stats.activeProjects, label: 'Active Projects' },
+        { value: stats.messages, label: 'Messages' },
+        { value: stats.savedContractors, label: 'Saved Crew' },
+        { value: stats.projectInvites, label: 'Invites Sent' },
+      ]
 
   return (
     <>
       <div className="dash-welcome">
         <div className="dash-welcome__text">
           <h2>Welcome back, {firstName}!</h2>
+          <p>
+            {isWorker
+              ? 'Find open work, submit proposals, and keep up with messages.'
+              : 'Post jobs, review bids, and hire crew from one place.'}
+          </p>
         </div>
+        {isWorker ? (
+          <Link to="/jobs" className="btn btn-primary btn-sm">
+            Browse jobs
+          </Link>
+        ) : (
+          <Link to="/dashboard/projects" className="btn btn-primary btn-sm">
+            Post a project
+          </Link>
+        )}
       </div>
 
       <div className="dash-stats">
@@ -196,16 +221,20 @@ function DashboardHome({ user }) {
 
       <div className="dash-table-card">
         <div className="dash-table-card__head">
-          <h3>Recent Projects</h3>
-          <Link to="/dashboard/projects">View all</Link>
+          <h3>{isWorker ? 'Jobs for you' : 'Recent Projects'}</h3>
+          <Link to={isWorker ? '/jobs' : '/dashboard/projects'}>View all</Link>
         </div>
         {error ? <p className="dash-empty">{error}</p> : null}
         {loading ? (
-          <p className="dash-empty">Loading projects…</p>
+          <p className="dash-empty">Loading…</p>
         ) : (
           <ProjectsTable
-            projects={recentProjects}
-            emptyLabel="No projects yet. Create one from Projects and it will show up here."
+            projects={isWorker ? recommendedJobs : recentProjects}
+            emptyLabel={
+              isWorker
+                ? 'No open jobs yet. Check Browse Jobs as contractors post work.'
+                : 'No projects yet. Create one from My Projects and it will show up here.'
+            }
           />
         )}
       </div>
@@ -323,22 +352,32 @@ function ProjectsSection({ user }) {
     }
   }
 
+  const canPost = canPostProjects(user)
+
   return (
     <div className="dash-projects">
       <div className="dash-projects__toolbar">
         <p className="dash-page__hint">
-          Projects you create appear on your dashboard under Recent Projects.
+          {canPost
+            ? 'Projects you create appear on your dashboard under Recent Projects.'
+            : 'Browse open jobs below and apply from the job page. Only general contractors can post projects.'}
         </p>
-        <button
-          type="button"
-          className="btn btn-primary btn-sm"
-          onClick={() => setShowForm((v) => !v)}
-        >
-          {showForm ? 'Cancel' : 'New project'}
-        </button>
+        {canPost ? (
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => setShowForm((v) => !v)}
+          >
+            {showForm ? 'Cancel' : 'New project'}
+          </button>
+        ) : (
+          <Link to="/jobs" className="btn btn-primary btn-sm">
+            Browse jobs
+          </Link>
+        )}
       </div>
 
-      {showForm && (
+      {canPost && showForm && (
         <form className="dash-project-form" onSubmit={handleCreate}>
           <div className="dash-project-form__grid">
             <label>
@@ -445,9 +484,13 @@ function ProjectsSection({ user }) {
         ) : (
           <ProjectsTable
             projects={projects}
-            emptyLabel={`No projects yet for ${user.fullName}. Create your first project above.`}
-            onDelete={handleDelete}
-            onStatus={handleStatus}
+            emptyLabel={
+              canPost
+                ? `No projects yet for ${user.fullName}. Create your first project above.`
+                : 'You have not posted projects. This list is for jobs you create as a general contractor.'
+            }
+            onDelete={canPost ? handleDelete : undefined}
+            onStatus={canPost ? handleStatus : undefined}
           />
         )}
       </div>
@@ -466,36 +509,34 @@ function ProjectsSection({ user }) {
   )
 }
 
-function ReviewsSection() {
-  return (
-    <div className="dash-table-card">
-      <p className="dash-empty">
-        No reviews yet. Ratings will show here after jobs are completed on CrewUp.
-      </p>
-    </div>
-  )
-}
-
 export default function DashboardPage({ section = 'dashboard' }) {
   const { user } = useOutletContext()
   const copy = TITLES[section] || TITLES.dashboard
+  const worker = accountKindOf(user) === 'worker'
+  const header = {
+    ...copy,
+    ...(section === 'projects' && worker
+      ? {
+          title: 'Work',
+          lead: 'See jobs you can bid on. General contractors post the listings.',
+        }
+      : {}),
+  }
 
   return (
     <section className="dash-page">
       {section !== 'dashboard' ? (
         <div className="dash-page__header">
-          <h1>{copy.title}</h1>
-          <p>{copy.lead}</p>
+          <h1>{header.title}</h1>
+          <p>{header.lead}</p>
         </div>
       ) : null}
 
       {section === 'dashboard' ? (
         <DashboardHome user={user} />
-      ) : section === 'projects' ? (
+      ) : (
         <ProjectsSection user={user} />
-      ) : section === 'reviews' ? (
-        <ReviewsSection />
-      ) : null}
+      )}
     </section>
   )
 }

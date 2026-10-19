@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorizePermission } = require("../middleware/authMiddleware");
 const {
   listContractors,
   listSaved,
@@ -15,7 +15,7 @@ router.use(protect);
 router.get("/", listContractors);
 router.get("/saved", listSaved);
 router.get("/invites", listInvites);
-router.post("/invites", createInvite);
+router.post("/invites", authorizePermission("inviteContractors"), createInvite);
 router.patch("/invites/:id", respondInvite);
 router.post("/:id/save", toggleSaved);
 

@@ -5,6 +5,11 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const User = require("../models/User");
+const {
+  roleFromContractorType,
+  accountKind,
+  buildPermissions,
+} = require("../auth/permissions");
 
 const uploadDir = path.join(__dirname, "../../uploads/profiles");
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -57,6 +62,8 @@ function publicUser(user) {
     contractorType: user.contractorType,
     profilePhoto: user.profilePhoto || user.profileImage || "",
     role: user.role,
+    accountKind: accountKind(user),
+    permissions: buildPermissions(user),
     plan: user.plan || "starter",
     subscriptionStatus: user.subscriptionStatus || "none",
     jobTitle: user.jobTitle || "",
@@ -109,7 +116,10 @@ const register = async (req, res) => {
     if (!emailRegex.test(workEmail)) {
       return res.status(400).json({
         success: false,
-        message: "Please enter a valid work email.",
+        message:
+          contractorType === "find_work"
+            ? "Please enter a valid email."
+            : "Please enter a valid work email.",
       });
     }
 
@@ -152,7 +162,7 @@ const register = async (req, res) => {
       password: hashedPassword,
       termsAccepted: true,
       termsAcceptedAt: new Date(),
-      role: "business",
+      role: roleFromContractorType(contractorType),
     });
 
     const token = generateToken(user);

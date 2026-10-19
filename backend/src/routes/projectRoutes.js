@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorizePermission } = require("../middleware/authMiddleware");
 const {
   uploadProjectImage,
   getDashboardStats,
@@ -23,7 +23,7 @@ router.use(protect);
 router.get("/dashboard", getDashboardStats);
 router.get("/open", listOpenProjects);
 router.get("/", listProjects);
-router.post("/", (req, res) => {
+router.post("/", authorizePermission("postProjects"), (req, res) => {
   uploadProjectImage(req, res, (err) => {
     if (err) {
       return res.status(400).json({
@@ -36,7 +36,7 @@ router.post("/", (req, res) => {
 });
 router.get("/:id", getProject);
 router.get("/:id/proposals", listProposals);
-router.post("/:id/proposals", createProposal);
+router.post("/:id/proposals", authorizePermission("applyToJobs"), createProposal);
 router.patch("/:id/proposals/:proposalId", respondProposal);
 router.patch("/:id", (req, res) => {
   const contentType = String(req.headers["content-type"] || "");

@@ -7,6 +7,7 @@ const User = require("../models/User");
 const TeamMember = require("../models/TeamMember");
 const AccountDocument = require("../models/AccountDocument");
 const { Activity, logActivity } = require("../models/Activity");
+const { accountKind } = require("../auth/permissions");
 
 const docsDir = path.join(__dirname, "../../uploads/documents");
 fs.mkdirSync(docsDir, { recursive: true });
@@ -69,6 +70,7 @@ function settingsProfile(user) {
     website: user.website || "",
     profilePhoto: user.profilePhoto || user.profileImage || "",
     contractorType: user.contractorType,
+    accountKind: accountKind(user),
     company: user.company || "",
     companyWebsite: user.companyWebsite || "",
     companyPhone: user.companyPhone || "",

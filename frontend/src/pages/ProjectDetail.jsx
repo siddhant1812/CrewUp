@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom'
-import { mediaUrl } from '../api/auth'
+import { canApplyToJobs, mediaUrl } from '../api/auth'
 import { createConversation } from '../api/messages'
 import { fetchProject, respondProposal, submitProposal } from '../api/projects'
 
@@ -312,7 +312,11 @@ export default function ProjectDetail() {
           <div className="dash-table-card__head">
             <h3>Your proposal</h3>
           </div>
-          {mine ? (
+          {!canApplyToJobs(user) ? (
+            <p className="dash-empty">
+              General contractors post and hire on this job. Use a Subcontractor or Find Work account to submit a proposal.
+            </p>
+          ) : mine ? (
             <div className="proj-proposal">
               <dl className="proj-detail__meta">
                 <div>

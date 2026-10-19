@@ -26,6 +26,7 @@ import {
   UsersPanel,
 } from './pages/settings/panels'
 import { getSession } from './api/auth'
+import RequirePermission from './components/RequirePermission'
 
 function RequireGuest({ children }) {
   const session = getSession()
@@ -66,9 +67,6 @@ export default function App() {
           <Route path="contractors" element={<Contractors />} />
           <Route path="messages" element={<Messages />} />
           <Route path="billing" element={<Billing />} />
-          <Route path="profile" element={<Navigate to="/dashboard/settings/account" replace />} />
-          <Route path="reviews" element={<DashboardPage section="reviews" />} />
-          <Route path="saved" element={<Navigate to="/dashboard/contractors" replace />} />
           <Route path="settings" element={<SettingsLayout />}>
             <Route index element={<Navigate to="/dashboard/settings/account" replace />} />
             <Route path="account" element={<AccountPanel />} />
@@ -76,7 +74,14 @@ export default function App() {
             <Route path="notifications" element={<NotificationsPanel />} />
             <Route path="bid-preferences" element={<BidPreferencesPanel />} />
             <Route path="payments" element={<PaymentsPanel />} />
-            <Route path="users" element={<UsersPanel />} />
+            <Route
+              path="users"
+              element={
+                <RequirePermission permission="manageTeam">
+                  <UsersPanel />
+                </RequirePermission>
+              }
+            />
             <Route path="security" element={<SecurityPanel />} />
             <Route path="integrations" element={<IntegrationsPanel />} />
             <Route path="documents" element={<DocumentsPanel />} />

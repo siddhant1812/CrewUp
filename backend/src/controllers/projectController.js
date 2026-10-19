@@ -8,6 +8,7 @@ const SavedItem = require("../models/SavedItem");
 const ProjectInvite = require("../models/ProjectInvite");
 const Proposal = require("../models/Proposal");
 const { formatProposal } = require("./proposalController");
+const { can, accountKind } = require("../auth/permissions");
 
 const uploadDir = path.join(__dirname, "../../uploads/projects");
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -78,8 +79,9 @@ async function getDashboardStats(req, res) {
     if (!ensureDb(res)) return;
 
     const userId = req.user._id;
+    const kind = accountKind(req.user);
 
-    const [activeProjects, messageThreads, recentProjects, savedContractors, projectInvites] =
+    const [activeProjects, messageThreads, recentProjects, savedContractors, projectInvites, openJobs, myBids] =
       await Promise.all([
         Project.countDocuments({
           createdBy: userId,
@@ -92,7 +94,19 @@ async function getDashboardStats(req, res) {
         Project.find({ createdBy: userId }).sort({ updatedAt: -1 }).limit(5),
         SavedItem.countDocuments({ user: userId, itemType: "contractor" }),
         ProjectInvite.countDocuments({ to: userId, status: "pending" }),
+        Project.countDocuments({
+          status: "open",
+          createdBy: { $ne: userId },
+        }),
+        Proposal.countDocuments({ applicant: userId, status: { $ne: "withdrawn" } }),
       ]);
+
+    const recommendedJobs =
+      kind === "worker"
+        ? await Project.find({ status: "open", createdBy: { $ne: userId } })
+            .sort({ updatedAt: -1 })
+            .limit(5)
+        : [];
 
     let unreadMessages = 0;
     const conversations = await Conversation.find({
@@ -110,14 +124,18 @@ async function getDashboardStats(req, res) {
 
     return res.json({
       success: true,
+      accountKind: kind,
       stats: {
         activeProjects,
+        openJobs,
+        myBids,
         messages: messageThreads,
         unreadMessages,
         savedContractors,
         projectInvites,
       },
       recentProjects: recentProjects.map(formatProject),
+      recommendedJobs: recommendedJobs.map(formatProject),
     });
   } catch (error) {
     console.error("getDashboardStats:", error);
@@ -199,6 +217,13 @@ async function getProject(req, res) {
 async function createProject(req, res) {
   try {
     if (!ensureDb(res)) return;
+
+    if (!can(req.user, "postProjects")) {
+      return res.status(403).json({
+        success: false,
+        message: "Only general contractors can post projects.",
+      });
+    }
 
     const {
       title,
