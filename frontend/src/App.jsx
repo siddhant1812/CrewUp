@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Jobs from './pages/Jobs'
 import JobDetail from './pages/JobDetail'
@@ -34,13 +34,33 @@ function RequireGuest({ children }) {
   return children
 }
 
+function RequireAuth({ children }) {
+  const location = useLocation()
+  if (!getSession()?.user) return <Navigate to="/login" replace state={{ from: location }} />
+  return children
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/jobs/:id" element={<JobDetail />} />
+        <Route
+          path="/jobs"
+          element={
+            <RequireAuth>
+              <Jobs />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/jobs/:id"
+          element={
+            <RequireAuth>
+              <JobDetail />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/login"
           element={
@@ -59,7 +79,14 @@ export default function App() {
         />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route
+          path="/dashboard"
+          element={
+            <RequireAuth>
+              <DashboardLayout />
+            </RequireAuth>
+          }
+        >
           <Route index element={<DashboardPage section="dashboard" />} />
           <Route path="projects" element={<DashboardPage section="projects" />} />
           <Route path="projects/:id" element={<ProjectDetail />} />
@@ -89,6 +116,7 @@ export default function App() {
             <Route path="activity" element={<ActivityPanel />} />
           </Route>
         </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

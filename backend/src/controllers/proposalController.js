@@ -249,6 +249,11 @@ async function respondProposal(req, res) {
 
     proposal.status = status;
     await proposal.save();
+    if (status === "accepted") {
+      project.assignedTo = proposal.applicant._id || proposal.applicant;
+      if (project.status === "open") project.status = "in_progress";
+      await project.save();
+    }
     await logActivity(
       req.user._id,
       "proposal",

@@ -14,6 +14,11 @@ const reviewSchema = new mongoose.Schema(
       required: true,
     },
 
+    project: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+      required: true,
+    },
     rating: {
       type: Number,
       required: true,
@@ -30,6 +35,9 @@ const reviewSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+reviewSchema.index({ project: 1, author: 1 }, { unique: true });
+reviewSchema.index({ targetUser: 1, createdAt: -1 });
 
 module.exports = mongoose.model(
   "Review",

@@ -52,6 +52,16 @@ const connectDB = async () => {
     console.warn("MONGO_URI missing in .env");
   }
 
+  // An in-memory DB wipes every account on restart, which shows up as
+  // "Invalid email or password" for users who signed up earlier.
+  if (process.env.NODE_ENV === "production" || process.env.ALLOW_MEMORY_DB !== "true") {
+    console.error(
+      "Atlas unreachable and in-memory fallback is disabled. " +
+        "Set ALLOW_MEMORY_DB=true in backend/.env for throwaway local dev only."
+    );
+    return false;
+  }
+
   try {
     console.warn("Falling back to in-memory MongoDB for local development...");
     await connectMemory();

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getSession } from './auth'
+import { getSession, clearSession } from './auth'
 
 export const API_BASE =
   import.meta.env.VITE_API_URL ||'http://localhost:5000' 
@@ -25,6 +25,10 @@ export async function request(path, { method = 'GET', data, headers } = {}) {
     const res = await http.request({ url: path, method, data, headers })
     return res.data
   } catch (error) {
+    // Expired/invalid JWT on an authenticated call: drop the stale session.
+    if (error.response?.status === 401 && headers?.Authorization) {
+      clearSession()
+    }
     throw toError(error)
   }
 }

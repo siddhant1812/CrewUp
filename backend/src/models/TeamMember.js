@@ -46,6 +46,8 @@ const teamMemberSchema = new mongoose.Schema(
   }
 );
 
+teamMemberSchema.index({ owner: 1, email: 1 }, { unique: true });
+
 module.exports = mongoose.model(
   "TeamMember",
   teamMemberSchema

@@ -32,11 +32,11 @@ app.post(
   express.raw({ type: "application/json" }),
   stripeWebhook
 );
+app.use(express.json());
 app.use("/api/auth/login", (req, res, next) => authLimiter(req, res, next));
 app.use("/api/auth/signup", (req, res, next) => authLimiter(req, res, next));
 app.use("/api/settings/password", (req, res, next) => authLimiter(req, res, next));
 app.use("/api", (req, res, next) => apiLimiter(req, res, next));
-app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use("/api/auth", authRoutes);

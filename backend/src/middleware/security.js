@@ -1,5 +1,6 @@
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const { ipKeyGenerator } = require("express-rate-limit");
 const { RedisStore } = require("rate-limit-redis");
 
 function securityHeaders() {
@@ -44,6 +45,11 @@ function createLimiters(client) {
     windowMs: 15 * 60 * 1000,
     limit: 8,
     skipSuccessfulRequests: true,
+    // Behind the Vercel rewrite many users share one IP, so count per IP + email.
+    keyGenerator: (req) => {
+      const email = String(req.body?.workEmail || "").toLowerCase().trim();
+      return `${ipKeyGenerator(req.ip)}|${email}`;
+    },
     ...(client ? { store: redisStore(client, "rl:auth:") } : {}),
     handler: tooMany("Too many attempts. Try again in a few minutes."),
   });
