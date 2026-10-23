@@ -62,7 +62,8 @@ export function getSession() {
 
 function fallbackPermissions(user) {
   const admin = user?.role === 'admin'
-  const contractor = admin || user?.contractorType === 'general_contractor'
+  const contractor =
+    admin || user?.contractorType === 'general_contractor' || user?.contractorType === 'subcontractor'
   const worker = admin || user?.contractorType === 'subcontractor' || user?.contractorType === 'find_work'
   return {
     postProjects: contractor,

@@ -1,10 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Header from '../components/Header'
 import FooterCta from '../components/FooterCta'
 import { mediaUrl } from '../api/auth'
 import { browseJobs } from '../api/jobs'
-import { TRADES } from '../data/trades'
+import {
+  ALL_CATEGORIES,
+  CONTRACTOR_CATEGORIES,
+  SUBCONTRACTOR_CATEGORIES,
+  posterRoleLabel,
+} from '../data/categories'
 
 function formatDue(value) {
   if (!value) return ''
@@ -29,14 +34,10 @@ export default function Jobs() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const trade = searchParams.get('trade') || ''
+  const type = searchParams.get('type') || ''
+  const role = searchParams.get('role') || ''
   const location = searchParams.get('location') || ''
   const query = searchParams.get('q') || ''
-
-  const tradeOptions = useMemo(() => {
-    const extra = filters.trades.filter((t) => !TRADES.includes(t))
-    return [...TRADES, ...extra]
-  }, [filters.trades])
 
   useEffect(() => {
     setQ(query)
@@ -48,7 +49,7 @@ export default function Jobs() {
       setLoading(true)
       setError('')
       try {
-        const data = await browseJobs({ q: query, trade, location })
+        const data = await browseJobs({ q: query, type, role, location })
         if (cancelled) return
         setJobs(data.jobs || [])
         setTotal(data.total || 0)
@@ -65,19 +66,20 @@ export default function Jobs() {
     return () => {
       cancelled = true
     }
-  }, [query, trade, location])
+  }, [query, type, role, location])
 
   function applyFilters(next) {
     const params = {}
     if (next.q?.trim()) params.q = next.q.trim()
-    if (next.trade) params.trade = next.trade
+    if (next.type) params.type = next.type
+    if (next.role) params.role = next.role
     if (next.location) params.location = next.location
     setSearchParams(params)
   }
 
   function onSearch(e) {
     e.preventDefault()
-    applyFilters({ q, trade, location })
+    applyFilters({ q, type, role, location })
   }
 
   return (
@@ -88,7 +90,7 @@ export default function Jobs() {
           <div className="jobs__hero">
             <p className="eyebrow">Find Work</p>
             <h1>Browse open jobs</h1>
-            <p>Search projects by trade, location, and keywords, then apply with a proposal.</p>
+            <p>Search projects by category, location, and keywords, then apply with a proposal.</p>
           </div>
 
           <form className="jobs__filters" onSubmit={onSearch}>
@@ -96,24 +98,42 @@ export default function Jobs() {
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search title, trade, or company"
+              placeholder="Search title, category, or company"
               aria-label="Search jobs"
             />
             <select
-              value={trade}
-              onChange={(e) => applyFilters({ q, trade: e.target.value, location })}
-              aria-label="Filter by trade"
+              value={role}
+              onChange={(e) => applyFilters({ q, type, role: e.target.value, location })}
+              aria-label="Filter by poster"
             >
-              <option value="">All trades</option>
-              {tradeOptions.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
+              <option value="">Contractors &amp; subcontractors</option>
+              <option value="contractor">Posted by contractors</option>
+              <option value="subcontractor">Posted by subcontractors</option>
+            </select>
+            <select
+              value={type}
+              onChange={(e) => applyFilters({ q, type: e.target.value, role, location })}
+              aria-label="Filter by category"
+            >
+              <option value="">All categories</option>
+              <optgroup label="Project types">
+                {Object.keys(CONTRACTOR_CATEGORIES).map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Trade categories">
+                {Object.keys(SUBCONTRACTOR_CATEGORIES).map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </optgroup>
             </select>
             <select
               value={location}
-              onChange={(e) => applyFilters({ q, trade, location: e.target.value })}
+              onChange={(e) => applyFilters({ q, type, role, location: e.target.value })}
               aria-label="Filter by location"
             >
               <option value="">All locations</option>
@@ -128,13 +148,13 @@ export default function Jobs() {
             </button>
           </form>
 
-          <div className="jobs__chips" aria-label="Popular trades">
-            {TRADES.slice(0, 8).map((name) => (
+          <div className="jobs__chips" aria-label="Popular categories">
+            {Object.keys(ALL_CATEGORIES).slice(0, 8).map((name) => (
               <button
                 key={name}
                 type="button"
-                className={`jobs__chip${trade === name ? ' is-active' : ''}`}
-                onClick={() => applyFilters({ q, trade: trade === name ? '' : name, location })}
+                className={`jobs__chip${type === name ? ' is-active' : ''}`}
+                onClick={() => applyFilters({ q, type: type === name ? '' : name, role, location })}
               >
                 {name}
               </button>
@@ -149,7 +169,7 @@ export default function Jobs() {
 
           {!loading && jobs.length === 0 ? (
             <p className="jobs__empty">
-              No open jobs match those filters yet. Try another trade or location.
+              No open jobs match those filters yet. Try another category or location.
             </p>
           ) : (
             <div className="jobs__grid">
@@ -157,7 +177,11 @@ export default function Jobs() {
                 <article key={job.id} className="jobs-card">
                   <JobThumb job={job} />
                   <div className="jobs-card__body">
-                    <p className="jobs-card__type">{job.projectType || 'Project'}</p>
+                    <p className="jobs-card__type">
+                      {job.projectType || 'Project'}
+                      {job.service ? ` · ${job.service}` : ''}
+                      {posterRoleLabel(job.postedByRole) ? ` · ${posterRoleLabel(job.postedByRole)}` : ''}
+                    </p>
                     <h2>{job.title}</h2>
                     <p className="jobs-card__desc">
                       {job.description || 'No description posted yet.'}
@@ -165,6 +189,7 @@ export default function Jobs() {
                     <ul className="jobs-card__facts">
                       {job.location ? <li>{job.location}</li> : null}
                       {job.budget ? <li>{job.budget}</li> : null}
+                      <li>{job.vacancies || 1} {(job.vacancies || 1) === 1 ? 'vacancy' : 'vacancies'}</li>
                       {formatDue(job.dueDate) ? <li>Due {formatDue(job.dueDate)}</li> : null}
                       <li>{job.bidsCount || 0} bids</li>
                     </ul>

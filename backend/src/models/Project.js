@@ -23,10 +23,22 @@ const projectSchema = new mongoose.Schema(
       maxlength: 160,
     },
 
+    // Category: a project type (contractor posts) or trade category (subcontractor posts)
     projectType: {
       type: String,
       default: "Commercial",
       trim: true,
+    },
+    service: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    postedByRole: {
+      type: String,
+      enum: ["contractor", "subcontractor"],
+      default: "contractor",
+      index: true,
     },
 
     budget: {
@@ -50,6 +62,12 @@ const projectSchema = new mongoose.Schema(
       default: [],
     },
 
+    vacancies: {
+      type: Number,
+      default: 1,
+      min: 1,
+      max: 1000,
+    },
     bidsCount: {
       type: Number,
       default: 0,

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Project = require("../models/Project");
+const { CONTRACTOR_CATEGORIES, SUBCONTRACTOR_CATEGORIES } = require("../config/categories");
 
 function ensureDb(res) {
   if (mongoose.connection.readyState !== 1) {
@@ -20,7 +21,7 @@ function textMatch(value) {
   return new RegExp(escapeRegex(value.trim()), "i");
 }
 
-function buildJobFilter({ q, trade, location, type, excludeUserId } = {}) {
+function buildJobFilter({ q, trade, location, type, role, excludeUserId } = {}) {
   const filter = { status: "open" };
 
   if (excludeUserId) {
@@ -38,6 +39,7 @@ function buildJobFilter({ q, trade, location, type, excludeUserId } = {}) {
         { location: rx },
         { trades: rx },
         { projectType: rx },
+        { service: rx },
       ],
     });
   }
@@ -52,6 +54,10 @@ function buildJobFilter({ q, trade, location, type, excludeUserId } = {}) {
 
   if (type && String(type).trim()) {
     filter.projectType = textMatch(type);
+  }
+
+  if (role === "contractor" || role === "subcontractor") {
+    filter.postedByRole = role;
   }
 
   if (clauses.length) {
@@ -73,7 +79,10 @@ function formatPublicJob(project) {
     description: project.description || "",
     location: project.location || "",
     projectType: project.projectType || "Commercial",
+    service: project.service || "",
+    postedByRole: project.postedByRole || "contractor",
     budget: project.budget || "",
+    vacancies: project.vacancies || 1,
     dueDate: project.dueDate,
     image: project.image || "",
     trades: project.trades || [],
@@ -88,6 +97,14 @@ function formatPublicJob(project) {
         }
       : null,
   };
+}
+
+function getPublicCategories(_req, res) {
+  return res.json({
+    success: true,
+    contractor: CONTRACTOR_CATEGORIES,
+    subcontractor: SUBCONTRACTOR_CATEGORIES,
+  });
 }
 
 async function browseJobs(req, res) {
@@ -166,6 +183,7 @@ async function getPublicJob(req, res) {
 }
 
 module.exports = {
+  getPublicCategories,
   browseJobs,
   getPublicJob,
   buildJobFilter,

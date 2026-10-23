@@ -20,14 +20,17 @@ function accountKind(user) {
 function buildPermissions(user) {
   const kind = accountKind(user);
   const admin = kind === "admin";
+  const isSub = user.contractorType === TYPES.SUB;
   const contractor = admin || kind === "contractor";
+  // Subcontractors post trade work packages too, and can bid on others' jobs.
+  const poster = contractor || isSub;
   const worker = admin || kind === "worker";
 
   return {
-    postProjects: contractor,
-    manageProjects: contractor,
-    hire: contractor,
-    inviteContractors: contractor,
+    postProjects: poster,
+    manageProjects: poster,
+    hire: poster,
+    inviteContractors: poster,
     manageTeam: contractor,
     applyToJobs: worker,
     browseJobs: true,

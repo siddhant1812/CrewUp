@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useOutletContext } from 'react-router-dom'
 import { accountKindOf, canPostProjects, mediaUrl } from '../api/auth'
+import { categoriesFor } from '../data/categories'
 import {
   createProject,
   deleteProject,
@@ -254,8 +255,10 @@ function ProjectsSection({ user }) {
     title: '',
     location: '',
     dueDate: '',
-    projectType: 'Commercial',
+    projectType: '',
+    service: '',
     budget: '',
+    vacancies: 1,
     description: '',
     trades: '',
     status: 'open',
@@ -299,7 +302,9 @@ function ProjectsSection({ user }) {
         location: form.location.trim(),
         dueDate: form.dueDate || undefined,
         projectType: form.projectType,
+        service: form.service || undefined,
         budget: form.budget.trim(),
+        vacancies: Number(form.vacancies) || 1,
         description: form.description.trim(),
         trades: form.trades
           .split(',')
@@ -312,8 +317,10 @@ function ProjectsSection({ user }) {
         title: '',
         location: '',
         dueDate: '',
-        projectType: 'Commercial',
+        projectType: '',
+        service: '',
         budget: '',
+    vacancies: 1,
         description: '',
         trades: '',
         status: 'open',
@@ -353,6 +360,8 @@ function ProjectsSection({ user }) {
   }
 
   const canPost = canPostProjects(user)
+  const isContractor = user.contractorType === 'general_contractor'
+  const categories = categoriesFor(user.contractorType)
 
   return (
     <div className="dash-projects">
@@ -360,7 +369,7 @@ function ProjectsSection({ user }) {
         <p className="dash-page__hint">
           {canPost
             ? 'Projects you create appear on your dashboard under Recent Projects.'
-            : 'Browse open jobs below and apply from the job page. Only general contractors can post projects.'}
+            : 'Browse open jobs below and apply from the job page. Only contractors and subcontractors can post projects.'}
         </p>
         {canPost ? (
           <button
@@ -414,15 +423,46 @@ function ProjectsSection({ user }) {
               />
             </label>
             <label>
-              <span>Type</span>
+              <span>Vacancies (workers needed)</span>
+              <input
+                type="number"
+                min="1"
+                value={form.vacancies}
+                onChange={(e) => setForm((f) => ({ ...f, vacancies: e.target.value }))}
+              />
+            </label>
+            <label>
+              <span>{isContractor ? 'Project type' : 'Trade category'}</span>
               <select
                 value={form.projectType}
-                onChange={(e) => setForm((f) => ({ ...f, projectType: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, projectType: e.target.value, service: '' }))
+                }
+                required
               >
-                <option>Commercial</option>
-                <option>Residential</option>
-                <option>Industrial</option>
-                <option>Infrastructure</option>
+                <option value="">
+                  {isContractor ? 'Select project type' : 'Select trade category'}
+                </option>
+                {Object.keys(categories).map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>{isContractor ? 'Project' : 'Service'}</span>
+              <select
+                value={form.service}
+                onChange={(e) => setForm((f) => ({ ...f, service: e.target.value }))}
+                disabled={!form.projectType}
+              >
+                <option value="">Any / not specific</option>
+                {(categories[form.projectType] || []).map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
               </select>
             </label>
             <label>
@@ -512,13 +552,13 @@ function ProjectsSection({ user }) {
 export default function DashboardPage({ section = 'dashboard' }) {
   const { user } = useOutletContext()
   const copy = TITLES[section] || TITLES.dashboard
-  const worker = accountKindOf(user) === 'worker'
+  const worker = accountKindOf(user) === 'worker' && !canPostProjects(user)
   const header = {
     ...copy,
     ...(section === 'projects' && worker
       ? {
           title: 'Work',
-          lead: 'See jobs you can bid on. General contractors post the listings.',
+          lead: 'See jobs you can bid on. Contractors and subcontractors post the listings.',
         }
       : {}),
   }

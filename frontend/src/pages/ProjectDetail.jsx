@@ -182,12 +182,16 @@ export default function ProjectDetail() {
             <dd>{formatDue(project.dueDate)}</dd>
           </div>
           <div>
+            <dt>Vacancies</dt>
+            <dd>{project.vacancies || 1}</dd>
+          </div>
+          <div>
             <dt>Budget</dt>
             <dd>{project.budget || '—'}</dd>
           </div>
           <div>
             <dt>Type</dt>
-            <dd>{project.projectType || '—'}</dd>
+            <dd>{[project.projectType, project.service].filter(Boolean).join(' · ') || '—'}</dd>
           </div>
           <div>
             <dt>Proposals</dt>

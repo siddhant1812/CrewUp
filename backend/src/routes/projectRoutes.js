@@ -3,6 +3,7 @@ const { protect, authorizePermission } = require("../middleware/authMiddleware")
 const {
   uploadProjectImage,
   getDashboardStats,
+  getCategories,
   listProjects,
   getProject,
   createProject,
@@ -21,6 +22,7 @@ const router = express.Router();
 router.use(protect);
 
 router.get("/dashboard", getDashboardStats);
+router.get("/categories", getCategories);
 router.get("/open", listOpenProjects);
 router.get("/", listProjects);
 router.post("/", authorizePermission("postProjects"), (req, res) => {

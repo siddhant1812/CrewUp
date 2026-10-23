@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Header from '../components/Header'
 import FooterCta from '../components/FooterCta'
+import { posterRoleLabel } from '../data/categories'
 import { canApplyToJobs, canPostProjects, getSession, mediaUrl } from '../api/auth'
 import { fetchJob } from '../api/jobs'
 
@@ -76,10 +77,14 @@ export default function JobDetail() {
               )}
 
               <div className="job-detail__body">
-                <p className="eyebrow">{job.projectType || 'Open job'}</p>
+                <p className="eyebrow">
+                  {job.projectType || 'Open job'}
+                  {job.service ? ` · ${job.service}` : ''}
+                </p>
                 <h1>{job.title}</h1>
                 <p className="job-detail__poster">
                   Posted by {job.postedBy?.company || job.postedBy?.fullName || 'a CrewUp member'}
+                  {posterRoleLabel(job.postedByRole) ? ` (${posterRoleLabel(job.postedByRole)})` : ''}
                 </p>
 
                 <dl className="job-detail__meta">
@@ -90,6 +95,10 @@ export default function JobDetail() {
                   <div>
                     <dt>Budget</dt>
                     <dd>{job.budget || 'Ask for details'}</dd>
+                  </div>
+                  <div>
+                    <dt>Vacancies</dt>
+                    <dd>{job.vacancies || 1}</dd>
                   </div>
                   <div>
                     <dt>Due</dt>

@@ -9,6 +9,7 @@ const ProjectInvite = require("../models/ProjectInvite");
 const Proposal = require("../models/Proposal");
 const { formatProposal } = require("./proposalController");
 const { can, accountKind } = require("../auth/permissions");
+const { categoriesFor, posterRole, validateCategory } = require("../config/categories");
 
 const uploadDir = path.join(__dirname, "../../uploads/projects");
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -52,7 +53,10 @@ function formatProject(project) {
     description: project.description || "",
     location: project.location || "",
     projectType: project.projectType || "Commercial",
+    service: project.service || "",
+    postedByRole: project.postedByRole || "contractor",
     budget: project.budget || "",
+    vacancies: project.vacancies || 1,
     dueDate: project.dueDate,
     image: project.image || "",
     trades: project.trades || [],
@@ -72,6 +76,14 @@ function parseTrades(raw) {
       .filter(Boolean);
   }
   return [];
+}
+
+function getCategories(req, res) {
+  return res.json({
+    success: true,
+    posterRole: posterRole(req.user.contractorType),
+    categories: categoriesFor(req.user.contractorType),
+  });
 }
 
 async function getDashboardStats(req, res) {
@@ -221,7 +233,7 @@ async function createProject(req, res) {
     if (!can(req.user, "postProjects")) {
       return res.status(403).json({
         success: false,
-        message: "Only general contractors can post projects.",
+        message: "Only contractors and subcontractors can post projects.",
       });
     }
 
@@ -229,8 +241,10 @@ async function createProject(req, res) {
       title,
       description = "",
       location = "",
-      projectType = "Commercial",
+      projectType = "",
+      service = "",
       budget = "",
+      vacancies = 1,
       dueDate = null,
       status = "open",
       trades,
@@ -243,6 +257,15 @@ async function createProject(req, res) {
       });
     }
 
+    const categoryError = validateCategory(
+      req.user.contractorType,
+      String(projectType || "").trim(),
+      String(service || "").trim()
+    );
+    if (categoryError) {
+      return res.status(400).json({ success: false, message: categoryError });
+    }
+
     const allowedStatus = ["draft", "open", "in_progress", "completed", "cancelled"];
     const nextStatus = allowedStatus.includes(status) ? status : "open";
 
@@ -252,8 +275,11 @@ async function createProject(req, res) {
       title: String(title).trim(),
       description: String(description || "").trim(),
       location: String(location || "").trim(),
-      projectType: String(projectType || "Commercial").trim(),
+      projectType: String(projectType).trim(),
+      service: String(service || "").trim(),
+      postedByRole: posterRole(req.user.contractorType),
       budget: String(budget || "").trim(),
+      vacancies: Math.max(1, Math.min(1000, parseInt(vacancies, 10) || 1)),
       dueDate: dueDate ? new Date(dueDate) : null,
       image,
       trades: parseTrades(trades),
@@ -299,9 +325,21 @@ async function updateProject(req, res) {
       "title",
       "description",
       "location",
-      "projectType",
       "budget",
     ];
+
+    if (req.body.projectType !== undefined || req.body.service !== undefined) {
+      const nextCategory = String(req.body.projectType ?? project.projectType).trim();
+      const nextService = String(
+        req.body.service ?? (req.body.projectType !== undefined ? "" : project.service)
+      ).trim();
+      const categoryError = validateCategory(req.user.contractorType, nextCategory, nextService);
+      if (categoryError) {
+        return res.status(400).json({ success: false, message: categoryError });
+      }
+      project.projectType = nextCategory;
+      project.service = nextService;
+    }
 
     for (const key of fields) {
       if (req.body[key] !== undefined) {
@@ -319,6 +357,10 @@ async function updateProject(req, res) {
         });
       }
       project.status = status;
+    }
+
+    if (req.body.vacancies !== undefined) {
+      project.vacancies = Math.max(1, Math.min(1000, parseInt(req.body.vacancies, 10) || 1));
     }
 
     if (req.body.dueDate !== undefined) {
@@ -384,6 +426,7 @@ async function deleteProject(req, res) {
 }
 
 module.exports = {
+  getCategories,
   uploadProjectImage,
   getDashboardStats,
   listProjects,
