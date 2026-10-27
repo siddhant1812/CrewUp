@@ -42,6 +42,20 @@ function buildPermissions(user) {
   };
 }
 
+// Contractors and subcontractors are both posters, so when they browse jobs
+// they should only see work posted by general contractors — not each other's
+// trade listings, which are aimed at workers. Find-work accounts and admins
+// see everything. Returns the postedByRole to restrict to, or null for no
+// restriction (including guests, so the public jobs page stays unrestricted).
+function jobVisibilityRole(user) {
+  if (!user) return null;
+  if (user.role === "admin") return null;
+  if (user.contractorType === TYPES.GC || user.contractorType === TYPES.SUB) {
+    return "contractor";
+  }
+  return null;
+}
+
 function can(user, permission) {
   if (!user) return false;
   return Boolean(buildPermissions(user)[permission]);
@@ -63,6 +77,7 @@ module.exports = {
   roleFromContractorType,
   accountKind,
   buildPermissions,
+  jobVisibilityRole,
   can,
   authorizePermission,
 };

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Header from '../components/Header'
 import FooterCta from '../components/FooterCta'
-import { mediaUrl } from '../api/auth'
+import { getSession, mediaUrl } from '../api/auth'
 import { browseJobs } from '../api/jobs'
 import {
   ALL_CATEGORIES,
@@ -10,6 +10,8 @@ import {
   SUBCONTRACTOR_CATEGORIES,
   posterRoleLabel,
 } from '../data/categories'
+import Icon from '../components/Icon'
+import IconBadge from '../components/IconBadge'
 
 function formatDue(value) {
   if (!value) return ''
@@ -21,11 +23,25 @@ function formatDue(value) {
 function JobThumb({ job }) {
   const src = mediaUrl(job.image)
   if (src) return <img src={src} alt="" />
-  return <span className="jobs-card__thumb-fallback" aria-hidden="true" />
+  return (
+    <span className="jobs-card__thumb-fallback" aria-hidden="true">
+      <IconBadge icon="building" size={48} iconSize={22} />
+    </span>
+  )
+}
+
+// Contractors and subcontractors only ever see contractor-posted jobs (the
+// backend enforces this too), so the "posted by" filter is moot for them.
+function postsRestrictedToContractors(user) {
+  return Boolean(
+    user && user.role !== 'admin' &&
+      (user.contractorType === 'general_contractor' || user.contractorType === 'subcontractor')
+  )
 }
 
 export default function Jobs() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const restrictedViewer = postsRestrictedToContractors(getSession()?.user)
   const [searchParams, setSearchParams] = useSearchParams()
   const [q, setQ] = useState(searchParams.get('q') || '')
   const [jobs, setJobs] = useState([])
@@ -91,6 +107,9 @@ export default function Jobs() {
             <p className="eyebrow">Find Work</p>
             <h1>Browse open jobs</h1>
             <p>Search projects by category, location, and keywords, then apply with a proposal.</p>
+            {restrictedViewer ? (
+              <p className="jobs__hero-note">Showing projects posted by general contractors.</p>
+            ) : null}
           </div>
 
           <form className="jobs__filters" onSubmit={onSearch}>
@@ -101,15 +120,17 @@ export default function Jobs() {
               placeholder="Search title, category, or company"
               aria-label="Search jobs"
             />
-            <select
-              value={role}
-              onChange={(e) => applyFilters({ q, type, role: e.target.value, location })}
-              aria-label="Filter by poster"
-            >
-              <option value="">Contractors &amp; subcontractors</option>
-              <option value="contractor">Posted by contractors</option>
-              <option value="subcontractor">Posted by subcontractors</option>
-            </select>
+            {restrictedViewer ? null : (
+              <select
+                value={role}
+                onChange={(e) => applyFilters({ q, type, role: e.target.value, location })}
+                aria-label="Filter by poster"
+              >
+                <option value="">Contractors &amp; subcontractors</option>
+                <option value="contractor">Posted by contractors</option>
+                <option value="subcontractor">Posted by subcontractors</option>
+              </select>
+            )}
             <select
               value={type}
               onChange={(e) => applyFilters({ q, type: e.target.value, role, location })}
@@ -187,11 +208,28 @@ export default function Jobs() {
                       {job.description || 'No description posted yet.'}
                     </p>
                     <ul className="jobs-card__facts">
-                      {job.location ? <li>{job.location}</li> : null}
-                      {job.budget ? <li>{job.budget}</li> : null}
-                      <li>{job.vacancies || 1} {(job.vacancies || 1) === 1 ? 'vacancy' : 'vacancies'}</li>
-                      {formatDue(job.dueDate) ? <li>Due {formatDue(job.dueDate)}</li> : null}
-                      <li>{job.bidsCount || 0} bids</li>
+                      {job.location ? (
+                        <li>
+                          <Icon name="pin" size={13} /> {job.location}
+                        </li>
+                      ) : null}
+                      {job.budget ? (
+                        <li>
+                          <Icon name="coin" size={13} /> {job.budget}
+                        </li>
+                      ) : null}
+                      <li>
+                        <Icon name="users" size={13} /> {job.vacancies || 1}{' '}
+                        {(job.vacancies || 1) === 1 ? 'vacancy' : 'vacancies'}
+                      </li>
+                      {formatDue(job.dueDate) ? (
+                        <li>
+                          <Icon name="calendar" size={13} /> Due {formatDue(job.dueDate)}
+                        </li>
+                      ) : null}
+                      <li>
+                        <Icon name="fileText" size={13} /> {job.bidsCount || 0} bids
+                      </li>
                     </ul>
                     {job.trades?.length ? (
                       <div className="jobs-card__trades">
@@ -202,6 +240,7 @@ export default function Jobs() {
                     ) : null}
                     <div className="jobs-card__foot">
                       <span>
+                        <Icon name="user" size={13} />
                         {job.postedBy?.company || job.postedBy?.fullName || 'CrewUp member'}
                       </span>
                       <Link to={`/jobs/${job.id}`} className="btn btn-primary btn-sm">

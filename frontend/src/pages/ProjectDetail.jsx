@@ -3,6 +3,9 @@ import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom
 import { canApplyToJobs, mediaUrl } from '../api/auth'
 import { createConversation } from '../api/messages'
 import { fetchProject, respondProposal, submitProposal } from '../api/projects'
+import Icon from '../components/Icon'
+import IconBadge from '../components/IconBadge'
+import CardHead from '../components/CardHead'
 
 const STATUS_LABELS = {
   open: 'Bidding',
@@ -12,10 +15,22 @@ const STATUS_LABELS = {
   cancelled: 'Cancelled',
 }
 
+const STATUS_ICONS = {
+  open: 'hourglass',
+  in_progress: 'hourglass',
+  draft: 'fileText',
+  completed: 'hourglass',
+  cancelled: 'hourglass',
+}
+
 function designation(type) {
   if (type === 'subcontractor') return 'Subcontractor'
   if (type === 'find_work') return 'Employee'
   return 'Contractor'
+}
+
+function posterLabel(role) {
+  return role === 'subcontractor' ? 'Subcontractor post' : 'Contractor post'
 }
 
 function formatDue(value) {
@@ -147,74 +162,126 @@ export default function ProjectDetail() {
   }
 
   const mine = !isOwner ? proposals[0] : null
+  const vacancies = project.vacancies || 1
 
   return (
     <section className="dash-page">
       <div className="proj-detail__top">
         <Link to="/dashboard/projects" className="proj-detail__back">
-          ← Projects
+          <Icon name="arrowLeft" size={16} /> Back to Projects
         </Link>
       </div>
 
       {error ? <p className="dash-form-error">{error}</p> : null}
 
-      <div className="dash-table-card proj-detail__summary">
-        <div className="dash-table-card__head">
-          <h1>{project.title}</h1>
-          <span className={`status-pill status-pill--${project.status}`}>
-            {STATUS_LABELS[project.status] || project.status}
-          </span>
+      {/* Hero */}
+      <div className="dash-table-card proj-hero">
+        <div className="proj-hero__left">
+          <IconBadge icon="building" size={56} className="proj-hero__avatar" />
+          <div className="proj-hero__text">
+            <h1>{project.title}</h1>
+            {project.location ? (
+              <p className="proj-hero__loc">
+                <Icon name="pin" size={15} /> {project.location}
+              </p>
+            ) : null}
+          </div>
         </div>
-        {project.image ? (
-          <img
-            className="proj-detail__hero"
-            src={mediaUrl(project.image)}
-            alt=""
-          />
+        <span className={`status-pill status-pill--${project.status} proj-hero__status`}>
+          <Icon name={STATUS_ICONS[project.status] || 'hourglass'} size={13} />
+          {STATUS_LABELS[project.status] || project.status}
+        </span>
+      </div>
+
+      {/* Stats */}
+      <div className="proj-stats">
+        <div className="dash-table-card proj-stat proj-stat--accent">
+          <IconBadge icon="users" size={40} />
+          <div className="proj-stat__body">
+            <span>Vacancies</span>
+            <strong>{vacancies}</strong>
+            <em>{vacancies === 1 ? 'worker needed' : 'workers needed'}</em>
+          </div>
+        </div>
+        <div className="dash-table-card proj-stat">
+          <IconBadge icon="coin" size={40} />
+          <div className="proj-stat__body">
+            <span>Budget</span>
+            <strong>{project.budget || 'Not set'}</strong>
+          </div>
+        </div>
+        <div className="dash-table-card proj-stat">
+          <IconBadge icon="calendar" size={40} />
+          <div className="proj-stat__body">
+            <span>Due date</span>
+            <strong>{formatDue(project.dueDate)}</strong>
+          </div>
+        </div>
+        <div className="dash-table-card proj-stat">
+          <IconBadge icon="fileText" size={40} />
+          <div className="proj-stat__body">
+            <span>Proposals</span>
+            <strong>{isOwner ? proposals.length : project.bidsCount || 0}</strong>
+          </div>
+        </div>
+      </div>
+
+      {/* Project details */}
+      <div className="dash-table-card">
+        <CardHead icon="info" title="Project Details" />
+        <div className="proj-details-grid">
+          <div className="proj-details-grid__item">
+            <IconBadge icon="industry" size={36} />
+            <div>
+              <span>Industry</span>
+              <strong>{project.projectType || '—'}</strong>
+            </div>
+          </div>
+          <div className="proj-details-grid__item">
+            <IconBadge icon="building" size={36} />
+            <div>
+              <span>Project type</span>
+              <strong>{project.service || '—'}</strong>
+            </div>
+          </div>
+          <div className="proj-details-grid__item">
+            <IconBadge icon="user" size={36} />
+            <div>
+              <span>Posted by</span>
+              <strong>{posterLabel(project.postedByRole)}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* About */}
+      <div className="dash-table-card proj-about">
+        <CardHead icon="fileText" title="About this project" />
+        <p>{project.description || 'No description was added for this project.'}</p>
+        {project.trades?.length ? (
+          <div className="proj-hero__chips">
+            {project.trades.map((t) => (
+              <span key={t} className="proj-chip proj-chip--soft">
+                {t}
+              </span>
+            ))}
+          </div>
         ) : null}
-        <dl className="proj-detail__meta">
-          <div>
-            <dt>Location</dt>
-            <dd>{project.location || '—'}</dd>
-          </div>
-          <div>
-            <dt>Due</dt>
-            <dd>{formatDue(project.dueDate)}</dd>
-          </div>
-          <div>
-            <dt>Vacancies</dt>
-            <dd>{project.vacancies || 1}</dd>
-          </div>
-          <div>
-            <dt>Budget</dt>
-            <dd>{project.budget || '—'}</dd>
-          </div>
-          <div>
-            <dt>Type</dt>
-            <dd>{[project.projectType, project.service].filter(Boolean).join(' · ') || '—'}</dd>
-          </div>
-          <div>
-            <dt>Proposals</dt>
-            <dd>{isOwner ? proposals.length : project.bidsCount || 0}</dd>
-          </div>
-        </dl>
-        <div className="proj-detail__desc">
-          <h3>Project details</h3>
-          <p>{project.description || 'No description was added for this project.'}</p>
-        </div>
       </div>
 
       {isOwner ? (
         <div className="proj-split">
           <div className="dash-table-card">
-            <div className="dash-table-card__head">
-              <h3>Who applied</h3>
-              <span className="dash-muted">{proposals.length} bid{proposals.length === 1 ? '' : 's'}</span>
-            </div>
+            <CardHead
+              icon="users"
+              title="Who applied"
+              meta={`${proposals.length} bid${proposals.length === 1 ? '' : 's'}`}
+            />
             {proposals.length === 0 ? (
-              <p className="dash-empty">
-                No one has applied yet. Proposals will show here when another CrewUp user bids on this job.
-              </p>
+              <div className="empty-state">
+                <IconBadge icon="users" size={56} iconSize={24} tone="muted" />
+                <p>No one has applied yet. Proposals will show here when another CrewUp user bids on this job.</p>
+              </div>
             ) : (
               <ul className="proj-apply-list">
                 {proposals.map((p) => (
@@ -241,11 +308,12 @@ export default function ProjectDetail() {
           </div>
 
           <div className="dash-table-card">
-            <div className="dash-table-card__head">
-              <h3>Proposal</h3>
-            </div>
+            <CardHead icon="fileText" title="Proposal" />
             {!selected ? (
-              <p className="dash-empty">Select an applicant to read their proposal and bid.</p>
+              <div className="empty-state">
+                <IconBadge icon="fileText" size={56} iconSize={24} tone="muted" />
+                <p>Select an applicant to read their proposal and bid.</p>
+              </div>
             ) : (
               <div className="proj-proposal">
                 <div className="proj-proposal__who">
@@ -313,9 +381,7 @@ export default function ProjectDetail() {
         </div>
       ) : (
         <div className="dash-table-card">
-          <div className="dash-table-card__head">
-            <h3>Your proposal</h3>
-          </div>
+          <CardHead icon="fileText" title="Your proposal" />
           {!canApplyToJobs(user) ? (
             <p className="dash-empty">
               General contractors post and hire on this job. Use a Subcontractor or Find Work account to submit a proposal.

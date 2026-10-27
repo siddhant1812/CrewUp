@@ -2,19 +2,21 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { canDo, clearSession, getSession } from '../api/auth'
 import { fetchUnreadCount } from '../api/messages'
+import Icon from './Icon'
 
 const NAV = [
-  { to: '/dashboard', label: 'Dashboard', end: true },
-  { to: '/dashboard/projects', label: 'My Projects', permission: 'manageProjects' },
-  { to: '/jobs', label: 'Browse Jobs', permission: 'browseJobs' },
-  { to: '/dashboard/messages', label: 'Messages', badgeKey: 'messages' },
-  { to: '/dashboard/contractors', label: 'Find Crew', permission: 'hire' },
-  { to: '/dashboard/contractors', label: 'Companies', hideIf: 'hire' },
-  { to: '/dashboard/billing', label: 'Billing' },
+  { to: '/dashboard', label: 'Dashboard', icon: 'home', end: true },
+  { to: '/dashboard/projects', label: 'My Projects', icon: 'folder', permission: 'manageProjects' },
+  { to: '/jobs', label: 'Browse Jobs', icon: 'search', permission: 'browseJobs' },
+  { to: '/dashboard/messages', label: 'Messages', icon: 'message', badgeKey: 'messages' },
+  { to: '/dashboard/contractors', label: 'Find Crew', icon: 'users', permission: 'hire' },
+  { to: '/dashboard/contractors', label: 'Companies', icon: 'users', hideIf: 'hire' },
+  { to: '/dashboard/billing', label: 'Billing', icon: 'card' },
   {
     to: '/dashboard/settings/account',
     match: '/dashboard/settings',
     label: 'Settings',
+    icon: 'settings',
   },
 ]
 
@@ -97,7 +99,9 @@ export default function Sidebar({ mobileOpen, onClose }) {
                 }}
                 onClick={onClose}
               >
-                <span className="sidebar__dot" aria-hidden="true" />
+                <span className="sidebar__icon">
+                  <Icon name={item.icon} size={19} />
+                </span>
                 <span className="sidebar__label">{item.label}</span>
                 {badge != null && (
                   <span className="sidebar__badge">{badge > 99 ? '99+' : badge}</span>
@@ -108,6 +112,9 @@ export default function Sidebar({ mobileOpen, onClose }) {
         </nav>
 
         <button type="button" className="sidebar__logout" onClick={handleLogout}>
+          <span className="sidebar__icon">
+            <Icon name="logout" size={19} />
+          </span>
           <span className="sidebar__label">Log Out</span>
         </button>
       </aside>

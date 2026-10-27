@@ -1,4 +1,13 @@
 import { request } from './client'
+import { getSession } from './auth'
+
+// /api/jobs is public, but a logged-in contractor/subcontractor only sees
+// contractor-posted jobs, so attach the token when we have one without
+// requiring it.
+function optionalAuthHeaders() {
+  const token = getSession()?.token
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
 
 export function browseJobs({ q = '', trade = '', location = '', type = '', role = '', page = 1 } = {}) {
   const params = new URLSearchParams()
@@ -9,9 +18,9 @@ export function browseJobs({ q = '', trade = '', location = '', type = '', role 
   if (role.trim()) params.set('role', role.trim())
   if (page > 1) params.set('page', String(page))
   const qs = params.toString()
-  return request(`/api/jobs${qs ? `?${qs}` : ''}`)
+  return request(`/api/jobs${qs ? `?${qs}` : ''}`, { headers: optionalAuthHeaders() })
 }
 
 export function fetchJob(id) {
-  return request(`/api/jobs/${id}`)
+  return request(`/api/jobs/${id}`, { headers: optionalAuthHeaders() })
 }

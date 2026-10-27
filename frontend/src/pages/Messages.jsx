@@ -11,6 +11,8 @@ import {
   toggleArchive,
 } from '../api/messages'
 import { getSocket } from '../api/socket'
+import Icon from '../components/Icon'
+import IconBadge from '../components/IconBadge'
 
 const PAGE_SIZE = 8
 
@@ -478,10 +480,7 @@ export default function Messages() {
           </div>
 
           <div className="msg-search">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Icon name="search" size={16} />
             <input
               type="search"
               placeholder="Search messages..."
@@ -494,9 +493,12 @@ export default function Messages() {
             {listLoading && <p className="msg-empty">Loading conversations…</p>}
             {!listLoading && listError && <p className="msg-empty">{listError}</p>}
             {!listLoading && !listError && conversations.length === 0 && (
-              <p className="msg-empty">
-                No conversations yet. Start one with <strong>New message</strong>.
-              </p>
+              <div className="empty-state">
+                <IconBadge icon="message" size={48} iconSize={20} tone="muted" />
+                <p>
+                  No conversations yet. Start one with <strong>New message</strong>.
+                </p>
+              </div>
             )}
             {!listLoading &&
               conversations.map((t) => (
@@ -545,6 +547,7 @@ export default function Messages() {
         <div className="msg-chat">
           {!activeId || !active ? (
             <div className="msg-chat__empty">
+              <IconBadge icon="message" size={56} iconSize={24} tone="muted" />
               <h2>Select a conversation</h2>
               <p>Choose a thread on the left, or start a new message.</p>
               <button type="button" className="btn btn-primary btn-sm" onClick={() => setShowNew(true)}>
@@ -707,7 +710,9 @@ export default function Messages() {
           {active ? (
             <>
               <section className="msg-panel">
-                <h3>Project Details</h3>
+                <h3 className="msg-panel__h">
+                  <Icon name="fileText" size={14} /> Project Details
+                </h3>
                 {active.projectImage ? (
                   <img className="msg-panel__thumb" src={mediaUrl(active.projectImage)} alt="" />
                 ) : (
@@ -745,7 +750,9 @@ export default function Messages() {
               </section>
 
               <section className="msg-panel">
-                <h3>Conversation Info</h3>
+                <h3 className="msg-panel__h">
+                  <Icon name="info" size={14} /> Conversation Info
+                </h3>
                 <dl className="msg-meta">
                   <div>
                     <dt>Contact</dt>
@@ -782,10 +789,15 @@ export default function Messages() {
 
               <section className="msg-panel">
                 <div className="msg-panel__row">
-                  <h3>Shared Files</h3>
+                  <h3 className="msg-panel__h">
+                    <Icon name="fileText" size={14} /> Shared Files
+                  </h3>
                 </div>
                 {sharedFiles.length === 0 ? (
-                  <p className="msg-empty">No files shared yet.</p>
+                  <div className="empty-state empty-state--tight">
+                    <IconBadge icon="fileText" size={40} iconSize={18} tone="muted" />
+                    <p>No files shared yet.</p>
+                  </div>
                 ) : (
                   <ul className="msg-files">
                     {sharedFiles.map((f) => (
@@ -810,7 +822,9 @@ export default function Messages() {
               </section>
 
               <section className="msg-panel msg-panel--actions">
-                <h3>Actions</h3>
+                <h3 className="msg-panel__h">
+                  <Icon name="settings" size={14} /> Actions
+                </h3>
                 <input
                   ref={uploadInputRef}
                   type="file"
@@ -831,8 +845,13 @@ export default function Messages() {
             </>
           ) : (
             <div className="msg-panel">
-              <h3>Details</h3>
-              <p className="msg-empty">Select a conversation to see project and contact details.</p>
+              <h3 className="msg-panel__h">
+                <Icon name="info" size={14} /> Details
+              </h3>
+              <div className="empty-state empty-state--tight">
+                <IconBadge icon="info" size={40} iconSize={18} tone="muted" />
+                <p>Select a conversation to see project and contact details.</p>
+              </div>
             </div>
           )}
         </aside>

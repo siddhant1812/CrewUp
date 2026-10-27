@@ -5,6 +5,8 @@ import FooterCta from '../components/FooterCta'
 import { posterRoleLabel } from '../data/categories'
 import { canApplyToJobs, canPostProjects, getSession, mediaUrl } from '../api/auth'
 import { fetchJob } from '../api/jobs'
+import Icon from '../components/Icon'
+import IconBadge from '../components/IconBadge'
 
 function formatDue(value) {
   if (!value) return 'Flexible'
@@ -73,7 +75,9 @@ export default function JobDetail() {
               {image ? (
                 <img className="job-detail__image" src={image} alt="" />
               ) : (
-                <div className="job-detail__image job-detail__image--empty" />
+                <div className="job-detail__image job-detail__image--empty">
+                  <IconBadge icon="building" size={56} iconSize={26} />
+                </div>
               )}
 
               <div className="job-detail__body">
@@ -83,32 +87,48 @@ export default function JobDetail() {
                 </p>
                 <h1>{job.title}</h1>
                 <p className="job-detail__poster">
-                  Posted by {job.postedBy?.company || job.postedBy?.fullName || 'a CrewUp member'}
+                  <Icon name="user" size={15} /> Posted by{' '}
+                  {job.postedBy?.company || job.postedBy?.fullName || 'a CrewUp member'}
                   {posterRoleLabel(job.postedByRole) ? ` (${posterRoleLabel(job.postedByRole)})` : ''}
                 </p>
 
-                <dl className="job-detail__meta">
-                  <div>
-                    <dt>Location</dt>
-                    <dd>{job.location || 'Not specified'}</dd>
+                <div className="proj-stats job-detail__stats">
+                  <div className="proj-stat">
+                    <IconBadge icon="pin" size={38} />
+                    <div className="proj-stat__body">
+                      <span>Location</span>
+                      <strong>{job.location || 'Not specified'}</strong>
+                    </div>
                   </div>
-                  <div>
-                    <dt>Budget</dt>
-                    <dd>{job.budget || 'Ask for details'}</dd>
+                  <div className="proj-stat">
+                    <IconBadge icon="coin" size={38} />
+                    <div className="proj-stat__body">
+                      <span>Budget</span>
+                      <strong>{job.budget || 'Ask for details'}</strong>
+                    </div>
                   </div>
-                  <div>
-                    <dt>Vacancies</dt>
-                    <dd>{job.vacancies || 1}</dd>
+                  <div className="proj-stat proj-stat--accent">
+                    <IconBadge icon="users" size={38} />
+                    <div className="proj-stat__body">
+                      <span>Vacancies</span>
+                      <strong>{job.vacancies || 1}</strong>
+                    </div>
                   </div>
-                  <div>
-                    <dt>Due</dt>
-                    <dd>{formatDue(job.dueDate)}</dd>
+                  <div className="proj-stat">
+                    <IconBadge icon="calendar" size={38} />
+                    <div className="proj-stat__body">
+                      <span>Due</span>
+                      <strong>{formatDue(job.dueDate)}</strong>
+                    </div>
                   </div>
-                  <div>
-                    <dt>Bids</dt>
-                    <dd>{job.bidsCount || 0}</dd>
+                  <div className="proj-stat">
+                    <IconBadge icon="fileText" size={38} />
+                    <div className="proj-stat__body">
+                      <span>Bids</span>
+                      <strong>{job.bidsCount || 0}</strong>
+                    </div>
                   </div>
-                </dl>
+                </div>
 
                 {job.trades?.length ? (
                   <div className="jobs-card__trades">

@@ -3,6 +3,8 @@ import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-d
 import Logo from './Logo'
 import Sidebar from './Sidebar'
 import AccountDrawer from './AccountDrawer'
+import ThemeToggle from './ThemeToggle'
+import Icon from './Icon'
 import { clearSession, getSession, mediaUrl } from '../api/auth'
 import { connectSocket, disconnectSocket } from '../api/socket'
 
@@ -104,25 +106,10 @@ export default function DashboardLayout() {
         </div>
 
         <div className="dash-topbar__user">
+          <ThemeToggle />
           <button type="button" className="user-bar__bell" aria-label="Notifications">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M10 19a2 2 0 0 0 4 0"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-              />
-            </svg>
-            {unread > 0 ? (
-              <span className="user-bar__badge">{unread > 99 ? '99+' : unread}</span>
-            ) : null}
+            <Icon name="bell" size={19} />
+            {unread > 0 ? <span className="user-bar__badge" aria-hidden="true" /> : null}
           </button>
 
           <button
@@ -143,6 +130,7 @@ export default function DashboardLayout() {
               <span className="user-bar__online" aria-hidden="true" />
             </div>
             <span className="user-bar__name">{user.fullName}</span>
+            <Icon name="chevronDown" size={16} className="user-bar__chevron-icon" />
           </button>
         </div>
       </header>

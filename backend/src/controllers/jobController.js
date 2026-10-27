@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Project = require("../models/Project");
 const { CONTRACTOR_CATEGORIES, SUBCONTRACTOR_CATEGORIES } = require("../config/categories");
+const { jobVisibilityRole } = require("../auth/permissions");
 
 function ensureDb(res) {
   if (mongoose.connection.readyState !== 1) {
@@ -21,7 +22,7 @@ function textMatch(value) {
   return new RegExp(escapeRegex(value.trim()), "i");
 }
 
-function buildJobFilter({ q, trade, location, type, role, excludeUserId } = {}) {
+function buildJobFilter({ q, trade, location, type, role, excludeUserId, forcedRole } = {}) {
   const filter = { status: "open" };
 
   if (excludeUserId) {
@@ -58,6 +59,12 @@ function buildJobFilter({ q, trade, location, type, role, excludeUserId } = {}) 
 
   if (role === "contractor" || role === "subcontractor") {
     filter.postedByRole = role;
+  }
+
+  // Contractors/subcontractors browsing jobs only ever see contractor-posted
+  // work, regardless of what role filter was requested.
+  if (forcedRole) {
+    filter.postedByRole = forcedRole;
   }
 
   if (clauses.length) {
@@ -113,7 +120,10 @@ async function browseJobs(req, res) {
 
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 12));
-    const filter = buildJobFilter(req.query);
+    const filter = buildJobFilter({
+      ...req.query,
+      forcedRole: jobVisibilityRole(req.user),
+    });
 
     const [jobs, total, tradeValues, locations] = await Promise.all([
       Project.find(filter)
@@ -163,6 +173,14 @@ async function getPublicJob(req, res) {
     );
 
     if (!project || !["open", "in_progress"].includes(project.status)) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found.",
+      });
+    }
+
+    const forcedRole = jobVisibilityRole(req.user);
+    if (forcedRole && (project.postedByRole || "contractor") !== forcedRole) {
       return res.status(404).json({
         success: false,
         message: "Job not found.",

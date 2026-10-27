@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import ThemeToggle from './ThemeToggle'
 import Logo from './Logo'
 import AccountDrawer from './AccountDrawer'
 import { canHire, clearSession, getSession, mediaUrl } from '../api/auth'
@@ -127,6 +128,7 @@ export default function Header({ menuOpen, setMenuOpen }) {
         </nav>
 
         <div className="header__actions">
+          <ThemeToggle />
           {user ? (
             <UserMenu
               user={user}

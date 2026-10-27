@@ -8,7 +8,7 @@ const SavedItem = require("../models/SavedItem");
 const ProjectInvite = require("../models/ProjectInvite");
 const Proposal = require("../models/Proposal");
 const { formatProposal } = require("./proposalController");
-const { can, accountKind } = require("../auth/permissions");
+const { can, accountKind, jobVisibilityRole } = require("../auth/permissions");
 const { categoriesFor, posterRole, validateCategory } = require("../config/categories");
 
 const uploadDir = path.join(__dirname, "../../uploads/projects");
@@ -113,9 +113,13 @@ async function getDashboardStats(req, res) {
         Proposal.countDocuments({ applicant: userId, status: { $ne: "withdrawn" } }),
       ]);
 
+    const recommendedJobsFilter = { status: "open", createdBy: { $ne: userId } };
+    const forcedRole = jobVisibilityRole(req.user);
+    if (forcedRole) recommendedJobsFilter.postedByRole = forcedRole;
+
     const recommendedJobs =
       kind === "worker"
-        ? await Project.find({ status: "open", createdBy: { $ne: userId } })
+        ? await Project.find(recommendedJobsFilter)
             .sort({ updatedAt: -1 })
             .limit(5)
         : [];

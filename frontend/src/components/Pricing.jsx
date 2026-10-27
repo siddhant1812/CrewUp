@@ -6,8 +6,8 @@ import { fetchPlans, startCheckout } from '../api/billing'
 function Check() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <circle cx="9" cy="9" r="8" fill="rgba(0,102,255,0.1)" stroke="#0066FF" strokeWidth="1.2" />
-      <path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#0066FF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="9" cy="9" r="8" fill="rgba(19, 146, 236,0.1)" stroke="#43a8f0" strokeWidth="1.2" />
+      <path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#43a8f0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

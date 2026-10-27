@@ -3,7 +3,7 @@ const Project = require("../models/Project");
 const Proposal = require("../models/Proposal");
 const { logActivity } = require("../models/Activity");
 const { buildJobFilter, formatPublicJob } = require("./jobController");
-const { can } = require("../auth/permissions");
+const { can, jobVisibilityRole } = require("../auth/permissions");
 
 function ensureDb(res) {
   if (mongoose.connection.readyState !== 1) {
@@ -60,6 +60,7 @@ async function listOpenProjects(req, res) {
       buildJobFilter({
         ...req.query,
         excludeUserId: req.user._id,
+        forcedRole: jobVisibilityRole(req.user),
       })
     )
       .populate("createdBy", "fullName company")

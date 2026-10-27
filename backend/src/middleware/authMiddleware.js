@@ -47,7 +47,30 @@ const protect = async (req, res, next) => {
   }
 };
 
+// Reads the JWT if present and attaches req.user, but never blocks the
+// request — for routes that are public but behave differently when logged in.
+const optionalAuth = async (req, _res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) return next();
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (user && user.accountStatus === "active") {
+      req.user = user;
+      req.accountKind = accountKind(user);
+      req.permissions = buildPermissions(user);
+    }
+  } catch {
+    /* invalid/expired token on a public route: just proceed as a guest */
+  }
+  next();
+};
+
 module.exports = {
   protect,
+  optionalAuth,
   authorizePermission,
 };

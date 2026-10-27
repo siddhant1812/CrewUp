@@ -11,6 +11,7 @@ import {
   sendInvite,
   toggleSavedContractor,
 } from '../api/contractors'
+import CardHead from '../components/CardHead'
 
 function typeLabel(type) {
   if (type === 'subcontractor') return 'Subcontractor'
@@ -150,9 +151,7 @@ export default function Contractors() {
 
       {invites.length > 0 && (
         <div className="dash-table-card" style={{ marginBottom: '1rem' }}>
-          <div className="dash-table-card__head">
-            <h3>Project invites for you</h3>
-          </div>
+          <CardHead icon="message" title="Project invites for you" />
           <ul className="set-list" style={{ padding: '0 1.1rem 1rem' }}>
             {invites.map((inv) => (
               <li key={inv.id}>

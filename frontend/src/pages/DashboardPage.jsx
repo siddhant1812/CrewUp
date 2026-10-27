@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useOutletContext } from 'react-router-dom'
 import { accountKindOf, canPostProjects, mediaUrl } from '../api/auth'
 import { categoriesFor } from '../data/categories'
+import CardHead from '../components/CardHead'
 import {
   createProject,
   deleteProject,
@@ -221,10 +222,11 @@ function DashboardHome({ user }) {
       </div>
 
       <div className="dash-table-card">
-        <div className="dash-table-card__head">
-          <h3>{isWorker ? 'Jobs for you' : 'Recent Projects'}</h3>
-          <Link to={isWorker ? '/jobs' : '/dashboard/projects'}>View all</Link>
-        </div>
+        <CardHead icon={isWorker ? 'search' : 'folder'} title={isWorker ? 'Jobs for you' : 'Recent Projects'}>
+          <Link to={isWorker ? '/jobs' : '/dashboard/projects'} className="card-head__link">
+            View all
+          </Link>
+        </CardHead>
         {error ? <p className="dash-empty">{error}</p> : null}
         {loading ? (
           <p className="dash-empty">Loading…</p>
@@ -514,10 +516,7 @@ function ProjectsSection({ user }) {
       )}
 
       <div className="dash-table-card">
-        <div className="dash-table-card__head">
-          <h3>Your projects</h3>
-          <span className="dash-muted">{projects.length} total</span>
-        </div>
+        <CardHead icon="folder" title="Your projects" meta={`${projects.length} total`} />
         {error ? <p className="dash-empty">{error}</p> : null}
         {loading ? (
           <p className="dash-empty">Loading projects…</p>
@@ -536,10 +535,11 @@ function ProjectsSection({ user }) {
       </div>
 
       <div className="dash-table-card" style={{ marginTop: '1rem' }}>
-        <div className="dash-table-card__head">
-          <h3>Open jobs to bid on</h3>
-          <Link to="/jobs">Browse all</Link>
-        </div>
+        <CardHead icon="search" title="Open jobs to bid on">
+          <Link to="/jobs" className="card-head__link">
+            Browse all
+          </Link>
+        </CardHead>
         <ProjectsTable
           projects={openJobs}
           emptyLabel="No open jobs from other users yet. When someone posts a project, you can apply from here."

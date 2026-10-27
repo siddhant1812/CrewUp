@@ -10,6 +10,8 @@ import {
   startCheckout,
 } from '../../api/billing'
 import PhoneInput, { isValidPhone } from '../../components/PhoneInput'
+import CardHead from '../../components/CardHead'
+import Icon from '../../components/Icon'
 import {
   deleteDocument,
   fetchActivity,
@@ -500,7 +502,9 @@ export function PaymentsPanel() {
       {notice ? <p className="bill-notice">{notice}</p> : null}
 
       <article className="set-card">
-        <h3>Payment method</h3>
+        <h3 className="msg-panel__h set-card__h">
+          <Icon name="card" size={15} /> Payment method
+        </h3>
         {card ? (
           <p>
             <strong className="set-cap">{card.brand}</strong> ending in {card.last4}
@@ -514,7 +518,9 @@ export function PaymentsPanel() {
 
       {profile && (
         <form className="set-card" onSubmit={onSubmit}>
-          <h3>Payouts</h3>
+          <h3 className="msg-panel__h set-card__h">
+            <Icon name="coin" size={15} /> Payouts
+          </h3>
           <div className="set-grid">
             <Field label="Payout email">
               <input
@@ -683,7 +689,9 @@ export function SecurityPanel() {
       {error ? <p className="dash-form-error">{error}</p> : null}
       {notice ? <p className="bill-notice">{notice}</p> : null}
       <form className="set-card" onSubmit={onPassword}>
-        <h3>Password</h3>
+        <h3 className="msg-panel__h set-card__h">
+          <Icon name="settings" size={15} /> Password
+        </h3>
         <Field label="Current password">
           <input
             type="password"
@@ -716,7 +724,9 @@ export function SecurityPanel() {
       </form>
       {profile && (
         <div className="set-card">
-          <h3>Two-factor authentication</h3>
+          <h3 className="msg-panel__h set-card__h">
+            <Icon name="info" size={15} /> Two-factor authentication
+          </h3>
           <p className="dash-muted">
             {profile.twoFactorEnabled ? 'Enabled on this account.' : 'Not enabled.'}
           </p>
@@ -930,9 +940,7 @@ export function SubscriptionPanel({ standalone = false }) {
         <>
           <div className="bill-grid">
             <article className="dash-table-card bill-card">
-              <div className="dash-table-card__head">
-                <h3>Current plan</h3>
-              </div>
+              <CardHead icon="fileText" title="Current plan" />
               <div className="bill-card__body">
                 <p className="bill-plan">
                   {billing.planName}{' '}
@@ -984,9 +992,7 @@ export function SubscriptionPanel({ standalone = false }) {
               </div>
             </article>
             <article className="dash-table-card bill-card">
-              <div className="dash-table-card__head">
-                <h3>Payment method</h3>
-              </div>
+              <CardHead icon="card" title="Payment method" />
               <div className="bill-card__body">
                 {card ? (
                   <>
