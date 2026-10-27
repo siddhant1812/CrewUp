@@ -215,6 +215,16 @@ const login = async (req, res) => {
       });
     }
 
+    if (user.accountStatus !== "active") {
+      return res.status(403).json({
+        success: false,
+        message:
+          user.accountStatus === "deleted"
+            ? "This account no longer exists."
+            : "Your account has been deactivated. Contact support if you think this is a mistake.",
+      });
+    }
+
     const token = generateToken(user);
 
     return res.status(200).json({

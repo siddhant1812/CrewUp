@@ -17,6 +17,7 @@ const billingRoutes = require("./routes/billingRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const contractorRoutes = require("./routes/contractorRoutes");
 const jobRoutes = require("./routes/jobRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const { stripeWebhook } = require("./controllers/billingController");
 
 const app = express();
@@ -46,6 +47,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/contractors", contractorRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.json({

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "test": "node --test",
     "setup:stripe": "node scripts/setup-stripe.js"
   },
   "dependencies": {

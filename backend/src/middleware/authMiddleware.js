@@ -69,8 +69,22 @@ const optionalAuth = async (req, _res, next) => {
   next();
 };
 
+// Use after `protect`. Only a user with role "admin" may proceed — the
+// admin panel's routes use this instead of authorizePermission(), since
+// admin access is an unconditional override, not a per-feature permission.
+const requireAdmin = (req, res, next) => {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Admin access required.",
+    });
+  }
+  next();
+};
+
 module.exports = {
   protect,
   optionalAuth,
+  requireAdmin,
   authorizePermission,
 };
