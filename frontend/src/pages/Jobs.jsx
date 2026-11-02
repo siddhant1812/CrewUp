@@ -169,18 +169,19 @@ export default function Jobs() {
             </button>
           </form>
 
-          <div className="jobs__chips" aria-label="Popular categories">
+          <select
+            className="jobs__chips"
+            value={Object.keys(ALL_CATEGORIES).slice(0, 8).includes(type) ? type : ''}
+            onChange={(e) => applyFilters({ q, type: e.target.value, role, location })}
+            aria-label="Popular categories"
+          >
+            <option value="">Popular categories</option>
             {Object.keys(ALL_CATEGORIES).slice(0, 8).map((name) => (
-              <button
-                key={name}
-                type="button"
-                className={`jobs__chip${type === name ? ' is-active' : ''}`}
-                onClick={() => applyFilters({ q, type: type === name ? '' : name, role, location })}
-              >
+              <option key={name} value={name}>
                 {name}
-              </button>
+              </option>
             ))}
-          </div>
+          </select>
 
           <div className="jobs__meta">
             {loading ? 'Loading jobs…' : `${total} open ${total === 1 ? 'job' : 'jobs'}`}

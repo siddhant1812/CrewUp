@@ -1,0 +1,95 @@
+- generic [ref=f1e3]:
+  - banner [ref=f1e4]:
+    - link "CrewUp home" [ref=f1e6] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f1e7]: CREWUP
+    - generic [ref=f1e13]:
+      - button "Switch to dark mode" [ref=f1e14] [cursor=pointer]
+      - button "Notifications" [ref=f1e17] [cursor=pointer]
+      - button "S Shagun" [ref=f1e21] [cursor=pointer]:
+        - generic [ref=f1e22]: S
+        - generic [ref=f1e25]: Shagun
+  - complementary [aria-hidden] [ref=f1e28]:
+    - generic [ref=f1e29]:
+      - heading [level=2] [ref=f1e30]: Account
+      - button [ref=f1e31] [cursor=pointer]: ×
+    - generic [ref=f1e32]:
+      - generic [ref=f1e33]:
+        - generic [ref=f1e34]: S
+        - button [ref=f1e35] [cursor=pointer]
+      - generic [ref=f1e39]:
+        - strong [ref=f1e40]: Shagun
+        - generic [ref=f1e41]: Contractor
+        - generic [ref=f1e42]: shagun@example.com
+    - generic [ref=f1e43]:
+      - heading [level=3] [ref=f1e44]: About
+      - generic [ref=f1e45]:
+        - generic [ref=f1e46]:
+          - term [ref=f1e47]: Designation
+          - definition [ref=f1e48]: Contractor
+        - generic [ref=f1e49]:
+          - term [ref=f1e50]: Company
+          - definition [ref=f1e51]: Radiant tech solution
+        - generic [ref=f1e52]:
+          - term [ref=f1e53]: Job title
+          - definition [ref=f1e54]: —
+        - generic [ref=f1e55]:
+          - term [ref=f1e56]: Location
+          - definition [ref=f1e57]: —
+        - generic [ref=f1e58]:
+          - term [ref=f1e59]: Member since
+          - definition [ref=f1e60]: —
+    - navigation [ref=f1e61]:
+      - link [ref=f1e62] [cursor=pointer]:
+        - /url: /dashboard/settings/account
+        - text: Settings
+      - link [ref=f1e63] [cursor=pointer]:
+        - /url: /dashboard/billing
+        - text: Subscription
+        - emphasis [ref=f1e64]: Starter
+    - button [ref=f1e65] [cursor=pointer]: Log out
+  - generic [ref=f1e66]:
+    - complementary "Dashboard" [ref=f1e67]:
+      - generic [ref=f1e68]: CU
+      - navigation [ref=f1e70]:
+        - link "Dashboard" [ref=f1e71] [cursor=pointer]:
+          - /url: /dashboard
+        - link "My Projects" [ref=f1e77] [cursor=pointer]:
+          - /url: /dashboard/projects
+        - link "Browse Jobs" [ref=f1e82] [cursor=pointer]:
+          - /url: /jobs
+        - link "Messages" [ref=f1e88] [cursor=pointer]:
+          - /url: /dashboard/messages
+        - link "Find Crew" [ref=f1e93] [cursor=pointer]:
+          - /url: /dashboard/contractors
+        - link "Billing" [ref=f1e101] [cursor=pointer]:
+          - /url: /dashboard/billing
+        - link "Settings" [ref=f1e106] [cursor=pointer]:
+          - /url: /dashboard/settings/account
+      - button "Log Out" [ref=f1e112] [cursor=pointer]
+    - generic [ref=f1e119]:
+      - generic [ref=f1e120]:
+        - generic [ref=f1e121]:
+          - heading "Welcome back, Shagun!" [level=2] [ref=f1e122]
+          - paragraph [ref=f1e123]: Post jobs, review bids, and hire crew from one place.
+        - link "Post a project" [ref=f1e124] [cursor=pointer]:
+          - /url: /dashboard/projects
+      - generic [ref=f1e125]:
+        - article [ref=f1e126]:
+          - strong [ref=f1e127]: —
+          - text: Active Projects
+        - article [ref=f1e128]:
+          - strong [ref=f1e129]: —
+          - text: Messages
+        - article [ref=f1e130]:
+          - strong [ref=f1e131]: —
+          - text: Saved Crew
+        - article [ref=f1e132]:
+          - strong [ref=f1e133]: —
+          - text: Invites Sent
+      - generic [ref=f1e134]:
+        - generic [ref=f1e135]:
+          - heading "Recent Projects" [level=3] [ref=f1e139]
+          - link "View all" [ref=f1e140] [cursor=pointer]:
+            - /url: /dashboard/projects
+        - paragraph [ref=f1e141]: Loading…

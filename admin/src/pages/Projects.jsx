@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { deleteProject, fetchProjects, updateProjectStatus } from '../api/admin'
 import Icon from '../components/Icon'
 
@@ -10,6 +11,7 @@ function formatDate(value) {
 }
 
 export default function Projects() {
+  const navigate = useNavigate()
   const [projects, setProjects] = useState([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -132,7 +134,11 @@ export default function Projects() {
             </thead>
             <tbody>
               {projects.map((p) => (
-                <tr key={p.id}>
+                <tr
+                  key={p.id}
+                  className="admin-table__row--clickable"
+                  onClick={() => navigate(`/projects/${p.id}`)}
+                >
                   <td>
                     <div className="admin-table__name">{p.title}</div>
                     <div className="admin-table__sub">
@@ -148,7 +154,7 @@ export default function Projects() {
                   </td>
                   <td>{p.bidsCount}</td>
                   <td>{formatDate(p.createdAt)}</td>
-                  <td>
+                  <td onClick={(e) => e.stopPropagation()}>
                     <div className="admin-actions">
                       <select
                         className="admin-inline-select"

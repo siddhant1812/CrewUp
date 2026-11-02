@@ -47,6 +47,9 @@ function ensureDb(res) {
 }
 
 function formatProject(project) {
+  const owner =
+    project.createdBy && project.createdBy.fullName ? project.createdBy : null;
+
   return {
     id: String(project._id),
     title: project.title,
@@ -62,6 +65,17 @@ function formatProject(project) {
     trades: project.trades || [],
     bidsCount: project.bidsCount || 0,
     status: project.status,
+    createdBy: String(owner ? owner._id : project.createdBy),
+    postedBy: owner
+      ? {
+          id: String(owner._id),
+          fullName: owner.fullName,
+          company: owner.company || "",
+          contractorType: owner.contractorType,
+          profilePhoto: owner.profilePhoto || owner.profileImage || "",
+          location: owner.location || "",
+        }
+      : null,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
   };
@@ -189,7 +203,10 @@ async function getProject(req, res) {
   try {
     if (!ensureDb(res)) return;
 
-    const project = await Project.findById(req.params.id);
+    const project = await Project.findById(req.params.id).populate(
+      "createdBy",
+      "fullName company contractorType profilePhoto profileImage location"
+    );
     if (!project) {
       return res.status(404).json({
         success: false,
@@ -197,7 +214,7 @@ async function getProject(req, res) {
       });
     }
 
-    const isOwner = String(project.createdBy) === String(req.user._id);
+    const isOwner = String(project.createdBy._id) === String(req.user._id);
     if (!isOwner && !["open", "in_progress"].includes(project.status)) {
       return res.status(403).json({
         success: false,

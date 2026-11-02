@@ -59,6 +59,13 @@ const PATHS = {
       <path d="M10.5 12.5 18 5M15.5 7.5 18 5l2 2-2.5 2.5M14 9l2 2" />
     </>
   ),
+  arrowLeft: (
+    <>
+      <path d="M19 12H5" />
+      <path d="m11 6-6 6 6 6" />
+    </>
+  ),
+  check: <path d="M5 12.5 9.5 17 19 7" />,
 }
 
 export default function Icon({ name, size = 18, strokeWidth = 1.8, className = '' }) {

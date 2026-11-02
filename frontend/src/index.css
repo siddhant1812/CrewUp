@@ -2392,8 +2392,27 @@ ol {
 .proj-proposal__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
+  align-items: center;
+  gap: 0.6rem;
   margin-top: 0.9rem;
+}
+
+.proj-proposal__notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #e7f8ee;
+  color: #067647;
+}
+
+.proj-proposal__notice--muted {
+  background: #eef3f6;
+  color: #5a6c78;
+  font-weight: 500;
 }
 
 @media (max-width: 800px) {
@@ -3773,26 +3792,15 @@ ol {
 }
 
 .jobs__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 1rem;
-}
-
-.jobs__chip {
-  border: 1px solid var(--line);
+  width: 100%;
+  min-width: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
   background: #fff;
-  color: var(--navy);
-  border-radius: 999px;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.85rem;
-}
-
-.jobs__chip.is-active,
-.jobs__chip:hover {
-  border-color: var(--blue);
-  color: var(--blue);
-  background: var(--soft-blue);
+  font: inherit;
+  color: var(--ink);
+  margin-bottom: 1rem;
 }
 
 .jobs__meta {
@@ -4502,7 +4510,7 @@ html[data-theme="dark"] .set-card,
 html[data-theme="dark"] .set-field input:disabled,
 html[data-theme="dark"] .jobs__filters input,
 html[data-theme="dark"] .jobs__filters select,
-html[data-theme="dark"] .jobs__chip,
+html[data-theme="dark"] .jobs__chips,
 html[data-theme="dark"] .jobs__error,
 html[data-theme="dark"] .jobs__empty,
 html[data-theme="dark"] .jobs-card,
@@ -4548,8 +4556,6 @@ html[data-theme="dark"] .jobs {
 
 html[data-theme="dark"] .dash__card,
 html[data-theme="dark"] .stats,
-html[data-theme="dark"] .jobs__chip.is-active,
-html[data-theme="dark"] .jobs__chip:hover,
 html[data-theme="dark"] .jobs-card__trades span,
 html[data-theme="dark"] .proj-chip--soft {
   background: #1f3c50;
@@ -4621,6 +4627,16 @@ html[data-theme="dark"] .status-select.status-pill--open {
 html[data-theme="dark"] .status-pill--draft,
 html[data-theme="dark"] .status-select.status-pill--draft {
   background: #1b3242;
+  color: #a5bed0;
+}
+
+html[data-theme="dark"] .proj-proposal__notice {
+  background: #163324;
+  color: #6fd9a2;
+}
+
+html[data-theme="dark"] .proj-proposal__notice--muted {
+  background: #253844;
   color: #a5bed0;
 }
 
@@ -4886,6 +4902,26 @@ html[data-theme="dark"] .logo svg path:first-child {
 .proj-hero__loc svg {
   color: #e8495f;
   flex-shrink: 0;
+}
+
+.proj-hero__right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.proj-hero__delete {
+  color: #b91c1c;
+  border-color: #f3c6c6;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.proj-hero__delete:hover {
+  background: #fdf2f2;
+  border-color: #e8a3a3;
 }
 
 .proj-hero__status {

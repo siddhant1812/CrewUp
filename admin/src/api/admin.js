@@ -31,6 +31,14 @@ export function fetchProjects(params) {
   return request('/api/admin/projects', { params })
 }
 
+export function fetchProject(id) {
+  return request(`/api/admin/projects/${id}`)
+}
+
+export function updateProject(id, patch) {
+  return request(`/api/admin/projects/${id}`, { method: 'PATCH', data: patch })
+}
+
 export function updateProjectStatus(id, status) {
   return request(`/api/admin/projects/${id}/status`, { method: 'PATCH', data: { status } })
 }

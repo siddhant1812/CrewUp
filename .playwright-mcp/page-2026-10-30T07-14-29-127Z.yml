@@ -1,0 +1,88 @@
+- generic [ref=f10e3]:
+  - complementary [ref=f10e4]:
+    - generic [ref=f10e9]:
+      - strong [ref=f10e10]: CrewUp
+      - generic [ref=f10e11]: Admin
+    - navigation [ref=f10e12]:
+      - link "Dashboard" [ref=f10e13] [cursor=pointer]:
+        - /url: /
+      - link "Users" [ref=f10e18] [cursor=pointer]:
+        - /url: /users
+      - link "Projects" [ref=f10e25] [cursor=pointer]:
+        - /url: /projects
+      - link "Proposals" [ref=f10e29] [cursor=pointer]:
+        - /url: /proposals
+    - button "Log out" [ref=f10e34] [cursor=pointer]
+  - main [ref=f10e39]:
+    - link "Back to Projects" [ref=f10e154] [cursor=pointer]:
+      - /url: /projects
+    - generic [ref=f10e157]:
+      - generic [ref=f10e158]:
+        - heading "hgdf" [level=1] [ref=f10e159]
+        - paragraph [ref=f10e160]: 0 proposals · Created Oct 23, 2026
+      - button "Delete project" [ref=f10e161] [cursor=pointer]
+    - generic [ref=f10e165]:
+      - heading "Project details" [level=2] [ref=f10e166]
+      - generic [ref=f10e167]:
+        - generic [ref=f10e168]:
+          - generic [ref=f10e169]: Posted by
+          - strong [ref=f10e170]: Shagun
+        - generic [ref=f10e171]:
+          - generic [ref=f10e172]: Email
+          - strong [ref=f10e173]: shagun@example.com
+        - generic [ref=f10e174]:
+          - generic [ref=f10e175]: Account type
+          - strong [ref=f10e176]: general contractor
+        - generic [ref=f10e177]:
+          - generic [ref=f10e178]: Bids
+          - strong [ref=f10e179]: "0"
+        - generic [ref=f10e180]:
+          - generic [ref=f10e181]: Last updated
+          - strong [ref=f10e182]: Oct 23, 2026
+      - generic [ref=f10e183]:
+        - generic [ref=f10e184]:
+          - text: Title
+          - textbox "Title" [ref=f10e185]: hgdf
+        - generic [ref=f10e186]:
+          - text: Status
+          - combobox "Status" [ref=f10e187]:
+            - option "draft"
+            - option "open" [selected]
+            - option "in progress"
+            - option "completed"
+            - option "cancelled"
+        - generic [ref=f10e188]:
+          - text: Posted by role
+          - combobox "Posted by role" [ref=f10e189]:
+            - option "contractor" [selected]
+            - option "subcontractor"
+        - generic [ref=f10e190]:
+          - text: Location
+          - textbox "Location" [ref=f10e191]:
+            - /placeholder: Austin, TX
+            - text: sdcsd
+        - generic [ref=f10e192]:
+          - text: Project type / category
+          - textbox "Project type / category" [ref=f10e193]: Residential Construction
+        - generic [ref=f10e194]:
+          - text: Service
+          - textbox "Service" [ref=f10e195]
+        - generic [ref=f10e196]:
+          - text: Budget
+          - textbox "Budget" [ref=f10e197]:
+            - /placeholder: $5,000
+        - generic [ref=f10e198]:
+          - text: Vacancies
+          - spinbutton "Vacancies" [ref=f10e199]: "1"
+        - generic [ref=f10e200]:
+          - text: Due date
+          - textbox "Due date" [ref=f10e201]: 2026-10-24
+        - generic [ref=f10e202]:
+          - text: Trades (comma separated)
+          - textbox "Trades (comma separated)" [ref=f10e203]:
+            - /placeholder: Electrical, Plumbing
+        - generic [ref=f10e204]:
+          - text: Description
+          - textbox "Description" [ref=f10e205]:
+            - /placeholder: No description was added for this project.
+      - button "Save changes" [ref=f10e207] [cursor=pointer]

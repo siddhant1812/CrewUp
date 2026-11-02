@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { canApplyToJobs, mediaUrl } from '../api/auth'
 import { createConversation } from '../api/messages'
-import { fetchProject, respondProposal, submitProposal } from '../api/projects'
+import { deleteProject, fetchProject, respondProposal, submitProposal } from '../api/projects'
 import Icon from '../components/Icon'
 import IconBadge from '../components/IconBadge'
 import CardHead from '../components/CardHead'
@@ -122,6 +122,18 @@ export default function ProjectDetail() {
     }
   }
 
+  async function onDelete() {
+    if (!window.confirm('Delete this project? This also removes all proposals on it.')) return
+    setBusy('delete')
+    try {
+      await deleteProject(id)
+      navigate('/dashboard/projects')
+    } catch (err) {
+      setError(err.message || 'Could not delete project.')
+      setBusy('')
+    }
+  }
+
   async function onMessage(person) {
     if (!person?.id) return
     setBusy(`msg-${person.id}`)
@@ -187,10 +199,23 @@ export default function ProjectDetail() {
             ) : null}
           </div>
         </div>
-        <span className={`status-pill status-pill--${project.status} proj-hero__status`}>
-          <Icon name={STATUS_ICONS[project.status] || 'hourglass'} size={13} />
-          {STATUS_LABELS[project.status] || project.status}
-        </span>
+        <div className="proj-hero__right">
+          <span className={`status-pill status-pill--${project.status} proj-hero__status`}>
+            <Icon name={STATUS_ICONS[project.status] || 'hourglass'} size={13} />
+            {STATUS_LABELS[project.status] || project.status}
+          </span>
+          {isOwner ? (
+            <button
+              type="button"
+              className="btn btn-outline btn-sm proj-hero__delete"
+              disabled={busy === 'delete'}
+              onClick={onDelete}
+            >
+              <Icon name="trash" size={14} />
+              {busy === 'delete' ? 'Deleting…' : 'Delete'}
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {/* Stats */}
@@ -199,7 +224,7 @@ export default function ProjectDetail() {
           <IconBadge icon="users" size={40} />
           <div className="proj-stat__body">
             <span>Vacancies</span>
-            <strong>{vacancies}</strong>
+            <strong>{vacancies}</strong>{' '}
             <em>{vacancies === 1 ? 'worker needed' : 'workers needed'}</em>
           </div>
         </div>
@@ -354,7 +379,8 @@ export default function ProjectDetail() {
                         disabled={busy === selected.id}
                         onClick={() => onRespond(selected.id, 'accepted')}
                       >
-                        Accept
+                        <Icon name="check" size={14} />
+                        {busy === selected.id ? 'Accepting…' : 'Accept'}
                       </button>
                       <button
                         type="button"
@@ -362,18 +388,33 @@ export default function ProjectDetail() {
                         disabled={busy === selected.id}
                         onClick={() => onRespond(selected.id, 'declined')}
                       >
+                        <Icon name="close" size={14} />
                         Decline
                       </button>
                     </>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    disabled={busy === `msg-${selected.applicant?.id}`}
-                    onClick={() => onMessage(selected.applicant)}
-                  >
-                    Message
-                  </button>
+                  ) : selected.status === 'accepted' ? (
+                    <>
+                      <span className="proj-proposal__notice">
+                        <Icon name="check" size={14} />
+                        Bid accepted — you can now message each other
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        disabled={busy === `msg-${selected.applicant?.id}`}
+                        onClick={() => onMessage(selected.applicant)}
+                      >
+                        <Icon name="message" size={14} />
+                        {busy === `msg-${selected.applicant?.id}`
+                          ? 'Opening…'
+                          : `Message ${selected.applicant?.fullName?.split(' ')[0] || 'applicant'}`}
+                      </button>
+                    </>
+                  ) : (
+                    <span className="proj-proposal__notice proj-proposal__notice--muted">
+                      This proposal was declined.
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -403,6 +444,35 @@ export default function ProjectDetail() {
                 </div>
               </dl>
               <p>{mine.proposal}</p>
+              <div className="proj-proposal__actions">
+                {mine.status === 'accepted' ? (
+                  <>
+                    <span className="proj-proposal__notice">
+                      <Icon name="check" size={14} />
+                      Bid accepted — you can now message {project.postedBy?.fullName || 'the project owner'}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      disabled={busy === `msg-${project.postedBy?.id}`}
+                      onClick={() => onMessage(project.postedBy)}
+                    >
+                      <Icon name="message" size={14} />
+                      {busy === `msg-${project.postedBy?.id}`
+                        ? 'Opening…'
+                        : `Message ${project.postedBy?.fullName?.split(' ')[0] || 'owner'}`}
+                    </button>
+                  </>
+                ) : mine.status === 'pending' ? (
+                  <span className="proj-proposal__notice proj-proposal__notice--muted">
+                    Waiting on a response — you'll be able to message once this bid is accepted.
+                  </span>
+                ) : (
+                  <span className="proj-proposal__notice proj-proposal__notice--muted">
+                    This proposal was declined.
+                  </span>
+                )}
+              </div>
             </div>
           ) : project.status === 'open' ? (
             <form className="dash-project-form" onSubmit={onApply}>

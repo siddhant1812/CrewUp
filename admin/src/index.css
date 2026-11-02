@@ -97,6 +97,23 @@ a {
   margin-bottom: 1.4rem;
 }
 
+.admin-auth__switch {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.admin-auth__switch a {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-auth__switch a:hover {
+  text-decoration: underline;
+}
+
 .admin-field {
   display: flex;
   flex-direction: column;
@@ -118,6 +135,22 @@ a {
 
 .admin-field input:focus,
 .admin-field select:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.admin-field textarea {
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  background: #fff;
+  resize: vertical;
+  min-height: 96px;
+}
+
+.admin-field textarea:focus {
   outline: none;
   border-color: var(--blue);
 }
@@ -334,6 +367,83 @@ a {
   margin-bottom: 1.1rem;
 }
 
+.admin-card h2 {
+  font-size: 1.02rem;
+  margin-bottom: 1rem;
+}
+
+.admin-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.admin-back-link:hover {
+  color: var(--blue-hover);
+}
+
+.admin-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+  margin-bottom: 1.1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-detail-meta > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.admin-detail-meta span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-detail-meta strong {
+  color: var(--navy);
+  font-size: 0.95rem;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0 1.2rem;
+}
+
+.admin-form-grid .admin-field {
+  min-width: 0;
+}
+
+.admin-form-grid--full {
+  grid-column: 1 / -1;
+}
+
+.admin-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.4rem;
+}
+
+.admin-form-actions__saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--ok);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .admin-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -363,7 +473,7 @@ a {
   flex-shrink: 0;
 }
 
-.admin-stat span {
+.admin-stat div > span {
   display: block;
   font-size: 0.72rem;
   font-weight: 700;
@@ -471,6 +581,10 @@ a {
 
 .admin-table tr:hover td {
   background: #fafcff;
+}
+
+.admin-table__row--clickable {
+  cursor: pointer;
 }
 
 .admin-table__name {

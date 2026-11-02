@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { isAdmin, login } from '../api/auth'
 import Icon from '../components/Icon'
 
@@ -59,6 +59,9 @@ export default function Login() {
         <button type="submit" className="admin-btn admin-btn--block" disabled={loading}>
           {loading ? 'Signing in…' : 'Sign in'}
         </button>
+        <p className="admin-auth__switch">
+          Need an account? <Link to="/signup">Create one</Link>
+        </p>
       </form>
     </div>
   )

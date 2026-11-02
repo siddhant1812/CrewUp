@@ -1,0 +1,20 @@
+- generic [ref=f3e3]:
+  - complementary [ref=f3e4]:
+    - generic [ref=f3e9]:
+      - strong [ref=f3e10]: CrewUp
+      - generic [ref=f3e11]: Admin
+    - navigation [ref=f3e12]:
+      - link "Dashboard" [ref=f3e13] [cursor=pointer]:
+        - /url: /
+      - link "Users" [ref=f3e18] [cursor=pointer]:
+        - /url: /users
+      - link "Projects" [ref=f3e25] [cursor=pointer]:
+        - /url: /projects
+      - link "Proposals" [ref=f3e29] [cursor=pointer]:
+        - /url: /proposals
+    - button "Log out" [ref=f3e34] [cursor=pointer]
+  - main [ref=f3e39]:
+    - generic [ref=f3e41]:
+      - heading "Platform overview" [level=1] [ref=f3e42]
+      - paragraph [ref=f3e43]: Signed in as Kanishka
+    - paragraph [ref=f3e44]: Loading…
