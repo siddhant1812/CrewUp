@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
+import { Box, Container, Stack, Typography } from '@mui/material'
 import { getSession } from '../api/auth'
 import { fetchDashboard } from '../api/projects'
 
@@ -29,10 +30,9 @@ function statusLabel(status) {
   return map[status] || 'Open'
 }
 
-function statusClass(status) {
-  if (status === 'open') return 'bidding'
-  if (status === 'in_progress') return 'active'
-  return (status || 'open').replace('_', '-')
+const STATUS_COLORS = {
+  open: { bg: 'rgba(245, 166, 35, 0.15)', color: '#b7791f' },
+  in_progress: { bg: 'rgba(67, 168, 240, 0.12)', color: 'primary.main' },
 }
 
 function DashboardPreview() {
@@ -74,61 +74,141 @@ function DashboardPreview() {
   ]
 
   return (
-    <Link to="/dashboard" className="dash" aria-label="Open dashboard">
-      <aside className="dash__side">
-        <span className="dash__logo">CU</span>
-        {NAV.map((item) => (
-          <span key={item.to} className={`dash__item${item.to === '/dashboard' ? ' active' : ''}`}>
-            <span className="dash__dot" />
-            {item.label}
-          </span>
-        ))}
-      </aside>
-      <div className="dash__body">
-        <p className="dash__hello">
-          {firstName ? `Welcome back, ${firstName}!` : 'Welcome to CrewUp'}
-        </p>
-        <div className="dash__cards">
-          {cards.map(([n, label]) => (
-            <div key={label} className="dash__card">
-              <strong>{n}</strong>
-              <span>{label}</span>
-            </div>
+    <Box
+      component={RouterLink}
+      to="/dashboard"
+      aria-label="Open dashboard"
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: '120px 1fr',
+        bgcolor: 'background.paper',
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: '16px',
+        boxShadow: '0 12px 40px rgba(16, 30, 40, 0.1)',
+        overflow: 'hidden',
+        minHeight: 340,
+        textDecoration: 'none',
+        transition: '0.2s ease',
+        '&:hover': { boxShadow: '0 12px 40px rgba(16, 30, 40, 0.1), 0 6px 18px rgba(67, 168, 240, 0.35)' },
+      }}
+    >
+      <Box sx={{ bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#0f1f2a' : '#f7fbfe'), borderRight: '1px solid', borderColor: 'divider', p: '1rem 0.75rem' }}>
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: '8px',
+            bgcolor: 'primary.main',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: '0.8rem',
+            display: 'grid',
+            placeItems: 'center',
+            mb: 1.5,
+          }}
+        >
+          CU
+        </Box>
+        <Stack spacing={0.25}>
+          {NAV.map((item) => (
+            <Stack
+              key={item.to}
+              direction="row"
+              spacing={0.75}
+              sx={{
+                alignItems: 'center',
+                fontSize: '0.72rem',
+                color: item.to === '/dashboard' ? 'primary.main' : 'text.secondary',
+                fontWeight: item.to === '/dashboard' ? 600 : 400,
+                bgcolor: item.to === '/dashboard' ? 'rgba(67, 168, 240, 0.1)' : 'transparent',
+                px: 0.5,
+                py: 0.6,
+                borderRadius: '6px',
+              }}
+            >
+              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'currentColor', opacity: 0.7 }} />
+              <span>{item.label}</span>
+            </Stack>
           ))}
-        </div>
-        <div className="dash__table">
-          <div className="dash__table-head">Recent Projects</div>
-          {projects.length === 0 ? (
-            <p className="dash__empty">No projects yet.</p>
-          ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Project</th>
-                  <th>Location</th>
-                  <th>Due</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {projects.map((p) => (
-                  <tr key={p.id}>
-                    <td>{p.title}</td>
-                    <td>{p.location || '—'}</td>
-                    <td>{formatDue(p.dueDate)}</td>
-                    <td>
-                      <span className={`pill pill--${statusClass(p.status)}`}>
-                        {statusLabel(p.status)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-    </Link>
+        </Stack>
+      </Box>
+
+      <Box sx={{ p: '1.1rem 1.15rem 1.25rem' }}>
+        <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', color: 'secondary.main', mb: 1.25 }}>
+          {firstName ? `Welcome back, ${firstName}!` : 'Welcome to CrewUp'}
+        </Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.75, mb: 1.5 }}>
+          {cards.map(([n, label]) => (
+            <Box key={label} sx={{ bgcolor: 'primary.light', borderRadius: '8px', p: '0.65rem 0.7rem' }}>
+              <Typography sx={{ fontSize: '1.15rem', color: 'secondary.main', lineHeight: 1.1, fontWeight: 700 }}>
+                {n}
+              </Typography>
+              <Typography sx={{ fontSize: '0.68rem', color: 'text.secondary' }}>{label}</Typography>
+            </Box>
+          ))}
+        </Box>
+        <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: 'secondary.main', mb: 0.75 }}>
+          Recent Projects
+        </Typography>
+        {projects.length === 0 ? (
+          <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>No projects yet.</Typography>
+        ) : (
+          <Box sx={{ overflowX: 'auto' }}>
+            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.68rem' }}>
+              <Box component="thead">
+                <Box component="tr">
+                  {['Project', 'Location', 'Due', 'Status'].map((h) => (
+                    <Box
+                      component="th"
+                      key={h}
+                      sx={{ textAlign: 'left', color: 'text.secondary', fontWeight: 500, p: '0.35rem 0.25rem', borderBottom: '1px solid', borderColor: 'divider' }}
+                    >
+                      {h}
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+              <Box component="tbody">
+                {projects.map((p) => {
+                  const sc = STATUS_COLORS[p.status] || STATUS_COLORS.open
+                  return (
+                    <Box component="tr" key={p.id}>
+                      <Box component="td" sx={{ p: '0.45rem 0.25rem', borderBottom: '1px solid', borderColor: 'divider', whiteSpace: 'nowrap' }}>
+                        {p.title}
+                      </Box>
+                      <Box component="td" sx={{ p: '0.45rem 0.25rem', borderBottom: '1px solid', borderColor: 'divider', whiteSpace: 'nowrap' }}>
+                        {p.location || '—'}
+                      </Box>
+                      <Box component="td" sx={{ p: '0.45rem 0.25rem', borderBottom: '1px solid', borderColor: 'divider', whiteSpace: 'nowrap' }}>
+                        {formatDue(p.dueDate)}
+                      </Box>
+                      <Box component="td" sx={{ p: '0.45rem 0.25rem', borderBottom: '1px solid', borderColor: 'divider', whiteSpace: 'nowrap' }}>
+                        <Box
+                          component="span"
+                          sx={{
+                            display: 'inline-block',
+                            px: '0.45rem',
+                            py: '0.15rem',
+                            borderRadius: 999,
+                            fontSize: '0.62rem',
+                            fontWeight: 600,
+                            bgcolor: sc.bg,
+                            color: sc.color,
+                          }}
+                        >
+                          {statusLabel(p.status)}
+                        </Box>
+                      </Box>
+                    </Box>
+                  )
+                })}
+              </Box>
+            </Box>
+          </Box>
+        )}
+      </Box>
+    </Box>
   )
 }
 
@@ -183,32 +263,69 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <section className="section how" id="how-it-works">
-      <div className="container how__grid">
-        <div className="how__visual">
-          <DashboardPreview />
-        </div>
-        <div className="how__copy">
-          <p className="eyebrow">How It Works</p>
-          <h1 className="h2">How CrewUp Works</h1>
-          <p className="lead">
-            Whether you&apos;re hiring crew or looking for your next job, CrewUp makes
-            connecting simple, fast, and reliable.
-          </p>
-          <ol className="steps">
-            {STEPS.map((s) => (
-              <li key={s.n} className="steps__item">
-                <span className="steps__num">{s.n}</span>
-                <span className="steps__icon">{s.icon}</span>
-                <div>
-                  <h3>{s.title}</h3>
-                  <p>{s.text}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </div>
-    </section>
+    <Box component="section" id="how-it-works" sx={{ pt: { xs: 6, md: 7 }, pb: { xs: 7, md: 9 } }}>
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1.05fr 0.95fr' },
+            gap: { xs: 4, md: 6 },
+            alignItems: 'center',
+          }}
+        >
+          <Box sx={{ order: { xs: 2, md: 0 } }}>
+            <DashboardPreview />
+          </Box>
+          <Box sx={{ order: { xs: 1, md: 0 } }}>
+            <Typography sx={{ color: 'primary.main', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', mb: 1 }}>
+              How It Works
+            </Typography>
+            <Typography variant="h1" sx={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.35rem)', letterSpacing: '-0.025em', lineHeight: 1.2, mb: 1 }}>
+              How CrewUp Works
+            </Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: '1.02rem', maxWidth: '34rem', mb: 3 }}>
+              Whether you&apos;re hiring crew or looking for your next job, CrewUp makes connecting
+              simple, fast, and reliable.
+            </Typography>
+            <Stack component="ol" spacing={2.25} sx={{ listStyle: 'none', p: 0, m: 0 }}>
+              {STEPS.map((s) => (
+                <Box
+                  component="li"
+                  key={s.n}
+                  sx={{ display: 'grid', gridTemplateColumns: '32px 28px 1fr', gap: 1, alignItems: 'start' }}
+                >
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      bgcolor: 'primary.main',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      display: 'grid',
+                      placeItems: 'center',
+                    }}
+                  >
+                    {s.n}
+                  </Box>
+                  <Box sx={{ width: 28, height: 32, display: 'grid', placeItems: 'center', color: 'primary.main' }}>
+                    {s.icon}
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: 'secondary.main', mb: 0.25 }}>
+                      {s.title}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', lineHeight: 1.5 }}>
+                      {s.text}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   )
 }

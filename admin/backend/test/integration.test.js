@@ -54,6 +54,7 @@ function tokenFor(user) {
 
 before(async () => {
   process.env.JWT_SECRET = JWT_SECRET;
+  process.env.ADMIN_CODE = "1234";
   const { MongoMemoryServer } = require("mongodb-memory-server");
   mongod = await MongoMemoryServer.create();
   await mongoose.connect(mongod.getUri("crewup_admin_test"));
@@ -72,7 +73,7 @@ after(async () => {
 
 describe("authController.login", () => {
   test("rejects an unknown email", async () => {
-    const req = { body: { workEmail: "nobody@example.com", password: "whatever" } };
+    const req = { body: { workEmail: "nobody@example.com", password: "whatever", adminCode: "1234" } };
     const res = mockRes();
     await authController.login(req, res);
     assert.equal(res.statusCode, 401);
@@ -81,7 +82,7 @@ describe("authController.login", () => {
 
   test("rejects a wrong password for a real admin account", async () => {
     const admin = await makeUser({ role: "admin", plainPassword: "correct-password" });
-    const req = { body: { workEmail: admin.workEmail, password: "wrong-password" } };
+    const req = { body: { workEmail: admin.workEmail, password: "wrong-password", adminCode: "1234" } };
     const res = mockRes();
     await authController.login(req, res);
     assert.equal(res.statusCode, 401);
@@ -89,7 +90,7 @@ describe("authController.login", () => {
 
   test("rejects a correct password when the account is not an admin", async () => {
     const user = await makeUser({ role: "business", plainPassword: "correct-password" });
-    const req = { body: { workEmail: user.workEmail, password: "correct-password" } };
+    const req = { body: { workEmail: user.workEmail, password: "correct-password", adminCode: "1234" } };
     const res = mockRes();
     await authController.login(req, res);
     assert.equal(res.statusCode, 403);
@@ -102,7 +103,7 @@ describe("authController.login", () => {
       accountStatus: "deactivated",
       plainPassword: "correct-password",
     });
-    const req = { body: { workEmail: admin.workEmail, password: "correct-password" } };
+    const req = { body: { workEmail: admin.workEmail, password: "correct-password", adminCode: "1234" } };
     const res = mockRes();
     await authController.login(req, res);
     assert.equal(res.statusCode, 403);
@@ -110,13 +111,22 @@ describe("authController.login", () => {
 
   test("logs in a real, active admin account and never leaks the password hash", async () => {
     const admin = await makeUser({ role: "admin", plainPassword: "correct-password" });
-    const req = { body: { workEmail: admin.workEmail, password: "correct-password" } };
+    const req = { body: { workEmail: admin.workEmail, password: "correct-password", adminCode: "1234" } };
     const res = mockRes();
     await authController.login(req, res);
     assert.equal(res.statusCode, 200);
     assert.ok(res.body.token);
     assert.equal(res.body.user.password, undefined);
     assert.equal(res.body.user.role, "admin");
+  });
+
+  test("rejects a correct login when the admin code is wrong", async () => {
+    const admin = await makeUser({ role: "admin", plainPassword: "correct-password" });
+    const req = { body: { workEmail: admin.workEmail, password: "correct-password", adminCode: "0000" } };
+    const res = mockRes();
+    await authController.login(req, res);
+    assert.equal(res.statusCode, 403);
+    assert.match(res.body.message, /admin code/i);
   });
 });
 
@@ -133,6 +143,7 @@ describe("authController.signup", () => {
         workEmail: email,
         password: "password123",
         confirmPassword: "password123",
+        adminCode: "1234",
       },
     };
     const res = mockRes();
@@ -154,6 +165,7 @@ describe("authController.signup", () => {
         workEmail: uniqueEmail(),
         password: "password123",
         confirmPassword: "password123",
+        adminCode: "1234",
       },
     };
     const res = mockRes();
@@ -174,6 +186,7 @@ describe("authController.signup", () => {
       workEmail: email,
       password: "password123",
       confirmPassword: "password123",
+      adminCode: "1234",
     };
     await authController.signup({ body }, mockRes());
 
@@ -189,6 +202,7 @@ describe("authController.signup", () => {
         workEmail: uniqueEmail(),
         password: "password123",
         confirmPassword: "different456",
+        adminCode: "1234",
       },
     };
     const res = mockRes();
@@ -203,6 +217,7 @@ describe("authController.signup", () => {
         workEmail: uniqueEmail(),
         password: "short",
         confirmPassword: "short",
+        adminCode: "1234",
       },
     };
     const res = mockRes();
@@ -217,6 +232,7 @@ describe("authController.signup", () => {
         workEmail: "not-an-email",
         password: "password123",
         confirmPassword: "password123",
+        adminCode: "1234",
       },
     };
     const res = mockRes();
@@ -228,6 +244,21 @@ describe("authController.signup", () => {
     const res = mockRes();
     await authController.signup({ body: {} }, res);
     assert.equal(res.statusCode, 400);
+  });
+
+  test("rejects a wrong admin code", async () => {
+    const req = {
+      body: {
+        fullName: "New Admin",
+        workEmail: uniqueEmail(),
+        password: "password123",
+        confirmPassword: "password123",
+        adminCode: "0000",
+      },
+    };
+    const res = mockRes();
+    await authController.signup(req, res);
+    assert.equal(res.statusCode, 403);
   });
 });
 

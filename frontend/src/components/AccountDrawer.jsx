@@ -1,5 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
+import {
+  Alert,
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Divider,
+  Drawer,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemText,
+  Stack,
+  Typography,
+} from '@mui/material'
+import { CameraAltOutlined, Close } from '@mui/icons-material'
 import { mediaUrl, updateSessionUser } from '../api/auth'
 import { fetchSettings, uploadProfilePhoto } from '../api/settings'
 import { fetchBilling } from '../api/billing'
@@ -22,6 +38,19 @@ function planLabel(plan) {
   if (plan === 'pro') return 'Pro'
   if (plan === 'business') return 'Business'
   return 'Starter'
+}
+
+function AboutRow({ label, value }) {
+  return (
+    <Stack direction="row" sx={{ justifyContent: 'space-between', py: 0.75 }}>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography variant="body2" fontWeight={600} align="right">
+        {value}
+      </Typography>
+    </Stack>
+  )
 }
 
 export default function AccountDrawer({ user, open, onClose, onLogout }) {
@@ -54,15 +83,6 @@ export default function AccountDrawer({ user, open, onClose, onLogout }) {
     }
   }, [open])
 
-  useEffect(() => {
-    if (!open) return undefined
-    function onKey(e) {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
-
   async function onPhoto(e) {
     const file = e.target.files?.[0]
     e.target.value = ''
@@ -92,115 +112,113 @@ export default function AccountDrawer({ user, open, onClose, onLogout }) {
   }
 
   return (
-    <>
-      <button
-        type="button"
-        className={`account-drawer__backdrop${open ? ' is-open' : ''}`}
-        aria-label="Close account"
-        tabIndex={open ? 0 : -1}
-        onClick={onClose}
-      />
-      <aside
-        className={`account-drawer${open ? ' is-open' : ''}`}
-        aria-hidden={!open}
-        aria-label="Account details"
-      >
-        <div className="account-drawer__head">
-          <h2>Account</h2>
-          <button type="button" className="account-drawer__close" onClick={onClose} aria-label="Close">
-            ×
-          </button>
-        </div>
+    <Drawer
+      anchor="right"
+      open={open}
+      onClose={onClose}
+      slotProps={{ paper: { sx: { width: 'min(100%, 380px)', p: 3 } } }}
+    >
+      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h6" fontWeight={700}>
+          Account
+        </Typography>
+        <IconButton onClick={onClose} aria-label="Close" size="small">
+          <Close fontSize="small" />
+        </IconButton>
+      </Stack>
 
-        <div className="account-drawer__profile">
-          <div className="account-drawer__photo">
-            {photo ? (
-              <img src={photo} alt="" width="72" height="72" />
-            ) : (
-              <span>{initials(user.fullName)}</span>
-            )}
-            <button
-              type="button"
-              className="account-drawer__camera"
+      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 2 }}>
+        <Badge
+          overlap="circular"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          badgeContent={
+            <IconButton
               onClick={() => fileRef.current?.click()}
               disabled={photoBusy}
               aria-label="Edit profile photo"
               title="Edit profile photo"
+              size="small"
+              sx={{
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                width: 26,
+                height: 26,
+                '&:hover': { bgcolor: 'primary.dark' },
+              }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M4 8.5h2.2l1.3-2h9l1.3 2H20a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18v-8A1.5 1.5 0 0 1 4 8.5z"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                />
-                <circle cx="12" cy="13.2" r="3.1" stroke="currentColor" strokeWidth="1.7" />
-              </svg>
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={onPhoto}
-            />
-          </div>
-          <div>
-            <strong>{profile?.fullName || user.fullName}</strong>
-            <span className="account-drawer__role">{designationLabel(type)}</span>
-            <span className="account-drawer__email">{profile?.workEmail || user.workEmail}</span>
-          </div>
-        </div>
+              <CameraAltOutlined sx={{ fontSize: 14 }} />
+            </IconButton>
+          }
+        >
+          <Avatar src={photo || undefined} sx={{ width: 72, height: 72, fontSize: '1.5rem' }}>
+            {initials(user.fullName)}
+          </Avatar>
+        </Badge>
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPhoto} />
+        <Box>
+          <Typography fontWeight={700}>{profile?.fullName || user.fullName}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {designationLabel(type)}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {profile?.workEmail || user.workEmail}
+          </Typography>
+        </Box>
+      </Stack>
 
-        {error ? <p className="account-drawer__error">{error}</p> : null}
-        {photoBusy ? <p className="account-drawer__hint">Uploading photo…</p> : null}
+      {error ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      ) : null}
+      {photoBusy ? (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Uploading photo…
+        </Alert>
+      ) : null}
 
-        <section className="account-drawer__about">
-          <h3>About</h3>
-          <dl>
-            <div>
-              <dt>Designation</dt>
-              <dd>{designationLabel(type)}</dd>
-            </div>
-            <div>
-              <dt>Company</dt>
-              <dd>{profile?.company || user.company || '—'}</dd>
-            </div>
-            <div>
-              <dt>Job title</dt>
-              <dd>{profile?.jobTitle || user.jobTitle || '—'}</dd>
-            </div>
-            <div>
-              <dt>Location</dt>
-              <dd>{profile?.location || user.location || '—'}</dd>
-            </div>
-            <div>
-              <dt>Member since</dt>
-              <dd>
-                {profile?.createdAt
-                  ? new Date(profile.createdAt).toLocaleDateString([], {
-                      month: 'short',
-                      year: 'numeric',
-                    })
-                  : '—'}
-              </dd>
-            </div>
-          </dl>
-        </section>
+      <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5 }}>
+        About
+      </Typography>
+      <Divider sx={{ mb: 0.5 }} />
+      <AboutRow label="Designation" value={designationLabel(type)} />
+      <AboutRow label="Company" value={profile?.company || user.company || '—'} />
+      <AboutRow label="Job title" value={profile?.jobTitle || user.jobTitle || '—'} />
+      <AboutRow label="Location" value={profile?.location || user.location || '—'} />
+      <AboutRow
+        label="Member since"
+        value={
+          profile?.createdAt
+            ? new Date(profile.createdAt).toLocaleDateString([], { month: 'short', year: 'numeric' })
+            : '—'
+        }
+      />
 
-        <nav className="account-drawer__nav">
-          <Link to="/dashboard/settings/account" onClick={onClose}>
-            Settings
-          </Link>
-          <Link to="/dashboard/billing" onClick={onClose}>
-            Subscription
-            <em>{planName}</em>
-          </Link>
-        </nav>
+      <List sx={{ mt: 2, mb: 1 }}>
+        <ListItemButton
+          component={RouterLink}
+          to="/dashboard/settings/account"
+          onClick={onClose}
+          sx={{ borderRadius: 2 }}
+        >
+          <ListItemText primary="Settings" />
+        </ListItemButton>
+        <ListItemButton
+          component={RouterLink}
+          to="/dashboard/billing"
+          onClick={onClose}
+          sx={{ borderRadius: 2 }}
+        >
+          <ListItemText primary="Subscription" />
+          <Typography variant="body2" color="primary.main" fontWeight={600}>
+            {planName}
+          </Typography>
+        </ListItemButton>
+      </List>
 
-        <button type="button" className="account-drawer__logout" onClick={onLogout}>
-          Log out
-        </button>
-      </aside>
-    </>
+      <Button variant="outlined" color="error" onClick={onLogout} sx={{ mt: 'auto' }}>
+        Log out
+      </Button>
+    </Drawer>
   )
 }

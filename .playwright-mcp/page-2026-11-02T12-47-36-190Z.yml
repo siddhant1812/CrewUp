@@ -1,0 +1,39 @@
+- generic [ref=f85e3]:
+  - banner [ref=f85e4]:
+    - generic [ref=f85e5]:
+      - link "CrewUp home" [ref=f85e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f85e7]: CREWUP
+      - generic [ref=f85e13]:
+        - button "Switch to dark mode" [ref=f85e14] [cursor=pointer]
+        - button "Notifications" [ref=f85e17] [cursor=pointer]
+        - button [ref=f85e21] [cursor=pointer]:
+          - paragraph [ref=f85e27]: Khushi
+  - generic [ref=f85e30]:
+    - generic [ref=f85e33]:
+      - generic [ref=f85e34]:
+        - generic [ref=f85e35]: CU
+        - list [ref=f85e37]:
+          - link "Dashboard" [ref=f85e38] [cursor=pointer]:
+            - /url: /dashboard
+          - link "My Projects" [ref=f85e45] [cursor=pointer]:
+            - /url: /dashboard/projects
+          - link "Browse Jobs" [ref=f85e51] [cursor=pointer]:
+            - /url: /jobs
+          - link "Messages" [ref=f85e58] [cursor=pointer]:
+            - /url: /dashboard/messages
+          - link "Find Crew" [ref=f85e64] [cursor=pointer]:
+            - /url: /dashboard/contractors
+          - link "Billing" [ref=f85e73] [cursor=pointer]:
+            - /url: /dashboard/billing
+          - link "Settings" [ref=f85e79] [cursor=pointer]:
+            - /url: /dashboard/settings/account
+      - button [ref=f85e86] [cursor=pointer]:
+        - paragraph [ref=f85e90]: Log Out
+    - generic [ref=f85e92]:
+      - generic [ref=f85e93]:
+        - heading "Billing" [level=4] [ref=f85e94]
+        - paragraph [ref=f85e95]: Your CrewUp plan, payment method, and billing cycle.
+      - generic [ref=f85e96]:
+        - progressbar [ref=f85e97]
+        - paragraph [ref=f85e100]: Loading billing…

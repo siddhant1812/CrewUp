@@ -1,3 +1,5 @@
+import { Box, Container, Typography } from '@mui/material'
+
 const STATS = [
   {
     value: '5,000+',
@@ -45,18 +47,28 @@ const STATS = [
 
 export default function StatsBar() {
   return (
-    <section className="stats" aria-label="Platform statistics">
-      <div className="container stats__row">
-        {STATS.map((s) => (
-          <div key={s.label} className="stats__item">
-            <div className="stats__icon">{s.icon}</div>
-            <div>
-              <div className="stats__value">{s.value}</div>
-              <div className="stats__label">{s.label}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
+    <Box component="section" aria-label="Platform statistics" sx={{ bgcolor: 'primary.light', py: 3.5 }}>
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
+            gap: { xs: 2.5, sm: 3 },
+          }}
+        >
+          {STATS.map((s) => (
+            <Box key={s.label} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ color: 'primary.main', flexShrink: 0 }}>{s.icon}</Box>
+              <Box>
+                <Typography sx={{ fontWeight: 700, fontSize: '1.15rem', color: 'secondary.main', lineHeight: 1.2 }}>
+                  {s.value}
+                </Typography>
+                <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>{s.label}</Typography>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </Container>
+    </Box>
   )
 }

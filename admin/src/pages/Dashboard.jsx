@@ -1,39 +1,76 @@
 import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { Alert, Avatar, Box, Chip, CircularProgress, Paper, Stack, Typography } from '@mui/material'
 import { fetchStats } from '../api/admin'
 import Icon from '../components/Icon'
 
 function StatCard({ icon, label, value }) {
   return (
-    <div className="admin-stat">
-      <span className="admin-stat__icon">
+    <Paper
+      elevation={0}
+      sx={{
+        flex: '1 1 200px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        p: 2.25,
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: '14px',
+      }}
+    >
+      <Avatar
+        sx={{
+          width: 44,
+          height: 44,
+          bgcolor: 'primary.light',
+          color: 'primary.dark',
+        }}
+      >
         <Icon name={icon} size={18} />
-      </span>
-      <div>
-        <span>{label}</span>
-        <strong>{value}</strong>
-      </div>
-    </div>
+      </Avatar>
+      <Box>
+        <Typography variant="body2" color="text.secondary">
+          {label}
+        </Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: 'secondary.main' }}>
+          {value}
+        </Typography>
+      </Box>
+    </Paper>
   )
 }
 
 function Breakdown({ title, counts }) {
   const entries = Object.entries(counts || {})
   return (
-    <div className="admin-card">
-      <h3 style={{ fontSize: '0.95rem', marginBottom: '0.75rem' }}>{title}</h3>
+    <Paper
+      elevation={0}
+      sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: '14px', mb: 2 }}
+    >
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1.25 }}>
+        {title}
+      </Typography>
       {entries.length === 0 ? (
-        <p className="admin-table__sub">No data yet.</p>
+        <Typography variant="body2" color="text.secondary">
+          No data yet.
+        </Typography>
       ) : (
-        <div className="admin-breakdown">
+        <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
           {entries.map(([key, count]) => (
-            <span key={key}>
-              {key.replace(/_/g, ' ')}: <b>{count}</b>
-            </span>
+            <Chip
+              key={key}
+              variant="outlined"
+              label={
+                <>
+                  {key.replace(/_/g, ' ')}: <b>{count}</b>
+                </>
+              }
+            />
           ))}
-        </div>
+        </Stack>
       )}
-    </div>
+    </Paper>
   )
 }
 
@@ -62,24 +99,33 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="admin-topbar">
-        <div>
-          <h1>Platform overview</h1>
-          <p>Signed in as {user.fullName}</p>
-        </div>
-      </div>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" sx={{ fontSize: '1.5rem' }}>
+          Platform overview
+        </Typography>
+        <Typography color="text.secondary">Signed in as {user.fullName}</Typography>
+      </Box>
 
-      {loading ? <p className="admin-table__sub">Loading…</p> : null}
-      {error ? <p className="admin-error">{error}</p> : null}
+      {loading ? (
+        <Stack direction="row" sx={{ alignItems: 'center', gap: 1, color: 'text.secondary', mb: 2 }}>
+          <CircularProgress size={16} />
+          <Typography variant="body2">Loading…</Typography>
+        </Stack>
+      ) : null}
+      {error ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      ) : null}
 
       {stats ? (
         <>
-          <div className="admin-stats">
+          <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 2, mb: 3 }}>
             <StatCard icon="users" label="Total users" value={stats.totalUsers} />
             <StatCard icon="folder" label="Total projects" value={stats.totalProjects} />
             <StatCard icon="fileText" label="Proposals" value={stats.totalProposals} />
             <StatCard icon="coin" label="Conversations" value={stats.totalConversations} />
-          </div>
+          </Stack>
 
           <Breakdown title="Users by account type" counts={stats.usersByType} />
           <Breakdown title="Users by status" counts={stats.usersByStatus} />

@@ -1,0 +1,180 @@
+- generic [ref=f48e3]:
+  - banner [ref=f48e4]:
+    - generic [ref=f48e6]:
+      - link "CrewUp home" [ref=f48e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f48e8]: CREWUP
+      - navigation "Primary" [ref=f48e14]:
+        - link "How It Works" [ref=f48e15] [cursor=pointer]:
+          - /url: /#how-it-works
+        - link "Find Work" [ref=f48e16] [cursor=pointer]:
+          - /url: /jobs
+        - link "Find Crew" [ref=f48e17] [cursor=pointer]:
+          - /url: /dashboard/contractors
+        - link "Pricing" [ref=f48e18] [cursor=pointer]:
+          - /url: /#pricing
+        - link "Resources" [ref=f48e19] [cursor=pointer]:
+          - /url: /#resources
+      - generic [ref=f48e22]:
+        - button "Switch to dark mode" [ref=f48e23] [cursor=pointer]
+        - generic [ref=f48e26]:
+          - button "Notifications" [ref=f48e27] [cursor=pointer]
+          - button "MT MUI Test User2" [ref=f48e30] [cursor=pointer]:
+            - generic [ref=f48e31]: MT
+            - paragraph [ref=f48e35]: MUI Test User2
+  - main [ref=f48e36]:
+    - generic [ref=f48e39]:
+      - link "Open dashboard" [ref=f48e41] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=f48e42]:
+          - generic [ref=f48e43]: CU
+          - generic [ref=f48e44]:
+            - generic [ref=f48e45]: Dashboard
+            - generic [ref=f48e48]: Projects
+            - generic [ref=f48e51]: Messages
+            - generic [ref=f48e54]: Contractors
+            - generic [ref=f48e57]: Billing
+        - generic [ref=f48e60]:
+          - paragraph [ref=f48e61]: Welcome back, MUI!
+          - generic [ref=f48e62]:
+            - generic [ref=f48e63]:
+              - paragraph [ref=f48e64]: "0"
+              - paragraph [ref=f48e65]: Active Projects
+            - generic [ref=f48e66]:
+              - paragraph [ref=f48e67]: "0"
+              - paragraph [ref=f48e68]: Messages
+            - generic [ref=f48e69]:
+              - paragraph [ref=f48e70]: "0"
+              - paragraph [ref=f48e71]: Saved Contractors
+            - generic [ref=f48e72]:
+              - paragraph [ref=f48e73]: "0"
+              - paragraph [ref=f48e74]: Project Invites
+          - paragraph [ref=f48e75]: Recent Projects
+          - paragraph [ref=f48e76]: No projects yet.
+      - generic [ref=f48e77]:
+        - paragraph [ref=f48e78]: How It Works
+        - heading "How CrewUp Works" [level=1] [ref=f48e79]
+        - paragraph [ref=f48e80]: Whether you're hiring crew or looking for your next job, CrewUp makes connecting simple, fast, and reliable.
+        - list [ref=f48e81]:
+          - listitem [ref=f48e82]:
+            - generic [ref=f48e83]: "1"
+            - generic [ref=f48e88]:
+              - paragraph [ref=f48e89]: Create Your Profile
+              - paragraph [ref=f48e90]: Sign up as a contractor, subcontractor, or to find work, and showcase your skills, licenses, and experience.
+          - listitem [ref=f48e91]:
+            - generic [ref=f48e92]: "2"
+            - generic [ref=f48e97]:
+              - paragraph [ref=f48e98]: Post or Search Projects
+              - paragraph [ref=f48e99]: Browse jobs in your trade or post projects when you need reliable crew on site.
+          - listitem [ref=f48e100]:
+            - generic [ref=f48e101]: "3"
+            - generic [ref=f48e106]:
+              - paragraph [ref=f48e107]: Connect With the Right Pros
+              - paragraph [ref=f48e108]: Message verified partners, compare quotes, and build relationships that last.
+          - listitem [ref=f48e109]:
+            - generic [ref=f48e110]: "4"
+            - generic [ref=f48e117]:
+              - paragraph [ref=f48e118]: Build Better Together
+              - paragraph [ref=f48e119]: Stay connected, fill labor gaps fast, and grow a crew you can count on.
+    - region "Platform statistics" [ref=f48e120]:
+      - generic [ref=f48e122]:
+        - generic [ref=f48e130]:
+          - paragraph [ref=f48e131]: 5,000+
+          - paragraph [ref=f48e132]: Contractors
+        - generic [ref=f48e138]:
+          - paragraph [ref=f48e139]: 10,000+
+          - paragraph [ref=f48e140]: Projects Posted
+        - generic [ref=f48e146]:
+          - paragraph [ref=f48e147]: 50+
+          - paragraph [ref=f48e148]: Trades
+        - generic [ref=f48e154]:
+          - paragraph [ref=f48e155]: Nationwide
+          - paragraph [ref=f48e156]: Coverage
+    - generic [ref=f48e159]:
+      - img "Construction worker reviewing blueprints on a job site" [ref=f48e160]
+      - generic [ref=f48e161]:
+        - paragraph [ref=f48e162]: Find Work
+        - heading "Find Your Next Opportunity" [level=2] [ref=f48e163]
+        - paragraph [ref=f48e164]: Browse projects that match your trade, location, and schedule — then connect directly with general contractors who need your skills.
+        - list [ref=f48e165]:
+          - listitem [ref=f48e166]: Search by trade
+          - listitem [ref=f48e170]: Search by location
+          - listitem [ref=f48e174]: Direct contractor messaging
+          - listitem [ref=f48e178]: Company profiles
+          - listitem [ref=f48e182]: Project alerts
+          - listitem [ref=f48e186]: Mobile friendly
+        - link "Browse Jobs" [ref=f48e190] [cursor=pointer]:
+          - /url: /jobs
+    - generic [ref=f48e193]:
+      - generic [ref=f48e194]:
+        - paragraph [ref=f48e195]: Find Work
+        - heading "Find Your Next Opportunity" [level=2] [ref=f48e196]
+        - paragraph [ref=f48e197]: Browse open projects by trade, location, and schedule — then connect with the people who posted them.
+        - generic [ref=f48e198]:
+          - link [ref=f48e199] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e202]: Electrical
+          - link [ref=f48e203] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e206]: Plumbing
+          - link [ref=f48e207] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e210]: HVAC
+          - link [ref=f48e211] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e214]: Roofing
+          - link [ref=f48e215] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e218]: Concrete
+          - link [ref=f48e219] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e222]: Framing
+          - link [ref=f48e223] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e226]: Drywall
+          - link [ref=f48e227] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e230]: Painting
+          - link [ref=f48e231] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e234]: Flooring
+          - link [ref=f48e235] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e238]: Excavation
+          - link [ref=f48e239] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e242]: Landscaping
+          - link [ref=f48e243] [cursor=pointer]:
+            - /url: /jobs
+            - paragraph [ref=f48e246]: Masonry
+        - link "Find Work" [ref=f48e247] [cursor=pointer]:
+          - /url: /jobs
+      - img "Two construction workers looking at a tablet together" [ref=f48e248]
+    - generic [ref=f48e250]:
+      - generic [ref=f48e251]:
+        - paragraph [ref=f48e252]: Pricing
+        - heading "Simple Pricing For Construction Professionals" [level=2] [ref=f48e253]
+        - paragraph [ref=f48e254]: No hidden fees. Upgrade when you're ready.
+      - paragraph [ref=f48e255]: Loading plans…
+      - paragraph [ref=f48e256]:
+        - text: Manage cards and invoices in
+        - link "Settings → Subscription" [ref=f48e257] [cursor=pointer]:
+          - /url: /dashboard/settings/subscription
+        - text: .
+    - region "Social proof" [ref=f48e258]:
+      - generic [ref=f48e259]:
+        - paragraph [ref=f48e260]: Trusted by Construction Professionals
+        - generic [ref=f48e261]:
+          - generic [ref=f48e262]: 4.9/5 Average Rating
+          - generic [ref=f48e275]: 5,000+ Active Members
+          - generic [ref=f48e282]: 10,000+ Connections Made
+          - generic [ref=f48e288]: 50+ Construction Trades
+    - generic [ref=f48e296]:
+      - generic [ref=f48e297]:
+        - heading "Ready To Build Better Together?" [level=2] [ref=f48e298]
+        - paragraph [ref=f48e299]: Join thousands of contractors and subcontractors using CrewUp to find work, fill crews, and grow lasting partnerships.
+      - generic [ref=f48e300]:
+        - link [ref=f48e301] [cursor=pointer]:
+          - /url: /jobs
+        - link [ref=f48e306] [cursor=pointer]:
+          - /url: /dashboard/find-contractors

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { MenuItem, Stack, TextField } from '@mui/material'
 
 export const COUNTRY_CODES = [
   { code: '+1', label: 'US / Canada' },
@@ -98,19 +99,22 @@ export default function PhoneInput({ value, onChange, id, required = false }) {
   }
 
   return (
-    <div className="phone-input">
-      <select
+    <Stack direction="row" spacing={1}>
+      <TextField
+        select
         aria-label="Country code"
         value={country}
         onChange={(e) => changeCountry(e.target.value)}
+        sx={{ width: 110, flexShrink: 0 }}
+        slotProps={{ select: { renderValue: (v) => v } }}
       >
         {COUNTRY_CODES.map((c) => (
-          <option key={c.code} value={c.code}>
+          <MenuItem key={c.code} value={c.code}>
             {c.code} {c.label}
-          </option>
+          </MenuItem>
         ))}
-      </select>
-      <input
+      </TextField>
+      <TextField
         id={id}
         type="tel"
         inputMode="numeric"
@@ -118,9 +122,10 @@ export default function PhoneInput({ value, onChange, id, required = false }) {
         placeholder="(555) 123-4567"
         value={display}
         required={required}
-        maxLength={14}
+        fullWidth
+        slotProps={{ htmlInput: { maxLength: 14 } }}
         onChange={(e) => setLocal(e.target.value)}
       />
-    </div>
+    </Stack>
   )
 }

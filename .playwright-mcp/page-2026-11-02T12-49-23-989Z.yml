@@ -1,0 +1,58 @@
+- generic [ref=f89e3]:
+  - banner [ref=f89e4]:
+    - generic [ref=f89e6]:
+      - link "CrewUp home" [ref=f89e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f89e8]: CREWUP
+      - navigation "Primary" [ref=f89e14]:
+        - link "How It Works" [ref=f89e15] [cursor=pointer]:
+          - /url: /#how-it-works
+        - link "Find Work" [ref=f89e16] [cursor=pointer]:
+          - /url: /jobs
+        - link "Find Crew" [ref=f89e17] [cursor=pointer]:
+          - /url: /dashboard/contractors
+        - link "Pricing" [ref=f89e18] [cursor=pointer]:
+          - /url: /#pricing
+        - link "Resources" [ref=f89e19] [cursor=pointer]:
+          - /url: /#resources
+      - generic [ref=f89e22]:
+        - button "Switch to dark mode" [ref=f89e23] [cursor=pointer]
+        - generic [ref=f89e26]:
+          - button "Notifications" [ref=f89e27] [cursor=pointer]
+          - button [ref=f89e30] [cursor=pointer]:
+            - paragraph [ref=f89e36]: Khushi
+  - main [ref=f89e37]:
+    - generic [ref=f89e38]:
+      - generic [ref=f89e39]:
+        - text: Find Work
+        - heading "Browse open jobs" [level=1] [ref=f89e40]
+        - paragraph [ref=f89e41]: Search projects by category, location, and keywords, then apply with a proposal.
+        - generic [ref=f89e42]: Showing projects posted by general contractors.
+      - generic [ref=f89e44]:
+        - generic "Search jobs" [ref=f89e45]:
+          - generic [ref=f89e46]:
+            - searchbox "Search title, category, or company" [ref=f89e49]
+            - group [aria-hidden]
+        - generic [ref=f89e50]:
+          - combobox "Filter by category" [ref=f89e51] [cursor=pointer]: All categories
+          - textbox [aria-hidden]
+          - group [aria-hidden]
+        - generic [ref=f89e52]:
+          - combobox "Filter by location" [ref=f89e53] [cursor=pointer]: All locations
+          - textbox [aria-hidden]
+          - group [aria-hidden]
+        - button "Search" [ref=f89e54] [cursor=pointer]
+      - generic [ref=f89e55]:
+        - combobox "Popular categories" [ref=f89e56] [cursor=pointer]
+        - textbox [aria-hidden]
+        - group [aria-hidden]
+      - paragraph [ref=f89e57]: Loading jobs…
+  - generic [ref=f89e60]:
+    - generic [ref=f89e61]:
+      - heading "Ready To Build Better Together?" [level=2] [ref=f89e62]
+      - paragraph [ref=f89e63]: Join thousands of contractors and subcontractors using CrewUp to find work, fill crews, and grow lasting partnerships.
+    - generic [ref=f89e64]:
+      - link [ref=f89e65] [cursor=pointer]:
+        - /url: /jobs
+      - link [ref=f89e70] [cursor=pointer]:
+        - /url: /dashboard/find-contractors

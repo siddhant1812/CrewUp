@@ -1,5 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Chip,
+  CircularProgress,
+  Divider,
+  FormControlLabel,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  MenuItem,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { DeleteOutlineOutlined as DeleteOutline } from '@mui/icons-material'
 import { mediaUrl, updateSessionUser } from '../../api/auth'
 import {
   cancelSubscription,
@@ -26,23 +48,77 @@ import {
 
 function PageHead({ title, crumb, lead }) {
   return (
-    <header className="set-head">
-      <p className="set-crumb">
-        Settings <span>›</span> {crumb}
-      </p>
-      <h1>{title}</h1>
-      <p>{lead}</p>
-    </header>
+    <Box sx={{ mb: 2.5 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+        Settings <Box component="span" sx={{ mx: 0.5 }}>›</Box> {crumb}
+      </Typography>
+      <Typography variant="h4" sx={{ fontSize: '1.5rem', mb: 0.5 }}>
+        {title}
+      </Typography>
+      <Typography color="text.secondary">{lead}</Typography>
+    </Box>
   )
 }
 
-function Field({ label, children, plain = false }) {
-  const Tag = plain ? 'div' : 'label'
+function Field({ label, children }) {
   return (
-    <Tag className="set-field">
-      <span>{label}</span>
+    <Box>
+      <Typography variant="body2" fontWeight={600} sx={{ mb: 0.6 }}>
+        {label}
+      </Typography>
       {children}
-    </Tag>
+    </Box>
+  )
+}
+
+function FieldGrid({ children }) {
+  return (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+        gap: 2,
+        mb: 2,
+      }}
+    >
+      {children}
+    </Box>
+  )
+}
+
+function Panel({ children, component = 'div', onSubmit }) {
+  return (
+    <Paper
+      component={component}
+      onSubmit={onSubmit}
+      elevation={0}
+      sx={{
+        p: { xs: 2.5, sm: 3 },
+        borderRadius: 3,
+        border: '1px solid',
+        borderColor: 'divider',
+        mb: 2.5,
+      }}
+    >
+      <Stack spacing={2}>{children}</Stack>
+    </Paper>
+  )
+}
+
+function Loading({ label = 'Loading…' }) {
+  return (
+    <Stack direction="row" spacing={1} sx={{ alignItems: 'center', color: 'text.secondary', py: 2 }}>
+      <CircularProgress size={16} />
+      <Typography variant="body2">{label}</Typography>
+    </Stack>
+  )
+}
+
+function Empty({ children }) {
+  return (
+    <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
+      {children}
+    </Typography>
   )
 }
 
@@ -113,24 +189,24 @@ export function AccountPanel() {
         crumb="Account Information"
         lead="Your personal details as they appear across CrewUp."
       />
-      {loading ? <p className="dash-empty">Loading…</p> : null}
-      {error ? <p className="dash-form-error">{error}</p> : null}
-      {notice ? <p className="bill-notice">{notice}</p> : null}
+      {loading ? <Loading /> : null}
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      {notice ? <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert> : null}
       {profile && (
-        <form className="set-card" onSubmit={onSubmit}>
-          <div className="set-grid">
+        <Panel component="form" onSubmit={onSubmit}>
+          <FieldGrid>
             <Field label="Full name">
-              <input
+              <TextField
                 value={profile.fullName || ''}
                 onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
                 required
               />
             </Field>
             <Field label="Work email">
-              <input value={profile.workEmail || ''} disabled />
+              <TextField value={profile.workEmail || ''} disabled />
             </Field>
             <Field label="Account type">
-              <input
+              <TextField
                 value={
                   profile.contractorType === 'subcontractor'
                     ? 'Subcontractor — apply to jobs'
@@ -143,36 +219,38 @@ export function AccountPanel() {
                 disabled
               />
             </Field>
-            <Field label="Phone" plain>
+            <Field label="Phone">
               <PhoneInput
                 value={profile.phoneNumber || ''}
                 onChange={(phoneNumber) => setProfile({ ...profile, phoneNumber })}
               />
             </Field>
             <Field label="Job title">
-              <input
+              <TextField
                 value={profile.jobTitle || ''}
                 onChange={(e) => setProfile({ ...profile, jobTitle: e.target.value })}
               />
             </Field>
             <Field label="Location">
-              <input
+              <TextField
                 value={profile.location || ''}
                 onChange={(e) => setProfile({ ...profile, location: e.target.value })}
                 placeholder="Austin, TX"
               />
             </Field>
             <Field label="Website">
-              <input
+              <TextField
                 value={profile.website || ''}
                 onChange={(e) => setProfile({ ...profile, website: e.target.value })}
               />
             </Field>
-          </div>
-          <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
-            {saving ? 'Saving…' : 'Save changes'}
-          </button>
-        </form>
+          </FieldGrid>
+          <Box>
+            <Button type="submit" variant="contained" size="small" disabled={saving}>
+              {saving ? 'Saving…' : 'Save changes'}
+            </Button>
+          </Box>
+        </Panel>
       )}
     </>
   )
@@ -217,54 +295,57 @@ export function CompanyPanel() {
         crumb="Company Information"
         lead="Business details used on proposals and your public profile."
       />
-      {loading ? <p className="dash-empty">Loading…</p> : null}
-      {error ? <p className="dash-form-error">{error}</p> : null}
-      {notice ? <p className="bill-notice">{notice}</p> : null}
+      {loading ? <Loading /> : null}
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      {notice ? <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert> : null}
       {profile && (
-        <form className="set-card" onSubmit={onSubmit}>
-          <div className="set-grid">
+        <Panel component="form" onSubmit={onSubmit}>
+          <FieldGrid>
             <Field label="Company name">
-              <input
+              <TextField
                 value={profile.company || ''}
                 onChange={(e) => setProfile({ ...profile, company: e.target.value })}
               />
             </Field>
-            <Field label="Company phone" plain>
+            <Field label="Company phone">
               <PhoneInput
                 value={profile.companyPhone || ''}
                 onChange={(companyPhone) => setProfile({ ...profile, companyPhone })}
               />
             </Field>
             <Field label="Company website">
-              <input
+              <TextField
                 value={profile.companyWebsite || ''}
                 onChange={(e) => setProfile({ ...profile, companyWebsite: e.target.value })}
               />
             </Field>
             <Field label="License number">
-              <input
+              <TextField
                 value={profile.licenseNumber || ''}
                 onChange={(e) => setProfile({ ...profile, licenseNumber: e.target.value })}
               />
             </Field>
             <Field label="Tax ID / EIN">
-              <input
+              <TextField
                 value={profile.taxId || ''}
                 onChange={(e) => setProfile({ ...profile, taxId: e.target.value })}
               />
             </Field>
-          </div>
+          </FieldGrid>
           <Field label="Address">
-            <textarea
+            <TextField
+              multiline
               rows={3}
               value={profile.companyAddress || ''}
               onChange={(e) => setProfile({ ...profile, companyAddress: e.target.value })}
             />
           </Field>
-          <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
-            {saving ? 'Saving…' : 'Save changes'}
-          </button>
-        </form>
+          <Box>
+            <Button type="submit" variant="contained" size="small" disabled={saving}>
+              {saving ? 'Saving…' : 'Save changes'}
+            </Button>
+          </Box>
+        </Panel>
       )}
     </>
   )
@@ -311,30 +392,32 @@ export function NotificationsPanel() {
 
   return (
     <>
-      <PageHead
-        title="Notifications"
-        crumb="Notifications"
-        lead="Choose which emails CrewUp can send you."
-      />
-      {loading ? <p className="dash-empty">Loading…</p> : null}
-      {error ? <p className="dash-form-error">{error}</p> : null}
-      {notice ? <p className="bill-notice">{notice}</p> : null}
+      <PageHead title="Notifications" crumb="Notifications" lead="Choose which emails CrewUp can send you." />
+      {loading ? <Loading /> : null}
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      {notice ? <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert> : null}
       {profile && (
-        <form className="set-card" onSubmit={onSubmit}>
-          {rows.map(([key, label]) => (
-            <label key={key} className="set-check">
-              <input
-                type="checkbox"
-                checked={Boolean(profile.emailPreferences?.[key])}
-                onChange={() => toggle(key)}
+        <Panel component="form" onSubmit={onSubmit}>
+          <Stack spacing={0.5}>
+            {rows.map(([key, label]) => (
+              <FormControlLabel
+                key={key}
+                control={
+                  <Checkbox
+                    checked={Boolean(profile.emailPreferences?.[key])}
+                    onChange={() => toggle(key)}
+                  />
+                }
+                label={label}
               />
-              <span>{label}</span>
-            </label>
-          ))}
-          <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
-            {saving ? 'Saving…' : 'Save preferences'}
-          </button>
-        </form>
+            ))}
+          </Stack>
+          <Box>
+            <Button type="submit" variant="contained" size="small" disabled={saving}>
+              {saving ? 'Saving…' : 'Save preferences'}
+            </Button>
+          </Box>
+        </Panel>
       )}
     </>
   )
@@ -367,13 +450,13 @@ export function BidPreferencesPanel() {
         crumb="Bid Preferences"
         lead="Tell us what work you want to see so matching can use your real settings."
       />
-      {loading ? <p className="dash-empty">Loading…</p> : null}
-      {error ? <p className="dash-form-error">{error}</p> : null}
-      {notice ? <p className="bill-notice">{notice}</p> : null}
+      {loading ? <Loading /> : null}
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      {notice ? <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert> : null}
       {profile && (
-        <form className="set-card" onSubmit={onSubmit}>
+        <Panel component="form" onSubmit={onSubmit}>
           <Field label="Trades (comma separated)">
-            <input
+            <TextField
               value={(profile.bidPreferences?.trades || []).join(', ')}
               onChange={(e) =>
                 setProfile({
@@ -387,11 +470,11 @@ export function BidPreferencesPanel() {
               placeholder="Electrical, HVAC, Drywall"
             />
           </Field>
-          <div className="set-grid">
+          <FieldGrid>
             <Field label="Service radius (miles)">
-              <input
+              <TextField
                 type="number"
-                min="0"
+                slotProps={{ htmlInput: { min: 0 } }}
                 value={profile.bidPreferences?.serviceRadiusMiles || ''}
                 onChange={(e) =>
                   setProfile({
@@ -405,7 +488,7 @@ export function BidPreferencesPanel() {
               />
             </Field>
             <Field label="Minimum project budget">
-              <input
+              <TextField
                 value={profile.bidPreferences?.minBudget || ''}
                 onChange={(e) =>
                   setProfile({
@@ -416,9 +499,10 @@ export function BidPreferencesPanel() {
                 placeholder="$25,000"
               />
             </Field>
-          </div>
+          </FieldGrid>
           <Field label="Notes">
-            <textarea
+            <TextField
+              multiline
               rows={3}
               value={profile.bidPreferences?.notes || ''}
               onChange={(e) =>
@@ -429,10 +513,12 @@ export function BidPreferencesPanel() {
               }
             />
           </Field>
-          <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
-            {saving ? 'Saving…' : 'Save preferences'}
-          </button>
-        </form>
+          <Box>
+            <Button type="submit" variant="contained" size="small" disabled={saving}>
+              {saving ? 'Saving…' : 'Save preferences'}
+            </Button>
+          </Box>
+        </Panel>
       )}
     </>
   )
@@ -497,54 +583,58 @@ export function PaymentsPanel() {
         crumb="Payment & Payouts"
         lead="Cards on file come from Stripe. Payout details are stored on your account."
       />
-      {loading ? <p className="dash-empty">Loading…</p> : null}
-      {error ? <p className="dash-form-error">{error}</p> : null}
-      {notice ? <p className="bill-notice">{notice}</p> : null}
+      {loading ? <Loading /> : null}
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      {notice ? <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert> : null}
 
-      <article className="set-card">
-        <h3 className="msg-panel__h set-card__h">
+      <Panel>
+        <Typography variant="subtitle1" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Icon name="card" size={15} /> Payment method
-        </h3>
+        </Typography>
         {card ? (
-          <p>
-            <strong className="set-cap">{card.brand}</strong> ending in {card.last4}
-          </p>
+          <Typography>
+            <Box component="strong" sx={{ textTransform: 'capitalize' }}>
+              {card.brand}
+            </Box>{' '}
+            ending in {card.last4}
+          </Typography>
         ) : (
-          <p className="dash-empty" style={{ padding: 0 }}>
-            No card on file. Add one when you subscribe.
-          </p>
+          <Empty>No card on file. Add one when you subscribe.</Empty>
         )}
-      </article>
+      </Panel>
 
       {profile && (
-        <form className="set-card" onSubmit={onSubmit}>
-          <h3 className="msg-panel__h set-card__h">
+        <Panel component="form" onSubmit={onSubmit}>
+          <Typography variant="subtitle1" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Icon name="coin" size={15} /> Payouts
-          </h3>
-          <div className="set-grid">
+          </Typography>
+          <FieldGrid>
             <Field label="Payout email">
-              <input
+              <TextField
                 type="email"
                 value={profile.payoutEmail || ''}
                 onChange={(e) => setProfile({ ...profile, payoutEmail: e.target.value })}
               />
             </Field>
             <Field label="Method">
-              <select
+              <TextField
+                select
                 value={profile.payoutMethod || ''}
                 onChange={(e) => setProfile({ ...profile, payoutMethod: e.target.value })}
               >
-                <option value="">Not set</option>
-                <option value="bank">Bank transfer</option>
-                <option value="paypal">PayPal</option>
-                <option value="stripe">Stripe</option>
-              </select>
+                <MenuItem value="">Not set</MenuItem>
+                <MenuItem value="bank">Bank transfer</MenuItem>
+                <MenuItem value="paypal">PayPal</MenuItem>
+                <MenuItem value="stripe">Stripe</MenuItem>
+              </TextField>
             </Field>
-          </div>
-          <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
-            {saving ? 'Saving…' : 'Save payouts'}
-          </button>
-        </form>
+          </FieldGrid>
+          <Box>
+            <Button type="submit" variant="contained" size="small" disabled={saving}>
+              {saving ? 'Saving…' : 'Save payouts'}
+            </Button>
+          </Box>
+        </Panel>
       )}
     </>
   )
@@ -596,48 +686,59 @@ export function UsersPanel() {
         crumb="Users & Permissions"
         lead="Invite people from your company. They appear here when you add their email."
       />
-      {error ? <p className="dash-form-error">{error}</p> : null}
-      <form className="set-card set-invite" onSubmit={onInvite}>
-        <input
-          type="email"
-          placeholder="teammate@company.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <select value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="member">Member</option>
-          <option value="manager">Manager</option>
-          <option value="admin">Admin</option>
-        </select>
-        <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
-          {saving ? 'Inviting…' : 'Invite'}
-        </button>
-      </form>
-      <div className="set-card">
-        {loading ? <p className="dash-empty">Loading…</p> : null}
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      <Panel component="form" onSubmit={onInvite}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+          <TextField
+            type="email"
+            placeholder="teammate@company.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            sx={{ flex: 2 }}
+          />
+          <TextField select value={role} onChange={(e) => setRole(e.target.value)} sx={{ flex: 1, minWidth: 140 }}>
+            <MenuItem value="member">Member</MenuItem>
+            <MenuItem value="manager">Manager</MenuItem>
+            <MenuItem value="admin">Admin</MenuItem>
+          </TextField>
+          <Button type="submit" variant="contained" size="small" disabled={saving} sx={{ flexShrink: 0 }}>
+            {saving ? 'Inviting…' : 'Invite'}
+          </Button>
+        </Stack>
+      </Panel>
+      <Panel>
+        {loading ? <Loading /> : null}
         {!loading && members.length === 0 ? (
-          <p className="dash-empty" style={{ padding: 0 }}>
-            No teammates yet. Invite someone above.
-          </p>
+          <Empty>No teammates yet. Invite someone above.</Empty>
         ) : (
-          <ul className="set-list">
-            {members.map((m) => (
-              <li key={m.id}>
-                <div>
-                  <strong>{m.name || m.email}</strong>
-                  <span>
-                    {m.email} · {m.role} · {m.status}
-                  </span>
-                </div>
-                <button type="button" className="dash-table__delete" onClick={() => removeTeam(m.id).then(load)}>
-                  Remove
-                </button>
-              </li>
+          <List disablePadding>
+            {members.map((m, i) => (
+              <Box key={m.id}>
+                {i > 0 ? <Divider /> : null}
+                <ListItem
+                  disableGutters
+                  secondaryAction={
+                    <Button
+                      size="small"
+                      color="error"
+                      startIcon={<DeleteOutline fontSize="small" />}
+                      onClick={() => removeTeam(m.id).then(load)}
+                    >
+                      Remove
+                    </Button>
+                  }
+                >
+                  <ListItemText
+                    primary={m.name || m.email}
+                    secondary={`${m.email} · ${m.role} · ${m.status}`}
+                  />
+                </ListItem>
+              </Box>
             ))}
-          </ul>
+          </List>
         )}
-      </div>
+      </Panel>
     </>
   )
 }
@@ -685,24 +786,24 @@ export function SecurityPanel() {
         crumb="Security"
         lead="Change your password and manage two-factor authentication."
       />
-      {loading ? <p className="dash-empty">Loading…</p> : null}
-      {error ? <p className="dash-form-error">{error}</p> : null}
-      {notice ? <p className="bill-notice">{notice}</p> : null}
-      <form className="set-card" onSubmit={onPassword}>
-        <h3 className="msg-panel__h set-card__h">
+      {loading ? <Loading /> : null}
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      {notice ? <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert> : null}
+      <Panel component="form" onSubmit={onPassword}>
+        <Typography variant="subtitle1" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Icon name="settings" size={15} /> Password
-        </h3>
+        </Typography>
         <Field label="Current password">
-          <input
+          <TextField
             type="password"
             value={form.currentPassword}
             onChange={(e) => setForm({ ...form, currentPassword: e.target.value })}
             required
           />
         </Field>
-        <div className="set-grid">
+        <FieldGrid>
           <Field label="New password">
-            <input
+            <TextField
               type="password"
               value={form.newPassword}
               onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
@@ -710,30 +811,34 @@ export function SecurityPanel() {
             />
           </Field>
           <Field label="Confirm new password">
-            <input
+            <TextField
               type="password"
               value={form.confirmPassword}
               onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
               required
             />
           </Field>
-        </div>
-        <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
-          Update password
-        </button>
-      </form>
+        </FieldGrid>
+        <Box>
+          <Button type="submit" variant="contained" size="small" disabled={saving}>
+            Update password
+          </Button>
+        </Box>
+      </Panel>
       {profile && (
-        <div className="set-card">
-          <h3 className="msg-panel__h set-card__h">
+        <Panel>
+          <Typography variant="subtitle1" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Icon name="info" size={15} /> Two-factor authentication
-          </h3>
-          <p className="dash-muted">
+          </Typography>
+          <Typography color="text.secondary">
             {profile.twoFactorEnabled ? 'Enabled on this account.' : 'Not enabled.'}
-          </p>
-          <button type="button" className="btn btn-outline btn-sm" onClick={onToggle2fa} disabled={saving}>
-            {profile.twoFactorEnabled ? 'Disable' : 'Enable'}
-          </button>
-        </div>
+          </Typography>
+          <Box>
+            <Button variant="outlined" size="small" onClick={onToggle2fa} disabled={saving}>
+              {profile.twoFactorEnabled ? 'Disable' : 'Enable'}
+            </Button>
+          </Box>
+        </Panel>
       )}
     </>
   )
@@ -747,11 +852,9 @@ export function IntegrationsPanel() {
         crumb="Integrations"
         lead="Connect accounting or calendar tools when those providers are wired."
       />
-      <div className="set-card">
-        <p className="dash-empty" style={{ padding: 0 }}>
-          No integrations connected yet. OAuth providers have not been configured for this account.
-        </p>
-      </div>
+      <Panel>
+        <Empty>No integrations connected yet. OAuth providers have not been configured for this account.</Empty>
+      </Panel>
     </>
   )
 }
@@ -801,37 +904,54 @@ export function DocumentsPanel() {
         crumb="Documents"
         lead="Insurance, licenses, and other files stored on your account."
       />
-      {error ? <p className="dash-form-error">{error}</p> : null}
-      <div className="set-card">
-        <label className="btn btn-outline btn-sm">
-          {uploading ? 'Uploading…' : 'Upload file'}
-          <input type="file" hidden disabled={uploading} onChange={onFile} />
-        </label>
-        {loading ? <p className="dash-empty">Loading…</p> : null}
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      <Panel>
+        <Box>
+          <Button component="label" variant="outlined" size="small" disabled={uploading}>
+            {uploading ? 'Uploading…' : 'Upload file'}
+            <input type="file" hidden disabled={uploading} onChange={onFile} />
+          </Button>
+        </Box>
+        {loading ? <Loading /> : null}
         {!loading && docs.length === 0 ? (
-          <p className="dash-empty">No documents uploaded yet.</p>
+          <Empty>No documents uploaded yet.</Empty>
         ) : (
-          <ul className="set-list">
-            {docs.map((d) => (
-              <li key={d.id}>
-                <div>
-                  <strong>
-                    <a href={mediaUrl(d.url)} target="_blank" rel="noreferrer">
-                      {d.name}
-                    </a>
-                  </strong>
-                  <span>
-                    {d.sizeLabel} · {formatDate(d.createdAt)}
-                  </span>
-                </div>
-                <button type="button" className="dash-table__delete" onClick={() => deleteDocument(d.id).then(load)}>
-                  Delete
-                </button>
-              </li>
+          <List disablePadding>
+            {docs.map((d, i) => (
+              <Box key={d.id}>
+                {i > 0 ? <Divider /> : null}
+                <ListItem
+                  disableGutters
+                  secondaryAction={
+                    <IconButton
+                      aria-label="Delete"
+                      size="small"
+                      onClick={() => deleteDocument(d.id).then(load)}
+                    >
+                      <DeleteOutline fontSize="small" />
+                    </IconButton>
+                  }
+                >
+                  <ListItemText
+                    primary={
+                      <Box
+                        component="a"
+                        href={mediaUrl(d.url)}
+                        target="_blank"
+                        rel="noreferrer"
+                        sx={{ color: 'primary.main', fontWeight: 600, textDecoration: 'none' }}
+                      >
+                        {d.name}
+                      </Box>
+                    }
+                    secondary={`${d.sizeLabel} · ${formatDate(d.createdAt)}`}
+                  />
+                </ListItem>
+              </Box>
             ))}
-          </ul>
+          </List>
         )}
-      </div>
+      </Panel>
     </>
   )
 }
@@ -853,7 +973,13 @@ function PlanCheck() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
       <circle cx="9" cy="9" r="8" fill="rgba(0,102,255,0.1)" stroke="#0066FF" strokeWidth="1.2" />
-      <path d="M5.5 9.2l2.2 2.2 4.8-4.8" stroke="#0066FF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M5.5 9.2l2.2 2.2 4.8-4.8"
+        stroke="#0066FF"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
@@ -922,144 +1048,189 @@ export function SubscriptionPanel({ standalone = false }) {
   return (
     <>
       {standalone ? (
-        <div className="dash-page__header">
-          <h1>Billing</h1>
-          <p>Your CrewUp plan, payment method, and billing cycle.</p>
-        </div>
+        <Box sx={{ mb: 2.5 }}>
+          <Typography variant="h4" sx={{ fontSize: '1.5rem', mb: 0.5 }}>
+            Billing
+          </Typography>
+          <Typography color="text.secondary">Your CrewUp plan, payment method, and billing cycle.</Typography>
+        </Box>
       ) : (
-        <PageHead
-          title="Subscription"
-          crumb="Subscription"
-          lead="Your CrewUp plan and billing cycle."
-        />
+        <PageHead title="Subscription" crumb="Subscription" lead="Your CrewUp plan and billing cycle." />
       )}
-      {notice ? <p className="bill-notice">{notice}</p> : null}
-      {error ? <p className="dash-form-error">{error}</p> : null}
-      {loading ? <p className="dash-empty">Loading billing…</p> : null}
+      {notice ? <Alert severity="success" sx={{ mb: 2 }}>{notice}</Alert> : null}
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      {loading ? <Loading label="Loading billing…" /> : null}
       {billing && (
         <>
-          <div className="bill-grid">
-            <article className="dash-table-card bill-card">
-              <CardHead icon="fileText" title="Current plan" />
-              <div className="bill-card__body">
-                <p className="bill-plan">
-                  {billing.planName}{' '}
-                  <span className="bill-status">{statusLabel(billing.subscriptionStatus)}</span>
-                </p>
-                <p className="bill-price">
-                  {billing.priceLabel}
-                  {billing.period}
-                </p>
-                {billing.currentPeriodEnd ? (
-                  <p className="dash-muted">
-                    {billing.cancelAtPeriodEnd ? 'Ends' : 'Renews'} {formatDate(billing.currentPeriodEnd)}
-                  </p>
-                ) : (
-                  <p className="dash-muted">Free Starter plan.</p>
-                )}
-                {!billing.stripeReady ? (
-                  <p className="bill-warn">
-                    Stripe keys are not set yet. Paid checkout stays disabled until you add them to
-                    backend/.env.
-                  </p>
-                ) : null}
-                <div className="bill-actions">
-                  {paid && !billing.cancelAtPeriodEnd ? (
-                    <button
-                      type="button"
-                      className="btn btn-outline btn-sm"
-                      onClick={async () => {
-                        const data = await cancelSubscription()
-                        setBilling(data.billing)
-                      }}
-                    >
-                      Cancel subscription
-                    </button>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            <Card variant="outlined" sx={{ borderRadius: 3 }}>
+              <CardContent>
+                <CardHead icon="fileText" title="Current plan" />
+                <Stack spacing={0.75} sx={{ mt: 1.5 }}>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                    <Typography fontWeight={700}>{billing.planName}</Typography>
+                    <Chip size="small" label={statusLabel(billing.subscriptionStatus)} />
+                  </Stack>
+                  <Typography color="text.secondary">
+                    {billing.priceLabel}
+                    {billing.period}
+                  </Typography>
+                  {billing.currentPeriodEnd ? (
+                    <Typography variant="body2" color="text.secondary">
+                      {billing.cancelAtPeriodEnd ? 'Ends' : 'Renews'} {formatDate(billing.currentPeriodEnd)}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Free Starter plan.
+                    </Typography>
+                  )}
+                  {!billing.stripeReady ? (
+                    <Alert severity="warning" sx={{ mt: 1 }}>
+                      Stripe keys are not set yet. Paid checkout stays disabled until you add them to
+                      backend/.env.
+                    </Alert>
                   ) : null}
-                  {billing.cancelAtPeriodEnd ? (
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm"
-                      onClick={async () => {
-                        const data = await resumeSubscription()
-                        setBilling(data.billing)
-                      }}
-                    >
-                      Keep my plan
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-            </article>
-            <article className="dash-table-card bill-card">
-              <CardHead icon="card" title="Payment method" />
-              <div className="bill-card__body">
-                {card ? (
-                  <>
-                    <p className="bill-card-line">
-                      <strong>{card.brand}</strong> ending in {card.last4}
-                    </p>
-                    <button
-                      type="button"
-                      className="btn btn-outline btn-sm"
-                      onClick={async () => {
-                        const data = await openBillingPortal()
-                        if (data.url) window.location.href = data.url
-                      }}
-                    >
-                      Update card
-                    </button>
-                  </>
-                ) : (
-                  <p className="dash-empty" style={{ padding: 0 }}>
-                    No card on file.
-                  </p>
-                )}
-              </div>
-            </article>
-          </div>
-          <div className="set-pricing">
-            <div className="pricing__grid">
-              {plans.map((plan) => {
-                const current = billing.plan === plan.id
-                const disabled =
-                  current || !!busy || (plan.id !== 'starter' && !billing.stripeReady)
-                let cta = `Start ${plan.name} Plan`
-                if (current && plan.id === 'starter') cta = 'Current / Starter'
-                else if (current) cta = `Current / ${plan.name}`
-                else if (busy === plan.id) cta = 'Redirecting…'
-                else if (plan.id === 'starter') cta = 'Switch to Starter'
+                  <Box sx={{ pt: 1 }}>
+                    {paid && !billing.cancelAtPeriodEnd ? (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={async () => {
+                          const data = await cancelSubscription()
+                          setBilling(data.billing)
+                        }}
+                      >
+                        Cancel subscription
+                      </Button>
+                    ) : null}
+                    {billing.cancelAtPeriodEnd ? (
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={async () => {
+                          const data = await resumeSubscription()
+                          setBilling(data.billing)
+                        }}
+                      >
+                        Keep my plan
+                      </Button>
+                    ) : null}
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+            <Card variant="outlined" sx={{ borderRadius: 3 }}>
+              <CardContent>
+                <CardHead icon="card" title="Payment method" />
+                <Box sx={{ mt: 1.5 }}>
+                  {card ? (
+                    <Stack spacing={1} sx={{ alignItems: 'flex-start' }}>
+                      <Typography>
+                        <Box component="strong">{card.brand}</Box> ending in {card.last4}
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={async () => {
+                          const data = await openBillingPortal()
+                          if (data.url) window.location.href = data.url
+                        }}
+                      >
+                        Update card
+                      </Button>
+                    </Stack>
+                  ) : (
+                    <Empty>No card on file.</Empty>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: `repeat(${plans.length || 1}, 1fr)` },
+              gap: 2,
+              pt: 1.5,
+            }}
+          >
+            {plans.map((plan) => {
+              const current = billing.plan === plan.id
+              const disabled = current || !!busy || (plan.id !== 'starter' && !billing.stripeReady)
+              let cta = `Start ${plan.name} Plan`
+              if (current && plan.id === 'starter') cta = 'Current / Starter'
+              else if (current) cta = `Current / ${plan.name}`
+              else if (busy === plan.id) cta = 'Redirecting…'
+              else if (plan.id === 'starter') cta = 'Switch to Starter'
 
-                return (
-                  <article key={plan.id} className={`plan${plan.popular ? ' plan--popular' : ''}`}>
-                    {plan.popular && <div className="plan__badge">Most Popular</div>}
-                    <h3 className="plan__name">{plan.name}</h3>
-                    <div className="plan__price">
-                      <span className="plan__amount">{plan.priceLabel}</span>
-                      {plan.period && <span className="plan__period">{plan.period}</span>}
-                    </div>
-                    <p className="plan__blurb">{plan.blurb}</p>
-                    <ul className="plan__features">
+              return (
+                <Card
+                  key={plan.id}
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 3,
+                    position: 'relative',
+                    overflow: 'visible',
+                    borderColor: plan.popular ? 'primary.main' : 'divider',
+                    borderWidth: plan.popular ? 2 : 1,
+                  }}
+                >
+                  {plan.popular && (
+                    <Chip
+                      label="Most Popular"
+                      color="primary"
+                      size="small"
+                      sx={{ position: 'absolute', top: -12, left: 16, zIndex: 1, fontWeight: 600 }}
+                    />
+                  )}
+                  <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', pt: plan.popular ? 3 : 2 }}>
+                    <Typography variant="h6" fontWeight={700}>
+                      {plan.name}
+                    </Typography>
+                    <Stack direction="row" spacing={0.5} sx={{ alignItems: 'baseline', my: 1 }}>
+                      <Typography variant="h5" fontWeight={700}>
+                        {plan.priceLabel}
+                      </Typography>
+                      {plan.period && (
+                        <Typography variant="body2" color="text.secondary">
+                          {plan.period}
+                        </Typography>
+                      )}
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      {plan.blurb}
+                    </Typography>
+                    <List disablePadding sx={{ mb: 2, flex: 1 }}>
                       {(plan.features || []).map((f) => (
-                        <li key={f}>
+                        <ListItem key={f} disableGutters sx={{ py: 0.4 }}>
                           <PlanCheck />
-                          <span>{f}</span>
-                        </li>
+                          <Typography variant="body2" sx={{ ml: 1 }}>
+                            {f}
+                          </Typography>
+                        </ListItem>
                       ))}
-                    </ul>
-                    <button
-                      type="button"
-                      className={`btn btn-lg plan__cta ${plan.popular && !current ? 'btn-primary' : 'btn-outline'}`}
+                    </List>
+                    <Button
+                      variant={plan.popular && !current ? 'contained' : 'outlined'}
+                      size="large"
+                      fullWidth
                       disabled={disabled}
                       onClick={() => checkout(plan.id)}
                     >
                       {cta}
-                    </button>
-                  </article>
-                )
-              })}
-            </div>
-          </div>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </Box>
         </>
       )}
     </>
@@ -1090,33 +1261,40 @@ export function ActivityPanel() {
 
   return (
     <>
-      <PageHead
-        title="Activity Log"
-        crumb="Activity Log"
-        lead="Review important account activity and changes."
-      />
-      {error ? <p className="dash-form-error">{error}</p> : null}
-      <div className="set-card">
-        {loading ? <p className="dash-empty">Loading activity…</p> : null}
+      <PageHead title="Activity Log" crumb="Activity Log" lead="Review important account activity and changes." />
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
+      <Panel>
+        {loading ? <Loading label="Loading activity…" /> : null}
         {!loading && items.length === 0 ? (
-          <p className="dash-empty" style={{ padding: 0 }}>
-            No account activity yet. Sign-ins, profile edits, uploads, and billing changes will show
-            up here.
-          </p>
+          <Empty>
+            No account activity yet. Sign-ins, profile edits, uploads, and billing changes will show up here.
+          </Empty>
         ) : (
-          <ul className="set-activity">
-            {items.map((a) => (
-              <li key={a.id}>
-                <div>
-                  <strong>{a.title}</strong>
-                  {a.detail ? <p>{a.detail}</p> : null}
-                </div>
-                <time dateTime={a.createdAt}>{formatWhen(a.createdAt)}</time>
-              </li>
+          <List disablePadding>
+            {items.map((a, i) => (
+              <Box key={a.id}>
+                {i > 0 ? <Divider /> : null}
+                <ListItem
+                  disableGutters
+                  secondaryAction={
+                    <Typography
+                      component="time"
+                      dateTime={a.createdAt}
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ whiteSpace: 'nowrap' }}
+                    >
+                      {formatWhen(a.createdAt)}
+                    </Typography>
+                  }
+                >
+                  <ListItemText primary={a.title} secondary={a.detail || null} sx={{ pr: 10 }} />
+                </ListItem>
+              </Box>
             ))}
-          </ul>
+          </List>
         )}
-      </div>
+      </Panel>
     </>
   )
 }

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import { Alert, Box, Button, Chip, Container, Paper, Stack, Typography } from '@mui/material'
+import { ArrowBack } from '@mui/icons-material'
 import Header from '../components/Header'
 import FooterCta from '../components/FooterCta'
 import { posterRoleLabel } from '../data/categories'
@@ -14,6 +16,14 @@ function formatDue(value) {
   if (Number.isNaN(d.getTime())) return 'Flexible'
   return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
 }
+
+const STATS = [
+  { key: 'location', icon: 'pin', label: 'Location', fallback: 'Not specified' },
+  { key: 'budget', icon: 'coin', label: 'Budget', fallback: 'Ask for details' },
+  { key: 'vacancies', icon: 'users', label: 'Vacancies', fallback: 1, accent: true },
+  { key: 'due', icon: 'calendar', label: 'Due' },
+  { key: 'bids', icon: 'fileText', label: 'Bids', fallback: 0 },
+]
 
 export default function JobDetail() {
   const { id } = useParams()
@@ -57,108 +67,150 @@ export default function JobDetail() {
   }
 
   const image = mediaUrl(job?.image)
+  const statValues = job
+    ? {
+        location: job.location,
+        budget: job.budget,
+        vacancies: job.vacancies || 1,
+        due: formatDue(job.dueDate),
+        bids: job.bidsCount || 0,
+      }
+    : {}
 
   return (
-    <div className="app">
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-      <main className="jobs jobs--detail">
-        <div className="container">
-          <Link to="/jobs" className="jobs__back">
-            ← All jobs
-          </Link>
+      <Box
+        component="main"
+        sx={{
+          flex: 1,
+          py: { xs: 4, md: 5 },
+          bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#16303f' : '#f2f8fd'),
+        }}
+      >
+        <Container maxWidth="md">
+          <Button
+            component={RouterLink}
+            to="/jobs"
+            startIcon={<ArrowBack fontSize="small" />}
+            sx={{ mb: 2.5, color: 'primary.main', fontWeight: 600 }}
+          >
+            All jobs
+          </Button>
 
-          {loading ? <p className="jobs__empty">Loading job…</p> : null}
-          {error ? <p className="jobs__error">{error}</p> : null}
+          {loading ? (
+            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: '14px', color: 'text.secondary' }}>
+              Loading job…
+            </Paper>
+          ) : null}
+          {error ? (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          ) : null}
 
           {job ? (
-            <article className="job-detail">
+            <Paper variant="outlined" sx={{ borderRadius: '18px', overflow: 'hidden' }}>
               {image ? (
-                <img className="job-detail__image" src={image} alt="" />
+                <Box component="img" src={image} alt="" sx={{ width: '100%', height: 240, objectFit: 'cover', display: 'block' }} />
               ) : (
-                <div className="job-detail__image job-detail__image--empty">
+                <Box
+                  aria-hidden="true"
+                  sx={{
+                    width: '100%',
+                    height: 240,
+                    display: 'grid',
+                    placeItems: 'center',
+                    background: 'linear-gradient(135deg, #dff0fc, #eef7fe)',
+                  }}
+                >
                   <IconBadge icon="building" size={56} iconSize={26} />
-                </div>
+                </Box>
               )}
 
-              <div className="job-detail__body">
-                <p className="eyebrow">
+              <Box sx={{ p: { xs: 2.5, sm: '1.5rem 1.35rem 1.75rem' } }}>
+                <Typography
+                  variant="overline"
+                  sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: '0.08em' }}
+                >
                   {job.projectType || 'Open job'}
                   {job.service ? ` · ${job.service}` : ''}
-                </p>
-                <h1>{job.title}</h1>
-                <p className="job-detail__poster">
-                  <Icon name="user" size={15} /> Posted by{' '}
-                  {job.postedBy?.company || job.postedBy?.fullName || 'a CrewUp member'}
-                  {posterRoleLabel(job.postedByRole) ? ` (${posterRoleLabel(job.postedByRole)})` : ''}
-                </p>
+                </Typography>
+                <Typography variant="h1" sx={{ fontSize: { xs: '1.6rem', md: '2.1rem' }, color: 'secondary.main', mb: 1 }}>
+                  {job.title}
+                </Typography>
+                <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', color: 'text.secondary', mb: 2.5 }}>
+                  <Icon name="user" size={15} />
+                  <Typography color="text.secondary">
+                    Posted by {job.postedBy?.company || job.postedBy?.fullName || 'a CrewUp member'}
+                    {posterRoleLabel(job.postedByRole) ? ` (${posterRoleLabel(job.postedByRole)})` : ''}
+                  </Typography>
+                </Stack>
 
-                <div className="proj-stats job-detail__stats">
-                  <div className="proj-stat">
-                    <IconBadge icon="pin" size={38} />
-                    <div className="proj-stat__body">
-                      <span>Location</span>
-                      <strong>{job.location || 'Not specified'}</strong>
-                    </div>
-                  </div>
-                  <div className="proj-stat">
-                    <IconBadge icon="coin" size={38} />
-                    <div className="proj-stat__body">
-                      <span>Budget</span>
-                      <strong>{job.budget || 'Ask for details'}</strong>
-                    </div>
-                  </div>
-                  <div className="proj-stat proj-stat--accent">
-                    <IconBadge icon="users" size={38} />
-                    <div className="proj-stat__body">
-                      <span>Vacancies</span>
-                      <strong>{job.vacancies || 1}</strong>
-                    </div>
-                  </div>
-                  <div className="proj-stat">
-                    <IconBadge icon="calendar" size={38} />
-                    <div className="proj-stat__body">
-                      <span>Due</span>
-                      <strong>{formatDue(job.dueDate)}</strong>
-                    </div>
-                  </div>
-                  <div className="proj-stat">
-                    <IconBadge icon="fileText" size={38} />
-                    <div className="proj-stat__body">
-                      <span>Bids</span>
-                      <strong>{job.bidsCount || 0}</strong>
-                    </div>
-                  </div>
-                </div>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(5, 1fr)' },
+                    gap: 1.25,
+                    mb: 2.5,
+                  }}
+                >
+                  {STATS.map((stat) => (
+                    <Paper
+                      key={stat.key}
+                      variant="outlined"
+                      sx={{
+                        p: 1.5,
+                        borderRadius: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        bgcolor: stat.accent ? 'primary.light' : 'background.paper',
+                        borderColor: stat.accent ? 'primary.main' : 'divider',
+                      }}
+                    >
+                      <IconBadge icon={stat.icon} size={38} tone={stat.accent ? 'blue' : 'muted'} />
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          {stat.label}
+                        </Typography>
+                        <Typography fontWeight={700} color="secondary.main" noWrap>
+                          {statValues[stat.key] || stat.fallback}
+                        </Typography>
+                      </Box>
+                    </Paper>
+                  ))}
+                </Box>
 
                 {job.trades?.length ? (
-                  <div className="jobs-card__trades">
+                  <Stack direction="row" useFlexGap spacing={0.75} sx={{ flexWrap: 'wrap', mb: 2 }}>
                     {job.trades.map((t) => (
-                      <span key={t}>{t}</span>
+                      <Chip key={t} label={t} size="small" sx={{ bgcolor: 'primary.light', color: 'secondary.main', fontWeight: 600 }} />
                     ))}
-                  </div>
+                  </Stack>
                 ) : null}
 
-                <h2>About this job</h2>
-                <p className="job-detail__copy">
+                <Typography variant="h2" sx={{ fontSize: '1.05rem', color: 'secondary.main', mt: 1, mb: 1 }}>
+                  About this job
+                </Typography>
+                <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap', mb: 3 }}>
                   {job.description || 'The poster has not added a description yet.'}
-                </p>
+                </Typography>
 
-                <div className="job-detail__actions">
-                  <button type="button" className="btn btn-primary btn-lg" onClick={apply}>
-                    {getSession()?.token && !canApplyToJobs(getSession()?.user)
-                      ? 'Go to my projects'
-                      : 'Apply now'}
-                  </button>
-                  <Link to="/jobs" className="btn btn-outline btn-lg">
+                <Stack direction="row" useFlexGap spacing={1.25} sx={{ flexWrap: 'wrap' }}>
+                  <Button variant="contained" size="large" onClick={apply}>
+                    {getSession()?.token && !canApplyToJobs(getSession()?.user) ? 'Go to my projects' : 'Apply now'}
+                  </Button>
+                  <Button component={RouterLink} to="/jobs" variant="outlined" size="large">
                     Back to jobs
-                  </Link>
-                </div>
-              </div>
-            </article>
+                  </Button>
+                </Stack>
+              </Box>
+            </Paper>
           ) : null}
-        </div>
-      </main>
+        </Container>
+      </Box>
       <FooterCta />
-    </div>
+    </Box>
   )
 }

@@ -1,0 +1,52 @@
+- generic [ref=f72e3]:
+  - banner [ref=f72e4]:
+    - generic [ref=f72e5]:
+      - link "CrewUp home" [ref=f72e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f72e7]: CREWUP
+      - generic [ref=f72e13]:
+        - button "Switch to dark mode" [ref=f72e14] [cursor=pointer]
+        - button "Notifications" [ref=f72e17] [cursor=pointer]
+        - button "MT MUI Test User2" [ref=f72e21] [cursor=pointer]:
+          - generic [ref=f72e22]: MT
+          - paragraph [ref=f72e26]: MUI Test User2
+  - generic [ref=f72e29]:
+    - generic [ref=f72e32]:
+      - generic [ref=f72e33]:
+        - generic [ref=f72e34]: CU
+        - list [ref=f72e36]:
+          - link "Dashboard" [ref=f72e37] [cursor=pointer]:
+            - /url: /dashboard
+          - link "My Projects" [ref=f72e44] [cursor=pointer]:
+            - /url: /dashboard/projects
+          - link "Browse Jobs" [ref=f72e50] [cursor=pointer]:
+            - /url: /jobs
+          - link "Messages" [ref=f72e57] [cursor=pointer]:
+            - /url: /dashboard/messages
+          - link "Find Crew" [ref=f72e63] [cursor=pointer]:
+            - /url: /dashboard/contractors
+          - link "Billing" [ref=f72e72] [cursor=pointer]:
+            - /url: /dashboard/billing
+          - link "Settings" [ref=f72e78] [cursor=pointer]:
+            - /url: /dashboard/settings/account
+      - button [ref=f72e85] [cursor=pointer]:
+        - paragraph [ref=f72e89]: Log Out
+    - generic [ref=f72e91]:
+      - generic [ref=f72e92]:
+        - heading "Projects" [level=4] [ref=f72e93]
+        - paragraph [ref=f72e94]: Track jobs you posted, or browse open work to bid on.
+      - generic [ref=f72e95]:
+        - generic [ref=f72e96]:
+          - paragraph [ref=f72e97]: Projects you create appear on your dashboard under Recent Projects.
+          - button "New project" [ref=f72e98] [cursor=pointer]
+        - generic [ref=f72e99]:
+          - generic [ref=f72e100]:
+            - heading "Your projects" [level=6] [ref=f72e104]
+            - paragraph [ref=f72e105]: 0 total
+          - paragraph [ref=f72e106]: Loading projects…
+        - generic [ref=f72e107]:
+          - generic [ref=f72e108]:
+            - heading "Open jobs to bid on" [level=6] [ref=f72e112]
+            - link "Browse all" [ref=f72e113] [cursor=pointer]:
+              - /url: /jobs
+          - paragraph [ref=f72e114]: No open jobs from other users yet. When someone posts a project, you can apply from here.

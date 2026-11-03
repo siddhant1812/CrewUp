@@ -1,0 +1,89 @@
+- generic [ref=f32e3]:
+  - generic [ref=f32e6]:
+    - generic [ref=f32e11]:
+      - paragraph [ref=f32e12]: CrewUp
+      - text: Admin
+    - list [ref=f32e13]:
+      - link "Dashboard" [ref=f32e14] [cursor=pointer]:
+        - /url: /
+      - link "Users" [ref=f32e21] [cursor=pointer]:
+        - /url: /users
+      - link "Projects" [ref=f32e30] [cursor=pointer]:
+        - /url: /projects
+      - link "Proposals" [ref=f32e36] [cursor=pointer]:
+        - /url: /proposals
+    - button [ref=f32e43] [cursor=pointer]:
+      - paragraph [ref=f32e47]: Log out
+  - main [ref=f32e48]:
+    - generic [ref=f32e49]:
+      - heading "Users" [level=4] [ref=f32e50]
+      - paragraph [ref=f32e51]: 3 total accounts
+    - generic [ref=f32e52]:
+      - generic [ref=f32e54]:
+        - searchbox "Search name, email, or company" [ref=f32e58]
+        - group [aria-hidden]
+      - generic [ref=f32e59]:
+        - combobox [ref=f32e60] [cursor=pointer]: All account types
+        - textbox [aria-hidden]
+        - group [aria-hidden]
+      - generic [ref=f32e61]:
+        - combobox [ref=f32e62] [cursor=pointer]: All statuses
+        - textbox [aria-hidden]
+        - group [aria-hidden]
+      - button "Search" [ref=f32e63] [cursor=pointer]
+    - table [ref=f32e65]:
+      - rowgroup [ref=f32e66]:
+        - row [ref=f32e67]:
+          - columnheader "Name" [ref=f32e68]
+          - columnheader "Type" [ref=f32e69]
+          - columnheader "Status" [ref=f32e70]
+          - columnheader "Plan" [ref=f32e71]
+          - columnheader "Joined" [ref=f32e72]
+          - columnheader "Actions" [ref=f32e73]
+      - rowgroup [ref=f32e74]:
+        - row [ref=f32e75]:
+          - cell "MUI QA Tester Admin mui-qa-tester@example.com" [ref=f32e76]:
+            - generic [ref=f32e77]:
+              - paragraph [ref=f32e78]: MUI QA Tester
+              - generic [ref=f32e79]: Admin
+            - paragraph [ref=f32e81]: mui-qa-tester@example.com
+          - cell "general contractor" [ref=f32e82]
+          - cell "active" [ref=f32e83]
+          - cell "starter" [ref=f32e86]
+          - cell "Nov 2, 2026" [ref=f32e87]
+          - cell [ref=f32e88]:
+            - generic [ref=f32e89]:
+              - button "Deactivate" [ref=f32e90] [cursor=pointer]
+              - button "Revoke admin" [disabled]
+              - button [ref=f32e91] [cursor=pointer]
+              - button [disabled]
+        - row [ref=f32e95]:
+          - cell [ref=f32e96]:
+            - paragraph [ref=f32e98]: Khushi
+            - paragraph [ref=f32e99]: khushi@example.com
+          - cell "general contractor" [ref=f32e100]
+          - cell "active" [ref=f32e101]
+          - cell "starter" [ref=f32e104]
+          - cell "Nov 2, 2026" [ref=f32e105]
+          - cell [ref=f32e106]:
+            - generic [ref=f32e107]:
+              - button "Deactivate" [ref=f32e108] [cursor=pointer]
+              - button "Make admin" [ref=f32e109] [cursor=pointer]
+              - button [ref=f32e110] [cursor=pointer]
+              - button [ref=f32e114] [cursor=pointer]
+        - row [ref=f32e118]:
+          - cell "Admin Admin admin@example.com" [ref=f32e119]:
+            - generic [ref=f32e120]:
+              - paragraph [ref=f32e121]: Admin
+              - generic [ref=f32e122]: Admin
+            - paragraph [ref=f32e124]: admin@example.com
+          - cell "general contractor" [ref=f32e125]
+          - cell "active" [ref=f32e126]
+          - cell "starter" [ref=f32e129]
+          - cell "Nov 2, 2026" [ref=f32e130]
+          - cell [ref=f32e131]:
+            - generic [ref=f32e132]:
+              - button "Deactivate" [ref=f32e133] [cursor=pointer]
+              - button "Revoke admin" [ref=f32e134] [cursor=pointer]
+              - button [ref=f32e135] [cursor=pointer]
+              - button [ref=f32e139] [cursor=pointer]

@@ -1,0 +1,49 @@
+- generic [ref=f54e4]:
+  - heading "Create admin account" [level=4] [ref=f54e8]
+  - paragraph [ref=f54e9]: Every account created here gets full admin access.
+  - generic [ref=f54e10]:
+    - generic [ref=f54e11]:
+      - generic:
+        - text: Full name
+        - generic [aria-hidden]: "*"
+      - generic [ref=f54e12]:
+        - textbox "Full name" [ref=f54e13]
+        - group [aria-hidden]:
+          - generic: Full name *
+    - generic [ref=f54e14]:
+      - generic:
+        - text: Email
+        - generic [aria-hidden]: "*"
+      - generic [ref=f54e15]:
+        - textbox "Email" [ref=f54e16]
+        - group [aria-hidden]:
+          - generic: Email *
+    - generic [ref=f54e17]:
+      - generic:
+        - text: Password
+        - generic [aria-hidden]: "*"
+      - generic [ref=f54e18]:
+        - textbox "Password" [ref=f54e19]
+        - group [aria-hidden]:
+          - generic: Password *
+    - generic [ref=f54e20]:
+      - generic:
+        - text: Confirm password
+        - generic [aria-hidden]: "*"
+      - generic [ref=f54e21]:
+        - textbox "Confirm password" [ref=f54e22]
+        - group [aria-hidden]:
+          - generic: Confirm password *
+    - generic [ref=f54e23]:
+      - generic:
+        - text: Admin code
+        - generic [aria-hidden]: "*"
+      - generic [ref=f54e24]:
+        - textbox "Admin code" [ref=f54e25]
+        - group [aria-hidden]:
+          - generic: Admin code *
+    - button "Create account" [ref=f54e26] [cursor=pointer]
+    - paragraph [ref=f54e27]:
+      - text: Already have an account?
+      - link "Sign in" [ref=f54e28] [cursor=pointer]:
+        - /url: /login

@@ -1,0 +1,47 @@
+- generic [ref=f50e3]:
+  - banner [ref=f50e4]:
+    - generic [ref=f50e5]:
+      - link "CrewUp home" [ref=f50e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f50e7]: CREWUP
+      - generic [ref=f50e13]:
+        - button "Switch to light mode" [ref=f50e14] [cursor=pointer]
+        - button "Notifications" [ref=f50e17] [cursor=pointer]
+        - button "MT MUI Test User2" [ref=f50e21] [cursor=pointer]:
+          - generic [ref=f50e22]: MT
+          - paragraph [ref=f50e26]: MUI Test User2
+  - generic [ref=f50e29]:
+    - generic [ref=f50e32]:
+      - generic [ref=f50e33]:
+        - generic [ref=f50e34]: CU
+        - list [ref=f50e36]:
+          - link "Dashboard" [ref=f50e37] [cursor=pointer]:
+            - /url: /dashboard
+          - link "My Projects" [ref=f50e44] [cursor=pointer]:
+            - /url: /dashboard/projects
+          - link "Browse Jobs" [ref=f50e50] [cursor=pointer]:
+            - /url: /jobs
+          - link "Messages" [ref=f50e57] [cursor=pointer]:
+            - /url: /dashboard/messages
+          - link "Find Crew" [active] [ref=f50e63] [cursor=pointer]:
+            - /url: /dashboard/contractors
+          - link "Billing" [ref=f50e72] [cursor=pointer]:
+            - /url: /dashboard/billing
+          - link "Settings" [ref=f50e78] [cursor=pointer]:
+            - /url: /dashboard/settings/account
+      - button [ref=f50e85] [cursor=pointer]:
+        - paragraph [ref=f50e89]: Log Out
+    - generic [ref=f50e123]:
+      - generic [ref=f50e124]:
+        - heading "Contractors" [level=4] [ref=f50e125]
+        - paragraph [ref=f50e126]: Search CrewUp users to save, message, or invite onto a project.
+      - generic [ref=f50e127]:
+        - generic [ref=f50e129]:
+          - searchbox "Search name, company, or location" [ref=f50e130]
+          - group [aria-hidden]
+        - generic [ref=f50e132]:
+          - combobox [ref=f50e133] [cursor=pointer]
+          - textbox [aria-hidden]
+          - group [aria-hidden]
+        - button "Search" [ref=f50e134] [cursor=pointer]
+      - paragraph [ref=f50e136]: No saved contractors yet. Search by name or company to find CrewUp users.

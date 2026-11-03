@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Box } from '@mui/material'
 import Header from '../components/Header'
 import HowItWorks from '../components/HowItWorks'
 import StatsBar from '../components/StatsBar'
@@ -12,9 +13,9 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <div className="app">
+    <Box>
       <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-      <main>
+      <Box component="main">
         <HowItWorks />
         <StatsBar />
         <FindWork />
@@ -22,7 +23,7 @@ export default function Home() {
         <Pricing />
         <TrustBar />
         <FooterCta />
-      </main>
-    </div>
+      </Box>
+    </Box>
   )
 }

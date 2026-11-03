@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { Link as RouterLink, Outlet, useLocation } from 'react-router-dom'
+import { Box, List, ListItemButton, ListItemIcon, ListItemText, Stack } from '@mui/material'
 import { canDo } from '../../api/auth'
 
 const ITEMS = [
@@ -109,28 +110,63 @@ function Icon({ name }) {
 }
 
 export default function SettingsLayout() {
-  const items = ITEMS.filter(
-    (item) => item.to !== '/dashboard/settings/users' || canDo('manageTeam')
-  )
+  const location = useLocation()
+  const items = ITEMS.filter((item) => item.to !== '/dashboard/settings/users' || canDo('manageTeam'))
 
   return (
-    <section className="set">
-      <aside className="set-nav" aria-label="Settings">
-        {items.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) => `set-nav__item${isActive ? ' is-active' : ''}`}
-            end
-          >
-            <Icon name={item.icon} />
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-      </aside>
-      <div className="set-main">
+    <Stack
+      direction={{ xs: 'column', md: 'row' }}
+      sx={{ alignItems: 'flex-start', gap: { xs: 2, md: 3 }, p: { xs: 2, sm: 3 } }}
+    >
+      <Box
+        component="aside"
+        aria-label="Settings"
+        sx={{
+          width: { xs: '100%', md: 240 },
+          flexShrink: 0,
+          bgcolor: 'background.paper',
+          borderRadius: 3,
+          border: '1px solid',
+          borderColor: 'divider',
+          p: 1,
+          position: { md: 'sticky' },
+          top: { md: 88 },
+        }}
+      >
+        <List sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+          {items.map((item) => {
+            const active = location.pathname === item.to
+            return (
+              <ListItemButton
+                key={item.to}
+                component={RouterLink}
+                to={item.to}
+                selected={active}
+                sx={{
+                  borderRadius: 2,
+                  color: active ? 'primary.main' : 'text.secondary',
+                  fontWeight: active ? 600 : 500,
+                  '&.Mui-selected': {
+                    bgcolor: 'primary.light',
+                    '&:hover': { bgcolor: 'primary.light' },
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 34, color: 'inherit' }}>
+                  <Icon name={item.icon} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.label}
+                  slotProps={{ primary: { fontSize: '0.9rem', fontWeight: 'inherit' } }}
+                />
+              </ListItemButton>
+            )
+          })}
+        </List>
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
         <Outlet />
-      </div>
-    </section>
+      </Box>
+    </Stack>
   )
 }

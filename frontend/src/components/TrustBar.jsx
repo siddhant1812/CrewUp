@@ -1,14 +1,16 @@
+import { Box, Container, Stack, Typography } from '@mui/material'
+
 const ITEMS = [
   {
     label: '4.9/5 Average Rating',
     node: (
-      <div className="trust__stars" aria-hidden="true">
+      <Stack direction="row" spacing={0.25} aria-hidden="true">
         {[0, 1, 2, 3, 4].map((i) => (
           <svg key={i} width="18" height="18" viewBox="0 0 18 18" fill="#F5A623">
             <path d="M9 1.5l2.1 4.25 4.7.68-3.4 3.31.8 4.66L9 12.2l-4.2 2.2.8-4.66-3.4-3.31 4.7-.68L9 1.5z" />
           </svg>
         ))}
-      </div>
+      </Stack>
     ),
   },
   {
@@ -46,18 +48,40 @@ const ITEMS = [
 
 export default function TrustBar() {
   return (
-    <section className="trust" aria-label="Social proof">
-      <div className="container">
-        <p className="trust__heading">Trusted by Construction Professionals</p>
-        <div className="trust__row">
-          {ITEMS.map((item) => (
-            <div key={item.label} className="trust__item">
+    <Box component="section" aria-label="Social proof" sx={{ py: 6, textAlign: 'center' }}>
+      <Container maxWidth="lg">
+        <Typography sx={{ color: 'primary.main', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', mb: 3 }}>
+          Trusted by Construction Professionals
+        </Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
+            gap: { xs: 3, sm: 0 },
+          }}
+        >
+          {ITEMS.map((item, i) => (
+            <Box
+              key={item.label}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 1,
+                fontWeight: 600,
+                fontSize: '0.92rem',
+                color: 'secondary.main',
+                px: { sm: 2 },
+                borderRight: { sm: i < ITEMS.length - 1 ? '1px solid' : 'none' },
+                borderColor: 'divider',
+              }}
+            >
               {item.node}
               <span>{item.label}</span>
-            </div>
+            </Box>
           ))}
-        </div>
-      </div>
-    </section>
+        </Box>
+      </Container>
+    </Box>
   )
 }

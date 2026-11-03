@@ -1,0 +1,44 @@
+- generic [ref=f15e24]:
+  - complementary [ref=f15e25]:
+    - generic [ref=f15e30]:
+      - strong [ref=f15e31]: CrewUp
+      - generic [ref=f15e32]: Admin
+    - navigation [ref=f15e33]:
+      - link "Dashboard" [ref=f15e34] [cursor=pointer]:
+        - /url: /
+      - link "Users" [ref=f15e39] [cursor=pointer]:
+        - /url: /users
+      - link "Projects" [ref=f15e46] [cursor=pointer]:
+        - /url: /projects
+      - link "Proposals" [ref=f15e50] [cursor=pointer]:
+        - /url: /proposals
+    - button "Log out" [ref=f15e55] [cursor=pointer]
+  - main [ref=f15e60]:
+    - generic [ref=f15e62]:
+      - heading "Platform overview" [level=1] [ref=f15e63]
+      - paragraph [ref=f15e64]: Signed in as Playwright Test
+    - generic [ref=f15e65]:
+      - generic [ref=f15e73]:
+        - generic [ref=f15e74]: Total users
+        - strong [ref=f15e75]: "2"
+      - generic [ref=f15e80]:
+        - generic [ref=f15e81]: Total projects
+        - strong [ref=f15e82]: "0"
+      - generic [ref=f15e88]:
+        - generic [ref=f15e89]: Proposals
+        - strong [ref=f15e90]: "0"
+      - generic [ref=f15e96]:
+        - generic [ref=f15e97]: Conversations
+        - strong [ref=f15e98]: "0"
+    - generic [ref=f15e99]:
+      - heading "Users by account type" [level=3] [ref=f15e100]
+      - generic [ref=f15e101]: "general contractor: 2"
+    - generic [ref=f15e103]:
+      - heading "Users by status" [level=3] [ref=f15e104]
+      - generic [ref=f15e105]: "active: 2"
+    - generic [ref=f15e107]:
+      - heading "Projects by status" [level=3] [ref=f15e108]
+      - paragraph [ref=f15e109]: No data yet.
+    - generic [ref=f15e110]:
+      - heading "Plans" [level=3] [ref=f15e111]
+      - generic [ref=f15e112]: "starter: 2"

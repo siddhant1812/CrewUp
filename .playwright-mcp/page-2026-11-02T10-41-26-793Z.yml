@@ -1,0 +1,33 @@
+- generic [ref=f18e3]:
+  - complementary [ref=f18e4]:
+    - generic [ref=f18e9]:
+      - strong [ref=f18e10]: CrewUp
+      - generic [ref=f18e11]: Admin
+    - navigation [ref=f18e12]:
+      - link "Dashboard" [ref=f18e13] [cursor=pointer]:
+        - /url: /
+      - link "Users" [ref=f18e18] [cursor=pointer]:
+        - /url: /users
+      - link "Projects" [ref=f18e25] [cursor=pointer]:
+        - /url: /projects
+      - link "Proposals" [ref=f18e29] [cursor=pointer]:
+        - /url: /proposals
+    - button "Log out" [ref=f18e34] [cursor=pointer]
+  - main [ref=f18e39]:
+    - generic [ref=f18e41]:
+      - heading "Users" [level=1] [ref=f18e42]
+      - paragraph [ref=f18e43]: 0 total accounts
+    - generic [ref=f18e44]:
+      - searchbox [ref=f18e49]
+      - combobox [ref=f18e50]:
+        - option "All account types" [selected]
+        - option "Contractor"
+        - option "Subcontractor"
+        - option "Find work"
+      - combobox [ref=f18e51]:
+        - option "All statuses" [selected]
+        - option "Active"
+        - option "Deactivated"
+        - option "Deleted"
+      - button "Search" [ref=f18e52] [cursor=pointer]
+    - paragraph [ref=f18e54]: Loading…

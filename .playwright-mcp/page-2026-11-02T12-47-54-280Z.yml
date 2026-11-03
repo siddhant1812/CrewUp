@@ -1,0 +1,49 @@
+- generic [ref=f86e3]:
+  - banner [ref=f86e4]:
+    - generic [ref=f86e5]:
+      - link "CrewUp home" [ref=f86e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f86e7]: CREWUP
+      - generic [ref=f86e13]:
+        - button "Switch to dark mode" [ref=f86e14] [cursor=pointer]
+        - button "Notifications" [ref=f86e17] [cursor=pointer]
+        - button [ref=f86e21] [cursor=pointer]:
+          - paragraph [ref=f86e27]: Khushi
+  - generic [ref=f86e30]:
+    - generic [ref=f86e33]:
+      - generic [ref=f86e34]:
+        - generic [ref=f86e35]: CU
+        - list [ref=f86e37]:
+          - link "Dashboard" [ref=f86e38] [cursor=pointer]:
+            - /url: /dashboard
+          - link "My Projects" [ref=f86e45] [cursor=pointer]:
+            - /url: /dashboard/projects
+          - link "Browse Jobs" [ref=f86e51] [cursor=pointer]:
+            - /url: /jobs
+          - link "Messages" [ref=f86e58] [cursor=pointer]:
+            - /url: /dashboard/messages
+          - link "Find Crew" [ref=f86e64] [cursor=pointer]:
+            - /url: /dashboard/contractors
+          - link "Billing" [ref=f86e73] [cursor=pointer]:
+            - /url: /dashboard/billing
+          - link "Settings" [ref=f86e79] [cursor=pointer]:
+            - /url: /dashboard/settings/account
+      - button [ref=f86e86] [cursor=pointer]:
+        - paragraph [ref=f86e90]: Log Out
+    - generic [ref=f86e92]:
+      - generic [ref=f86e93]:
+        - heading "Contractors" [level=4] [ref=f86e94]
+        - paragraph [ref=f86e95]: Search CrewUp users to save, message, or invite onto a project.
+      - generic [ref=f86e96]:
+        - generic [ref=f86e98]:
+          - searchbox "Search name, company, or location" [ref=f86e99]
+          - group [aria-hidden]
+        - generic [ref=f86e100]:
+          - generic: Account type
+          - generic [ref=f86e101]:
+            - combobox "Account type" [ref=f86e102] [cursor=pointer]
+            - textbox [aria-hidden]
+            - group [aria-hidden]:
+              - generic: Account type
+        - button "Search" [ref=f86e103] [cursor=pointer]
+      - paragraph [ref=f86e105]: Loading contractors…

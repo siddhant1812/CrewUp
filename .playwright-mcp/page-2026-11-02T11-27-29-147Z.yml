@@ -1,0 +1,33 @@
+- generic [ref=f29e4]:
+  - heading "CrewUp Admin" [level=4] [ref=f29e8]
+  - paragraph [ref=f29e9]: Sign in with an account that has admin access.
+  - generic [ref=f29e10]:
+    - generic [ref=f29e11]:
+      - generic:
+        - text: Email
+        - generic [aria-hidden]: "*"
+      - generic [ref=f29e12]:
+        - textbox "Email" [ref=f29e13]
+        - group [aria-hidden]:
+          - generic: Email *
+    - generic [ref=f29e14]:
+      - generic:
+        - text: Password
+        - generic [aria-hidden]: "*"
+      - generic [ref=f29e15]:
+        - textbox "Password" [ref=f29e16]
+        - group [aria-hidden]:
+          - generic: Password *
+    - generic [ref=f29e17]:
+      - generic:
+        - text: Admin code
+        - generic [aria-hidden]: "*"
+      - generic [ref=f29e18]:
+        - textbox "Admin code" [ref=f29e19]
+        - group [aria-hidden]:
+          - generic: Admin code *
+    - button "Sign in" [ref=f29e20] [cursor=pointer]
+    - paragraph [ref=f29e21]:
+      - text: Need an account?
+      - link "Create one" [ref=f29e22] [cursor=pointer]:
+        - /url: /signup

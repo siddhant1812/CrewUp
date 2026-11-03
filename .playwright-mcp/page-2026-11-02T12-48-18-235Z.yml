@@ -1,0 +1,34 @@
+- generic [ref=f88e3]:
+  - generic [ref=f88e6]:
+    - generic [ref=f88e11]:
+      - paragraph [ref=f88e12]: CrewUp
+      - text: Admin
+    - list [ref=f88e13]:
+      - link "Dashboard" [ref=f88e14] [cursor=pointer]:
+        - /url: /
+      - link "Users" [ref=f88e21] [cursor=pointer]:
+        - /url: /users
+      - link "Projects" [ref=f88e30] [cursor=pointer]:
+        - /url: /projects
+      - link "Proposals" [ref=f88e36] [cursor=pointer]:
+        - /url: /proposals
+    - button [ref=f88e43] [cursor=pointer]:
+      - paragraph [ref=f88e47]: Log out
+  - main [ref=f88e48]:
+    - generic [ref=f88e49]:
+      - heading "Users" [level=4] [ref=f88e50]
+      - paragraph [ref=f88e51]: 0 total accounts
+    - generic [ref=f88e52]:
+      - generic [ref=f88e54]:
+        - searchbox "Search name, email, or company" [ref=f88e58]
+        - group [aria-hidden]
+      - generic [ref=f88e59]:
+        - combobox [ref=f88e60] [cursor=pointer]: All account types
+        - textbox [aria-hidden]
+        - group [aria-hidden]
+      - generic [ref=f88e61]:
+        - combobox [ref=f88e62] [cursor=pointer]: All statuses
+        - textbox [aria-hidden]
+        - group [aria-hidden]
+      - button "Search" [ref=f88e63] [cursor=pointer]
+    - paragraph [ref=f88e65]: Loading…

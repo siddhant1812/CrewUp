@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
+import { Box, Button, Container, Typography } from '@mui/material'
 import { getSession } from '../api/auth'
 
 const TRADES = [
@@ -40,49 +41,81 @@ export default function FindContractors() {
   const destination = forContractor ? '/jobs' : '/dashboard/contractors'
 
   return (
-    <section className="section find-contractors" id="find-contractors">
-      <div className="container find-contractors__grid">
-        <div className="find-contractors__copy">
-          <p className="eyebrow">{forContractor ? 'Find Work' : 'Find Contractors'}</p>
-          <h2 className="h2">
-            {forContractor ? 'Find Your Next Opportunity' : 'Find Qualified Subcontractors Fast'}
-          </h2>
-          <p className="lead">
-            {forContractor
-              ? 'Browse open projects by trade, location, and schedule — then connect with the people who posted them.'
-              : 'Search verified tradespeople by specialty, location, and availability — then hire with confidence.'}
-          </p>
-          <div className="trades">
-            {TRADES.map((t) => (
-              <Link
-                key={t.name}
-                to={
-                  forContractor
-                    ? destination
-                    : `${destination}?trade=${encodeURIComponent(t.name)}`
-                }
-                className="trade"
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d={t.d} stroke="currentColor" strokeWidth="1.55" strokeLinejoin="round" strokeLinecap="round" />
-                </svg>
-                <span>{t.name}</span>
-              </Link>
-            ))}
-          </div>
-          <Link to={destination} className="btn btn-primary btn-lg">
-            {forContractor ? 'Find Work' : 'Find Contractors'}
-          </Link>
-        </div>
-        <div className="find-contractors__media">
-          <img
+    <Box component="section" id="find-contractors" sx={{ py: { xs: 6, md: 7 } }}>
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1.05fr 0.95fr' },
+            gap: { xs: 4.5, md: 6 },
+            alignItems: 'center',
+          }}
+        >
+          <Box>
+            <Typography sx={{ color: 'primary.main', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', mb: 1 }}>
+              {forContractor ? 'Find Work' : 'Find Contractors'}
+            </Typography>
+            <Typography variant="h2" sx={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.35rem)', letterSpacing: '-0.025em', lineHeight: 1.2, mb: 1 }}>
+              {forContractor ? 'Find Your Next Opportunity' : 'Find Qualified Subcontractors Fast'}
+            </Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: '1.02rem', maxWidth: '34rem', mb: 3 }}>
+              {forContractor
+                ? 'Browse open projects by trade, location, and schedule — then connect with the people who posted them.'
+                : 'Search verified tradespeople by specialty, location, and availability — then hire with confidence.'}
+            </Typography>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(4, 1fr)', md: 'repeat(6, 1fr)' },
+                gap: 1,
+                mb: 3.5,
+              }}
+            >
+              {TRADES.map((t) => (
+                <Box
+                  key={t.name}
+                  component={RouterLink}
+                  to={forContractor ? destination : `${destination}?trade=${encodeURIComponent(t.name)}`}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.6,
+                    p: '0.85rem 0.4rem',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: '10px',
+                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? 'background.paper' : '#f9fcff'),
+                    color: 'primary.main',
+                    textAlign: 'center',
+                    textDecoration: 'none',
+                    minHeight: 84,
+                    transition: '0.15s ease',
+                    '&:hover': { borderColor: '#b9def9', bgcolor: 'rgba(67, 168, 240, 0.04)' },
+                  }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d={t.d} stroke="currentColor" strokeWidth="1.55" strokeLinejoin="round" strokeLinecap="round" />
+                  </svg>
+                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'text.primary' }}>{t.name}</Typography>
+                </Box>
+              ))}
+            </Box>
+            <Button component={RouterLink} to={destination} variant="contained" size="large">
+              {forContractor ? 'Find Work' : 'Find Contractors'}
+            </Button>
+          </Box>
+          <Box
+            component="img"
             src={IMG}
             alt="Two construction workers looking at a tablet together"
-            width="560"
-            height="480"
+            width={560}
+            height={480}
+            sx={{ width: '100%', maxHeight: 480, objectFit: 'cover', borderRadius: '16px' }}
           />
-        </div>
-      </div>
-    </section>
+        </Box>
+      </Container>
+    </Box>
   )
 }

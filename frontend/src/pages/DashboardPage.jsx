@@ -1,8 +1,32 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useOutletContext } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useOutletContext } from 'react-router-dom'
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from '@mui/material'
+import {
+  DeleteOutlined,
+  FolderOutlined,
+  SearchOutlined,
+} from '@mui/icons-material'
 import { accountKindOf, canPostProjects, mediaUrl } from '../api/auth'
 import { categoriesFor } from '../data/categories'
-import CardHead from '../components/CardHead'
 import {
   createProject,
   deleteProject,
@@ -31,6 +55,14 @@ const STATUS_OPTIONS = [
   { value: 'cancelled', label: 'Cancelled' },
 ]
 
+const STATUS_CHIP_COLOR = {
+  open: 'warning',
+  in_progress: 'info',
+  draft: 'default',
+  completed: 'success',
+  cancelled: 'error',
+}
+
 function statusMeta(status) {
   return STATUS_OPTIONS.find((s) => s.value === status) || { value: status, label: status || 'Open' }
 }
@@ -42,91 +74,135 @@ function formatDue(value) {
   return d.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }
 
-function ProjectThumb({ project }) {
-  const src = mediaUrl(project.image)
-  if (src) {
-    return <img src={src} alt="" width="48" height="36" />
-  }
-  return <span className="dash-table__thumb-fallback" aria-hidden="true" />
+function SectionHeader({ icon, title, meta, children }) {
+  return (
+    <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 2 }}>
+      <Box
+        sx={{
+          width: 36,
+          height: 36,
+          borderRadius: '10px',
+          bgcolor: 'primary.light',
+          color: 'primary.dark',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        {icon}
+      </Box>
+      <Typography variant="h6" sx={{ fontSize: '1.05rem', flex: 1 }}>
+        {title}
+      </Typography>
+      {meta != null ? (
+        <Typography variant="body2" color="text.secondary" fontWeight={600}>
+          {meta}
+        </Typography>
+      ) : null}
+      {children}
+    </Stack>
+  )
 }
 
-function StatusPill({ status }) {
+function ProjectThumb({ project }) {
+  const src = mediaUrl(project.image)
+  return (
+    <Avatar
+      variant="rounded"
+      src={src || undefined}
+      sx={{ width: 48, height: 36, bgcolor: 'action.hover' }}
+    >
+      {' '}
+    </Avatar>
+  )
+}
+
+function StatusChip({ status }) {
   const meta = statusMeta(status)
-  return <span className={`status-pill status-pill--${meta.value}`}>{meta.label}</span>
+  return <Chip size="small" label={meta.label} color={STATUS_CHIP_COLOR[meta.value] || 'default'} />
 }
 
 function ProjectsTable({ projects, emptyLabel, onDelete, onStatus }) {
   const navigate = useNavigate()
 
   if (!projects.length) {
-    return <p className="dash-empty">{emptyLabel}</p>
+    return (
+      <Typography color="text.secondary" sx={{ py: 3 }}>
+        {emptyLabel}
+      </Typography>
+    )
   }
 
   return (
-    <div className="dash-table-wrap">
-      <table className="dash-table">
-        <thead>
-          <tr>
-            <th>Project</th>
-            <th>Location</th>
-            <th>Due</th>
-            <th>Status</th>
-            {onDelete ? <th /> : null}
-          </tr>
-        </thead>
-        <tbody>
+    <TableContainer>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Project</TableCell>
+            <TableCell>Location</TableCell>
+            <TableCell>Due</TableCell>
+            <TableCell>Status</TableCell>
+            {onDelete ? <TableCell /> : null}
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {projects.map((p) => (
-            <tr
+            <TableRow
               key={p.id}
-              className="dash-table__click"
+              hover
               onClick={() => navigate(`/dashboard/projects/${p.id}`)}
+              sx={{ cursor: 'pointer' }}
             >
-              <td>
-                <div className="dash-table__project">
+              <TableCell>
+                <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
                   <ProjectThumb project={p} />
-                  <span>{p.title}</span>
-                </div>
-              </td>
-              <td>{p.location || '—'}</td>
-              <td>{formatDue(p.dueDate)}</td>
-              <td>
+                  <Typography variant="body2" fontWeight={600}>
+                    {p.title}
+                  </Typography>
+                </Stack>
+              </TableCell>
+              <TableCell>{p.location || '—'}</TableCell>
+              <TableCell>{formatDue(p.dueDate)}</TableCell>
+              <TableCell>
                 {onStatus ? (
-                  <select
-                    className={`status-select status-pill--${p.status}`}
+                  <Select
+                    size="small"
                     value={p.status || 'open'}
                     onChange={(e) => onStatus(p.id, e.target.value)}
                     onClick={(e) => e.stopPropagation()}
                     aria-label={`Status for ${p.title}`}
                   >
                     {STATUS_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
+                      <MenuItem key={opt.value} value={opt.value}>
                         {opt.label}
-                      </option>
+                      </MenuItem>
                     ))}
-                  </select>
+                  </Select>
                 ) : (
-                  <StatusPill status={p.status} />
+                  <StatusChip status={p.status} />
                 )}
-              </td>
+              </TableCell>
               {onDelete ? (
-                <td>
-                  <button
-                    type="button"
-                    className="dash-table__delete"
+                <TableCell>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    aria-label="Delete project"
                     onClick={(e) => {
                       e.stopPropagation()
                       onDelete(p.id)
                     }}
                   >
-                    Delete
-                  </button>
-                </td>
+                    <DeleteOutlined fontSize="small" />
+                  </IconButton>
+                </TableCell>
               ) : null}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </TableContainer>
   )
 }
 
@@ -192,55 +268,76 @@ function DashboardHome({ user }) {
 
   return (
     <>
-      <div className="dash-welcome">
-        <div className="dash-welcome__text">
-          <h2>Welcome back, {firstName}!</h2>
-          <p>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between', gap: 2, mb: 3 }}
+      >
+        <Box>
+          <Typography variant="h4" sx={{ fontSize: '1.5rem', mb: 0.5 }}>
+            Welcome back, {firstName}!
+          </Typography>
+          <Typography color="text.secondary">
             {isWorker
               ? 'Find open work, submit proposals, and keep up with messages.'
               : 'Post jobs, review bids, and hire crew from one place.'}
-          </p>
-        </div>
+          </Typography>
+        </Box>
         {isWorker ? (
-          <Link to="/jobs" className="btn btn-primary btn-sm">
+          <Button component={RouterLink} to="/jobs" variant="contained" size="small">
             Browse jobs
-          </Link>
+          </Button>
         ) : (
-          <Link to="/dashboard/projects" className="btn btn-primary btn-sm">
+          <Button component={RouterLink} to="/dashboard/projects" variant="contained" size="small">
             Post a project
-          </Link>
+          </Button>
         )}
-      </div>
+      </Stack>
 
-      <div className="dash-stats">
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: 2,
+          mb: 3,
+        }}
+      >
         {statCards.map((s) => (
-          <article key={s.label} className="dash-stat">
-            <strong>{loading ? '—' : s.value}</strong>
-            <span>{s.label}</span>
-          </article>
+          <Paper key={s.label} variant="outlined" sx={{ p: 2.5, borderRadius: '14px' }}>
+            <Typography variant="h4" sx={{ fontSize: '1.9rem', mb: 0.5 }}>
+              {loading ? '—' : s.value}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {s.label}
+            </Typography>
+          </Paper>
         ))}
-      </div>
+      </Box>
 
-      <div className="dash-table-card">
-        <CardHead icon={isWorker ? 'search' : 'folder'} title={isWorker ? 'Jobs for you' : 'Recent Projects'}>
-          <Link to={isWorker ? '/jobs' : '/dashboard/projects'} className="card-head__link">
+      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '14px' }}>
+        <SectionHeader
+          icon={isWorker ? <SearchOutlined fontSize="small" /> : <FolderOutlined fontSize="small" />}
+          title={isWorker ? 'Jobs for you' : 'Recent Projects'}
+        >
+          <Button component={RouterLink} to={isWorker ? '/jobs' : '/dashboard/projects'} size="small">
             View all
-          </Link>
-        </CardHead>
-        {error ? <p className="dash-empty">{error}</p> : null}
+          </Button>
+        </SectionHeader>
+        {error ? <Alert severity="error">{error}</Alert> : null}
         {loading ? (
-          <p className="dash-empty">Loading…</p>
+          <Typography color="text.secondary" sx={{ py: 3 }}>
+            Loading…
+          </Typography>
         ) : (
           <ProjectsTable
             projects={isWorker ? recommendedJobs : recentProjects}
             emptyLabel={
               isWorker
                 ? 'No open jobs yet. Check Browse Jobs as contractors post work.'
-                : 'No projects yet. Create one from My Projects and it will show up here.'
+                : 'No projects yet.'
             }
           />
         )}
-      </div>
+      </Paper>
     </>
   )
 }
@@ -322,7 +419,7 @@ function ProjectsSection({ user }) {
         projectType: '',
         service: '',
         budget: '',
-    vacancies: 1,
+        vacancies: 1,
         description: '',
         trades: '',
         status: 'open',
@@ -366,160 +463,165 @@ function ProjectsSection({ user }) {
   const categories = categoriesFor(user.contractorType)
 
   return (
-    <div className="dash-projects">
-      <div className="dash-projects__toolbar">
-        <p className="dash-page__hint">
+    <Stack spacing={2.5}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between', gap: 1.5 }}
+      >
+        <Typography color="text.secondary">
           {canPost
             ? 'Projects you create appear on your dashboard under Recent Projects.'
             : 'Browse open jobs below and apply from the job page. Only contractors and subcontractors can post projects.'}
-        </p>
+        </Typography>
         {canPost ? (
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={() => setShowForm((v) => !v)}
-          >
+          <Button variant="contained" size="small" onClick={() => setShowForm((v) => !v)} sx={{ flexShrink: 0 }}>
             {showForm ? 'Cancel' : 'New project'}
-          </button>
+          </Button>
         ) : (
-          <Link to="/jobs" className="btn btn-primary btn-sm">
+          <Button component={RouterLink} to="/jobs" variant="contained" size="small" sx={{ flexShrink: 0 }}>
             Browse jobs
-          </Link>
+          </Button>
         )}
-      </div>
+      </Stack>
 
-      {canPost && showForm && (
-        <form className="dash-project-form" onSubmit={handleCreate}>
-          <div className="dash-project-form__grid">
-            <label>
-              <span>Title</span>
-              <input
-                value={form.title}
-                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                placeholder="Project title"
-                required
-              />
-            </label>
-            <label>
-              <span>Location</span>
-              <input
-                value={form.location}
-                onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-                placeholder="Denver, CO"
-              />
-            </label>
-            <label>
-              <span>Due date</span>
-              <input
-                type="date"
-                value={form.dueDate}
-                onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
-              />
-            </label>
-            <label>
-              <span>Budget</span>
-              <input
-                value={form.budget}
-                onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))}
-                placeholder="$250,000 – $500,000"
-              />
-            </label>
-            <label>
-              <span>Vacancies (workers needed)</span>
-              <input
-                type="number"
-                min="1"
-                value={form.vacancies}
-                onChange={(e) => setForm((f) => ({ ...f, vacancies: e.target.value }))}
-              />
-            </label>
-            <label>
-              <span>{isContractor ? 'Project type' : 'Trade category'}</span>
-              <select
-                value={form.projectType}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, projectType: e.target.value, service: '' }))
-                }
-                required
-              >
-                <option value="">
-                  {isContractor ? 'Select project type' : 'Select trade category'}
-                </option>
-                {Object.keys(categories).map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>{isContractor ? 'Project' : 'Service'}</span>
-              <select
-                value={form.service}
-                onChange={(e) => setForm((f) => ({ ...f, service: e.target.value }))}
-                disabled={!form.projectType}
-              >
-                <option value="">Any / not specific</option>
-                {(categories[form.projectType] || []).map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Status</span>
-              <select
-                value={form.status}
-                onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-              >
-                {STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Image</span>
+      {canPost && showForm ? (
+        <Paper
+          component="form"
+          onSubmit={handleCreate}
+          variant="outlined"
+          sx={{ p: { xs: 2, sm: 3 }, borderRadius: '14px' }}
+        >
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+              gap: 2,
+              mb: 2,
+            }}
+          >
+            <TextField
+              label="Title"
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              placeholder="Project title"
+              required
+            />
+            <TextField
+              label="Location"
+              value={form.location}
+              onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+              placeholder="Denver, CO"
+            />
+            <TextField
+              label="Due date"
+              type="date"
+              value={form.dueDate}
+              onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <TextField
+              label="Budget"
+              value={form.budget}
+              onChange={(e) => setForm((f) => ({ ...f, budget: e.target.value }))}
+              placeholder="$250,000 – $500,000"
+            />
+            <TextField
+              label="Vacancies (workers needed)"
+              type="number"
+              slotProps={{ htmlInput: { min: 1 } }}
+              value={form.vacancies}
+              onChange={(e) => setForm((f) => ({ ...f, vacancies: e.target.value }))}
+            />
+            <TextField
+              select
+              label={isContractor ? 'Project type' : 'Trade category'}
+              value={form.projectType}
+              onChange={(e) => setForm((f) => ({ ...f, projectType: e.target.value, service: '' }))}
+              required
+            >
+              <MenuItem value="">{isContractor ? 'Select project type' : 'Select trade category'}</MenuItem>
+              {Object.keys(categories).map((name) => (
+                <MenuItem key={name} value={name}>
+                  {name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label={isContractor ? 'Project' : 'Service'}
+              value={form.service}
+              onChange={(e) => setForm((f) => ({ ...f, service: e.target.value }))}
+              disabled={!form.projectType}
+            >
+              <MenuItem value="">Any / not specific</MenuItem>
+              {(categories[form.projectType] || []).map((name) => (
+                <MenuItem key={name} value={name}>
+                  {name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label="Status"
+              value={form.status}
+              onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+            >
+              {STATUS_OPTIONS.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Button
+              component="label"
+              variant="outlined"
+              sx={{ justifyContent: 'flex-start', alignSelf: 'center' }}
+            >
+              {form.image ? form.image.name : 'Upload image'}
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, image: e.target.files?.[0] || null }))
-                }
+                hidden
+                onChange={(e) => setForm((f) => ({ ...f, image: e.target.files?.[0] || null }))}
               />
-            </label>
-          </div>
-          <label className="dash-project-form__full">
-            <span>Trades needed</span>
-            <input
-              value={form.trades}
-              onChange={(e) => setForm((f) => ({ ...f, trades: e.target.value }))}
-              placeholder="Electrical, Plumbing, HVAC"
-            />
-          </label>
-          <label className="dash-project-form__full">
-            <span>Description</span>
-            <textarea
-              rows={3}
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              placeholder="Scope, trades needed, notes…"
-            />
-          </label>
-          {formError ? <p className="dash-form-error">{formError}</p> : null}
-          <button type="submit" className="btn btn-primary btn-sm" disabled={saving}>
+            </Button>
+          </Box>
+          <TextField
+            label="Trades needed"
+            value={form.trades}
+            onChange={(e) => setForm((f) => ({ ...f, trades: e.target.value }))}
+            placeholder="Electrical, Plumbing, HVAC"
+            fullWidth
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="Description"
+            multiline
+            rows={3}
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            placeholder="Scope, trades needed, notes…"
+            fullWidth
+            sx={{ mb: 2 }}
+          />
+          {formError ? (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {formError}
+            </Alert>
+          ) : null}
+          <Button type="submit" variant="contained" size="small" disabled={saving}>
             {saving ? 'Creating…' : 'Create project'}
-          </button>
-        </form>
-      )}
+          </Button>
+        </Paper>
+      ) : null}
 
-      <div className="dash-table-card">
-        <CardHead icon="folder" title="Your projects" meta={`${projects.length} total`} />
-        {error ? <p className="dash-empty">{error}</p> : null}
+      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '14px' }}>
+        <SectionHeader icon={<FolderOutlined fontSize="small" />} title="Your projects" meta={`${projects.length} total`} />
+        {error ? <Alert severity="error">{error}</Alert> : null}
         {loading ? (
-          <p className="dash-empty">Loading projects…</p>
+          <Typography color="text.secondary" sx={{ py: 3 }}>
+            Loading projects…
+          </Typography>
         ) : (
           <ProjectsTable
             projects={projects}
@@ -532,20 +634,20 @@ function ProjectsSection({ user }) {
             onStatus={canPost ? handleStatus : undefined}
           />
         )}
-      </div>
+      </Paper>
 
-      <div className="dash-table-card" style={{ marginTop: '1rem' }}>
-        <CardHead icon="search" title="Open jobs to bid on">
-          <Link to="/jobs" className="card-head__link">
+      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '14px' }}>
+        <SectionHeader icon={<SearchOutlined fontSize="small" />} title="Open jobs to bid on">
+          <Button component={RouterLink} to="/jobs" size="small">
             Browse all
-          </Link>
-        </CardHead>
+          </Button>
+        </SectionHeader>
         <ProjectsTable
           projects={openJobs}
           emptyLabel="No open jobs from other users yet. When someone posts a project, you can apply from here."
         />
-      </div>
-    </div>
+      </Paper>
+    </Stack>
   )
 }
 
@@ -564,19 +666,17 @@ export default function DashboardPage({ section = 'dashboard' }) {
   }
 
   return (
-    <section className="dash-page">
+    <Box component="section" sx={{ p: { xs: 2, sm: 3 } }}>
       {section !== 'dashboard' ? (
-        <div className="dash-page__header">
-          <h1>{header.title}</h1>
-          <p>{header.lead}</p>
-        </div>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h4" sx={{ fontSize: '1.5rem', mb: 0.5 }}>
+            {header.title}
+          </Typography>
+          <Typography color="text.secondary">{header.lead}</Typography>
+        </Box>
       ) : null}
 
-      {section === 'dashboard' ? (
-        <DashboardHome user={user} />
-      ) : (
-        <ProjectsSection user={user} />
-      )}
-    </section>
+      {section === 'dashboard' ? <DashboardHome user={user} /> : <ProjectsSection user={user} />}
+    </Box>
   )
 }

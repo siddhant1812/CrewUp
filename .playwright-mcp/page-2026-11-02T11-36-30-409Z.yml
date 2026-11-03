@@ -1,0 +1,61 @@
+- generic [ref=f62e3]:
+  - banner [ref=f62e4]:
+    - generic [ref=f62e5]:
+      - link "CrewUp home" [ref=f62e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f62e7]: CREWUP
+      - generic [ref=f62e13]:
+        - button "Switch to dark mode" [ref=f62e14] [cursor=pointer]
+        - button "Notifications" [ref=f62e17] [cursor=pointer]
+        - button "MT MUI Test User2" [ref=f62e21] [cursor=pointer]:
+          - generic [ref=f62e22]: MT
+          - paragraph [ref=f62e26]: MUI Test User2
+  - generic [ref=f62e29]:
+    - generic [ref=f62e32]:
+      - generic [ref=f62e33]:
+        - generic [ref=f62e34]: CU
+        - list [ref=f62e36]:
+          - link "Dashboard" [ref=f62e37] [cursor=pointer]:
+            - /url: /dashboard
+          - link "My Projects" [ref=f62e44] [cursor=pointer]:
+            - /url: /dashboard/projects
+          - link "Browse Jobs" [ref=f62e50] [cursor=pointer]:
+            - /url: /jobs
+          - link "Messages" [ref=f62e57] [cursor=pointer]:
+            - /url: /dashboard/messages
+          - link "Find Crew" [ref=f62e63] [cursor=pointer]:
+            - /url: /dashboard/contractors
+          - link "Billing" [ref=f62e72] [cursor=pointer]:
+            - /url: /dashboard/billing
+          - link "Settings" [ref=f62e78] [cursor=pointer]:
+            - /url: /dashboard/settings/account
+      - button [ref=f62e85] [cursor=pointer]:
+        - paragraph [ref=f62e89]: Log Out
+    - generic [ref=f62e91]:
+      - generic [ref=f62e92]:
+        - generic [ref=f62e93]:
+          - heading "Messages" [level=4] [ref=f62e94]
+          - paragraph [ref=f62e95]: Communicate with general contractors and manage conversations.
+        - button [ref=f62e96] [cursor=pointer]
+      - generic [ref=f62e100]:
+        - generic [ref=f62e101]:
+          - generic [ref=f62e102]:
+            - tablist [ref=f62e104]:
+              - tab "All (0)" [selected] [ref=f62e105] [cursor=pointer]
+              - tab "General Contractors (0)" [ref=f62e106] [cursor=pointer]
+              - tab "Projects (0)" [ref=f62e107] [cursor=pointer]
+              - tab "Unread (0)" [ref=f62e108] [cursor=pointer]
+              - tab "Archive (0)" [ref=f62e109] [cursor=pointer]
+            - generic [ref=f62e111] [cursor=pointer]
+          - generic [ref=f62e116]:
+            - searchbox "Search messages..." [ref=f62e120]
+            - group [aria-hidden]
+          - progressbar [ref=f62e123]
+          - generic [ref=f62e126]: Showing 0 to 0 of 0 conversations
+        - generic [ref=f62e129]:
+          - heading "Select a conversation" [level=6] [ref=f62e133]
+          - paragraph [ref=f62e134]: Choose a thread on the left, or start a new message.
+          - button "New message" [ref=f62e135] [cursor=pointer]
+        - generic [ref=f62e137]:
+          - heading "Details" [level=6] [ref=f62e141]
+          - paragraph [ref=f62e146]: Select a conversation to see project and contact details.

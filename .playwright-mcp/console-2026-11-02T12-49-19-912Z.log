@@ -1,0 +1,7 @@
+[     502ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=f3a29e95:20102
+[ 1397667ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5174/@vite/client:963
+[ 1398760ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=f3a29e95:20102
+[ 1423642ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5174/@vite/client:963
+[53898223ms] [ERROR] Failed to load resource: net::ERR_NETWORK_CHANGED @ https://crewup-3.onrender.com/uploads/profiles/1793622560452-739494999.png:0
+[53900557ms] [ERROR] WebSocket connection to 'ws://localhost:5174/' failed: WebSocket opening handshake timed out @ http://localhost:5174/@vite/client:1034
+[53903087ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=f3a29e95:20102

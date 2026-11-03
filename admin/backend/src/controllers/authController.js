@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { accountKind, buildPermissions } = require("../auth/permissions");
 
+const ADMIN_CODE = process.env.ADMIN_CODE;
+
 function ensureDb(res) {
   if (mongoose.connection.readyState !== 1) {
     res.status(503).json({
@@ -38,13 +40,17 @@ const signup = async (req, res) => {
   try {
     if (!ensureDb(res)) return;
 
-    const { fullName, workEmail, password, confirmPassword } = req.body;
+    const { fullName, workEmail, password, confirmPassword, adminCode } = req.body;
 
-    if (!fullName || !workEmail || !password || !confirmPassword) {
+    if (!fullName || !workEmail || !password || !confirmPassword || !adminCode) {
       return res.status(400).json({
         success: false,
         message: "Please fill in all fields.",
       });
+    }
+
+    if (adminCode !== ADMIN_CODE) {
+      return res.status(403).json({ success: false, message: "Invalid admin code." });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -107,13 +113,17 @@ const login = async (req, res) => {
   try {
     if (!ensureDb(res)) return;
 
-    const { workEmail, password } = req.body;
+    const { workEmail, password, adminCode } = req.body;
 
-    if (!workEmail || !password) {
+    if (!workEmail || !password || !adminCode) {
       return res.status(400).json({
         success: false,
-        message: "Work email and password are required.",
+        message: "Work email, password, and admin code are required.",
       });
+    }
+
+    if (adminCode !== ADMIN_CODE) {
+      return res.status(403).json({ success: false, message: "Invalid admin code." });
     }
 
     const normalizedEmail = workEmail.toLowerCase().trim();

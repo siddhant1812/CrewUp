@@ -1,0 +1,5 @@
+[    3751ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/react-dom_client.js?v=f3a29e95:20102
+[    7091ms] [WARNING] WebSocket connection to 'wss://crewup-3.onrender.com/socket.io/?EIO=4&transport=websocket' failed: WebSocket is closed before the connection is established. @ http://localhost:5174/node_modules/.vite/deps/socket__io-client.js?v=5b897162:1499
+[    7218ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5174/dashboard/settings/security:0
+[    7219ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "new-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5174/dashboard/settings/security:0
+[    7219ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "new-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5174/dashboard/settings/security:0

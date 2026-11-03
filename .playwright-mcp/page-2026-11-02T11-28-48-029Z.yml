@@ -1,0 +1,25 @@
+- generic [ref=f34e3]:
+  - generic [ref=f34e6]:
+    - generic [ref=f34e11]:
+      - paragraph [ref=f34e12]: CrewUp
+      - text: Admin
+    - list [ref=f34e13]:
+      - link "Dashboard" [ref=f34e14] [cursor=pointer]:
+        - /url: /
+      - link "Users" [ref=f34e21] [cursor=pointer]:
+        - /url: /users
+      - link "Projects" [ref=f34e30] [cursor=pointer]:
+        - /url: /projects
+      - link "Proposals" [ref=f34e36] [cursor=pointer]:
+        - /url: /proposals
+    - button [ref=f34e43] [cursor=pointer]:
+      - paragraph [ref=f34e47]: Log out
+  - main [ref=f34e48]:
+    - generic [ref=f34e49]:
+      - heading "Proposals" [level=4] [ref=f34e50]
+      - paragraph [ref=f34e51]: 0 total bids placed across every project
+    - generic [ref=f34e53]:
+      - combobox [ref=f34e54] [cursor=pointer]: All statuses
+      - textbox [aria-hidden]
+      - group [aria-hidden]
+    - paragraph [ref=f34e56]: Loading…

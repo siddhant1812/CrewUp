@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, Navigate, useNavigate } from 'react-router-dom'
+import { Alert, Box, Button, Link, Paper, Stack, TextField, Typography } from '@mui/material'
 import { isAdmin, signup } from '../api/auth'
 import Icon from '../components/Icon'
 
@@ -10,6 +11,7 @@ export default function Signup() {
     workEmail: '',
     password: '',
     confirmPassword: '',
+    adminCode: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -31,65 +33,108 @@ export default function Signup() {
   }
 
   return (
-    <div className="admin-auth">
-      <form className="admin-auth__card" onSubmit={onSubmit}>
-        <span className="admin-auth__mark">
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+        p: 2,
+      }}
+    >
+      <Paper
+        component="form"
+        onSubmit={onSubmit}
+        elevation={0}
+        sx={{
+          width: 'min(100%, 420px)',
+          p: { xs: 3, sm: 4 },
+          borderRadius: '18px',
+          border: '1px solid',
+          borderColor: 'divider',
+          boxShadow: '0 20px 50px rgba(16, 30, 40, 0.08)',
+        }}
+      >
+        <Box
+          sx={{
+            width: 48,
+            height: 48,
+            borderRadius: '12px',
+            bgcolor: 'primary.main',
+            color: '#fff',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 2,
+          }}
+        >
           <Icon name="shield" size={22} />
-        </span>
-        <h1>Create admin account</h1>
-        <p>Every account created here gets full admin access.</p>
+        </Box>
+        <Typography variant="h4" sx={{ fontSize: '1.5rem', mb: 0.5 }}>
+          Create admin account
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          Every account created here gets full admin access.
+        </Typography>
 
-        {error ? <p className="admin-error">{error}</p> : null}
+        <Stack spacing={2}>
+          {error ? <Alert severity="error">{error}</Alert> : null}
 
-        <label className="admin-field">
-          Full name
-          <input
-            type="text"
+          <TextField
+            label="Full name"
             autoComplete="name"
             value={form.fullName}
             onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
             required
           />
-        </label>
-        <label className="admin-field">
-          Email
-          <input
+          <TextField
+            label="Email"
             type="email"
             autoComplete="username"
             value={form.workEmail}
             onChange={(e) => setForm((f) => ({ ...f, workEmail: e.target.value }))}
             required
           />
-        </label>
-        <label className="admin-field">
-          Password
-          <input
+          <TextField
+            label="Password"
             type="password"
             autoComplete="new-password"
             value={form.password}
             onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-            minLength={8}
+            slotProps={{ htmlInput: { minLength: 8 } }}
             required
           />
-        </label>
-        <label className="admin-field">
-          Confirm password
-          <input
+          <TextField
+            label="Confirm password"
             type="password"
             autoComplete="new-password"
             value={form.confirmPassword}
             onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
-            minLength={8}
+            slotProps={{ htmlInput: { minLength: 8 } }}
             required
           />
-        </label>
-        <button type="submit" className="admin-btn admin-btn--block" disabled={loading}>
-          {loading ? 'Creating account…' : 'Create account'}
-        </button>
-        <p className="admin-auth__switch">
-          Already have an account? <Link to="/login">Sign in</Link>
-        </p>
-      </form>
-    </div>
+          <TextField
+            label="Admin code"
+            type="password"
+            autoComplete="off"
+            value={form.adminCode}
+            onChange={(e) => setForm((f) => ({ ...f, adminCode: e.target.value }))}
+            required
+          />
+
+          <Button type="submit" variant="contained" size="large" fullWidth disabled={loading}>
+            {loading ? 'Creating account…' : 'Create account'}
+          </Button>
+
+          <Typography variant="body2" color="text.secondary" align="center">
+            Already have an account?{' '}
+            <Link component={RouterLink} to="/login" fontWeight={600} underline="hover">
+              Sign in
+            </Link>
+          </Typography>
+        </Stack>
+      </Paper>
+    </Box>
   )
 }

@@ -1,7 +1,33 @@
 import { useEffect, useState } from 'react'
+import {
+  Alert,
+  Box,
+  Chip,
+  MenuItem,
+  Pagination,
+  Paper,
+  Select,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@mui/material'
 import { fetchProposals } from '../api/admin'
 
 const STATUSES = ['pending', 'accepted', 'declined', 'withdrawn']
+
+const STATUS_STYLES = {
+  accepted: { bgcolor: 'success.light', color: 'success.main' },
+  declined: { bgcolor: 'error.light', color: 'error.main' },
+}
+
+function statusChipSx(status) {
+  return STATUS_STYLES[status] || { bgcolor: 'grey.200', color: 'grey.700' }
+}
 
 function formatDate(value) {
   if (!value) return '—'
@@ -41,91 +67,92 @@ export default function Proposals() {
 
   return (
     <>
-      <div className="admin-topbar">
-        <div>
-          <h1>Proposals</h1>
-          <p>{total} total bids placed across every project</p>
-        </div>
-      </div>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" sx={{ fontSize: '1.6rem', mb: 0.5 }}>
+          Proposals
+        </Typography>
+        <Typography color="text.secondary">{total} total bids placed across every project</Typography>
+      </Box>
 
-      {error ? <p className="admin-error">{error}</p> : null}
+      {error ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      ) : null}
 
-      <form className="admin-toolbar" onSubmit={(e) => e.preventDefault()}>
-        <select
+      <Stack direction="row" sx={{ mb: 2.5 }}>
+        <Select
           value={status}
           onChange={(e) => {
             setStatus(e.target.value)
             setPage(1)
           }}
+          size="small"
+          displayEmpty
+          sx={{ minWidth: 180 }}
         >
-          <option value="">All statuses</option>
+          <MenuItem value="">All statuses</MenuItem>
           {STATUSES.map((s) => (
-            <option key={s} value={s}>
+            <MenuItem key={s} value={s} sx={{ textTransform: 'capitalize' }}>
               {s}
-            </option>
+            </MenuItem>
           ))}
-        </select>
-      </form>
+        </Select>
+      </Stack>
 
-      <div className="admin-table-wrap">
+      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
         {loading ? (
-          <p className="admin-empty">Loading…</p>
+          <Typography color="text.secondary" sx={{ p: 3 }}>
+            Loading…
+          </Typography>
         ) : proposals.length === 0 ? (
-          <p className="admin-empty">No proposals match those filters.</p>
+          <Typography color="text.secondary" sx={{ p: 3 }}>
+            No proposals match those filters.
+          </Typography>
         ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Applicant</th>
-                <th>Project</th>
-                <th>Bid</th>
-                <th>Status</th>
-                <th>Submitted</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Applicant</TableCell>
+                <TableCell>Project</TableCell>
+                <TableCell>Bid</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Submitted</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {proposals.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    <div className="admin-table__name">{p.applicant?.fullName || 'Unknown'}</div>
-                    <div className="admin-table__sub">{p.applicant?.workEmail || ''}</div>
-                  </td>
-                  <td>{p.project?.title || '—'}</td>
-                  <td>{p.amount}</td>
-                  <td>
-                    <span
-                      className={`admin-pill ${
-                        p.status === 'accepted'
-                          ? 'admin-pill--active'
-                          : p.status === 'declined'
-                            ? 'admin-pill--cancelled'
-                            : ''
-                      }`}
-                    >
-                      {p.status}
-                    </span>
-                  </td>
-                  <td>{formatDate(p.createdAt)}</td>
-                </tr>
+                <TableRow key={p.id} hover>
+                  <TableCell>
+                    <Typography fontWeight={600}>{p.applicant?.fullName || 'Unknown'}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {p.applicant?.workEmail || ''}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{p.project?.title || '—'}</TableCell>
+                  <TableCell>{p.amount}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={p.status}
+                      size="small"
+                      sx={{ fontWeight: 600, textTransform: 'capitalize', ...statusChipSx(p.status) }}
+                    />
+                  </TableCell>
+                  <TableCell>{formatDate(p.createdAt)}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
-      </div>
+      </TableContainer>
 
       {pages > 1 ? (
-        <div className="admin-pager">
-          <span>
+        <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mt: 2.5 }}>
+          <Typography variant="body2" color="text.secondary">
             Page {page} of {pages}
-          </span>
-          <div className="admin-pager__pages">
-            {Array.from({ length: Math.min(7, pages) }, (_, i) => i + 1).map((n) => (
-              <button key={n} type="button" className={page === n ? 'is-active' : ''} onClick={() => setPage(n)}>
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
+          </Typography>
+          <Pagination count={pages} page={page} onChange={(_, value) => setPage(value)} color="primary" shape="rounded" />
+        </Stack>
       ) : null}
     </>
   )

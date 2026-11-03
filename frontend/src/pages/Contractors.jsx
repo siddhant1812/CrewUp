@@ -1,5 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import {
+  Alert,
+  Avatar as MuiAvatar,
+  Box,
+  Button,
+  Card,
+  MenuItem,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { canHire, getSession, mediaUrl } from '../api/auth'
 import { createConversation } from '../api/messages'
 import { fetchProjects } from '../api/projects'
@@ -21,13 +33,16 @@ function typeLabel(type) {
 
 function Avatar({ user }) {
   const src = mediaUrl(user?.profilePhoto)
-  if (src) return <img src={src} alt="" width="44" height="44" />
   const initials = (user?.fullName || '?')
     .split(/\s+/)
     .slice(0, 2)
     .map((p) => p[0]?.toUpperCase() || '')
     .join('')
-  return <span className="msg-avatar-fallback">{initials}</span>
+  return (
+    <MuiAvatar src={src || undefined} sx={{ width: 44, height: 44, fontSize: '0.95rem', fontWeight: 700 }}>
+      {initials}
+    </MuiAvatar>
+  )
 }
 
 export default function Contractors() {
@@ -143,29 +158,37 @@ export default function Contractors() {
   }
 
   return (
-    <section className="dash-page">
-      <div className="dash-page__header">
-        <h1>Contractors</h1>
-        <p>Search CrewUp users to save, message, or invite onto a project.</p>
-      </div>
+    <Box component="section" sx={{ p: { xs: 2, sm: 3 } }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" sx={{ fontSize: '1.5rem', mb: 0.5 }}>
+          Contractors
+        </Typography>
+        <Typography color="text.secondary">
+          Search CrewUp users to save, message, or invite onto a project.
+        </Typography>
+      </Box>
 
       {invites.length > 0 && (
-        <div className="dash-table-card" style={{ marginBottom: '1rem' }}>
+        <Card variant="outlined" sx={{ mb: 2 }}>
           <CardHead icon="message" title="Project invites for you" />
-          <ul className="set-list" style={{ padding: '0 1.1rem 1rem' }}>
+          <Stack sx={{ px: 2, pb: 2 }} spacing={1.5}>
             {invites.map((inv) => (
-              <li key={inv.id}>
-                <div>
-                  <strong>{inv.project?.title || 'Project'}</strong>
-                  <span>
+              <Stack
+                key={inv.id}
+                direction="row"
+                sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}
+              >
+                <Box>
+                  <Typography fontWeight={700}>{inv.project?.title || 'Project'}</Typography>
+                  <Typography variant="body2" color="text.secondary">
                     From {inv.from?.fullName}
                     {inv.project?.location ? ` · ${inv.project.location}` : ''}
-                  </span>
-                </div>
-                <span>
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
+                  </Typography>
+                </Box>
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    variant="contained"
+                    size="small"
                     onClick={() =>
                       respondInvite(inv.id, 'accepted').then(() =>
                         setInvites((prev) => prev.filter((i) => i.id !== inv.id))
@@ -173,10 +196,10 @@ export default function Contractors() {
                     }
                   >
                     Accept
-                  </button>{' '}
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
                     onClick={() =>
                       respondInvite(inv.id, 'declined').then(() =>
                         setInvites((prev) => prev.filter((i) => i.id !== inv.id))
@@ -184,114 +207,138 @@ export default function Contractors() {
                     }
                   >
                     Decline
-                  </button>
-                </span>
-              </li>
+                  </Button>
+                </Stack>
+              </Stack>
             ))}
-          </ul>
-        </div>
+          </Stack>
+        </Card>
       )}
 
-      <form className="dash-projects__toolbar" onSubmit={onSearch}>
-        <input
+      <Stack
+        component="form"
+        onSubmit={onSearch}
+        direction="row"
+        spacing={1.5}
+        sx={{ flexWrap: 'wrap', mb: 2 }}
+      >
+        <TextField
           type="search"
           placeholder="Search name, company, or location"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          style={{ flex: 1, minWidth: 180, border: '1.5px solid var(--line)', borderRadius: 10, padding: '0.6rem 0.75rem' }}
+          sx={{ flex: 1, minWidth: 220 }}
+          size="small"
         />
-        <select
+        <TextField
+          select
+          label="Account type"
           value={type}
           onChange={(e) => setType(e.target.value)}
-          style={{ border: '1.5px solid var(--line)', borderRadius: 10, padding: '0.6rem 0.75rem' }}
+          size="small"
+          sx={{ minWidth: 180 }}
         >
-          <option value="">All types</option>
-          <option value="general_contractor">Contractors</option>
-          <option value="subcontractor">Subcontractors</option>
-          <option value="find_work">Find work</option>
-        </select>
-        <button type="submit" className="btn btn-primary btn-sm">
+          <MenuItem value="">All types</MenuItem>
+          <MenuItem value="general_contractor">Contractors</MenuItem>
+          <MenuItem value="subcontractor">Subcontractors</MenuItem>
+          <MenuItem value="find_work">Find work</MenuItem>
+        </TextField>
+        <Button type="submit" variant="contained">
           Search
-        </button>
-      </form>
+        </Button>
+      </Stack>
 
-      {error ? <p className="dash-form-error">{error}</p> : null}
+      {error ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      ) : null}
 
-      <div className="dash-table-card">
-        {loading ? <p className="dash-empty">Loading contractors…</p> : null}
+      <Card variant="outlined">
+        {loading ? (
+          <Typography color="text.secondary" sx={{ p: 3 }}>
+            Loading contractors…
+          </Typography>
+        ) : null}
         {!loading && list.length === 0 ? (
-          <p className="dash-empty">
+          <Typography color="text.secondary" sx={{ p: 3 }}>
             {mode === 'search'
               ? 'No matching contractors.'
               : 'No saved contractors yet. Search by name or company to find CrewUp users.'}
-          </p>
+          </Typography>
         ) : (
-          <ul className="set-list" style={{ padding: '0.85rem 1.1rem 1rem' }}>
+          <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
             {list.map((c) => (
-              <li key={c.id}>
-                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <Stack
+                key={c.id}
+                direction="row"
+                sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5, p: 2 }}
+              >
+                <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
                   <Avatar user={c} />
-                  <div>
-                    <strong>{c.company || c.fullName}</strong>
-                    <span>
+                  <Box>
+                    <Typography fontWeight={700}>{c.company || c.fullName}</Typography>
+                    <Typography variant="body2" color="text.secondary">
                       {c.fullName} · {typeLabel(c.contractorType)}
                       {c.location ? ` · ${c.location}` : ''}
-                    </span>
-                  </div>
-                </div>
-                <span style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    disabled={busy === c.id}
-                    onClick={() => onSave(c.id)}
-                  >
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                  <Button variant="outlined" size="small" disabled={busy === c.id} onClick={() => onSave(c.id)}>
                     {c.saved ? 'Saved' : 'Save'}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    disabled={busy === c.id}
-                    onClick={() => onMessage(c)}
-                  >
+                  </Button>
+                  <Button variant="outlined" size="small" disabled={busy === c.id} onClick={() => onMessage(c)}>
                     Message
-                  </button>
+                  </Button>
                   {canInvite && projects.length > 0 && (
-                    <button type="button" className="btn btn-primary btn-sm" onClick={() => setInviteFor(c)}>
+                    <Button variant="contained" size="small" onClick={() => setInviteFor(c)}>
                       Invite
-                    </button>
+                    </Button>
                   )}
-                </span>
-              </li>
+                </Stack>
+              </Stack>
             ))}
-          </ul>
+          </Stack>
         )}
-      </div>
+      </Card>
 
       {inviteFor && (
-        <form className="set-card" onSubmit={onInvite}>
-          <h3>Invite {inviteFor.fullName} to a project</h3>
-          <label className="set-field">
-            <span>Project</span>
-            <select value={projectId} onChange={(e) => setProjectId(e.target.value)} required>
-              <option value="">Select a project</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.title}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button type="submit" className="btn btn-primary btn-sm" disabled={busy === 'invite'}>
+        <Paper
+          component="form"
+          onSubmit={onInvite}
+          variant="outlined"
+          sx={{ p: 2.5, mt: 2, borderRadius: 3 }}
+        >
+          <Typography variant="h6" sx={{ fontSize: '1.05rem', mb: 1.5 }}>
+            Invite {inviteFor.fullName} to a project
+          </Typography>
+          <TextField
+            select
+            label="Project"
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            required
+            size="small"
+            sx={{ mb: 2, minWidth: 260 }}
+          >
+            <MenuItem value="">Select a project</MenuItem>
+            {projects.map((p) => (
+              <MenuItem key={p.id} value={p.id}>
+                {p.title}
+              </MenuItem>
+            ))}
+          </TextField>
+          <Stack direction="row" spacing={1}>
+            <Button type="submit" variant="contained" size="small" disabled={busy === 'invite'}>
               Send invite
-            </button>
-            <button type="button" className="btn btn-outline btn-sm" onClick={() => setInviteFor(null)}>
+            </Button>
+            <Button type="button" variant="outlined" size="small" onClick={() => setInviteFor(null)}>
               Cancel
-            </button>
-          </div>
-        </form>
+            </Button>
+          </Stack>
+        </Paper>
       )}
-    </section>
+    </Box>
   )
 }

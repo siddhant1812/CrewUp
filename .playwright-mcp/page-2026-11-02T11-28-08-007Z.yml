@@ -1,0 +1,23 @@
+- generic [ref=f31e29]:
+  - generic [ref=f31e32]:
+    - generic [ref=f31e37]:
+      - paragraph [ref=f31e38]: CrewUp
+      - text: Admin
+    - list [ref=f31e39]:
+      - link "Dashboard" [ref=f31e40] [cursor=pointer]:
+        - /url: /
+      - link "Users" [ref=f31e47] [cursor=pointer]:
+        - /url: /users
+      - link "Projects" [ref=f31e56] [cursor=pointer]:
+        - /url: /projects
+      - link "Proposals" [ref=f31e62] [cursor=pointer]:
+        - /url: /proposals
+    - button [ref=f31e69] [cursor=pointer]:
+      - paragraph [ref=f31e73]: Log out
+  - main [ref=f31e74]:
+    - generic [ref=f31e75]:
+      - heading "Platform overview" [level=4] [ref=f31e76]
+      - paragraph [ref=f31e77]: Signed in as MUI QA Tester
+    - generic [ref=f31e78]:
+      - progressbar [ref=f31e79]
+      - paragraph [ref=f31e82]: Loading…

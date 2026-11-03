@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
+import { Alert, Box, Button, Link, Stack, TextField, Typography } from '@mui/material'
 import AuthLayout from '../components/AuthLayout'
 
 export default function ForgotPassword() {
@@ -17,34 +18,38 @@ export default function ForgotPassword() {
   }
 
   return (
-    <AuthLayout
-      title="Reset your password"
-      subtitle="We'll email you a link to choose a new password."
-    >
+    <AuthLayout title="Reset your password" subtitle="We'll email you a link to choose a new password.">
       {sent ? (
-        <div className="auth__success" role="status">
-          <p>
-            If an account exists for <strong>{email}</strong>, you&apos;ll get a reset link
-            shortly. Check your inbox and spam folder.
-          </p>
-          <Link to="/login" className="btn btn-primary btn-lg auth__submit">
+        <Stack spacing={2} role="status">
+          <Typography color="text.secondary">
+            If an account exists for <strong>{email}</strong>, you&apos;ll get a reset link shortly. Check your
+            inbox and spam folder.
+          </Typography>
+          <Button component={RouterLink} to="/login" variant="contained" size="large" fullWidth>
             Back to Log In
-          </Link>
-          <button
+          </Button>
+          <Link
+            component="button"
             type="button"
-            className="auth__link auth__resend"
             onClick={() => setSent(false)}
+            fontWeight={600}
+            underline="hover"
+            sx={{ alignSelf: 'center' }}
           >
             Try a different email
-          </button>
-        </div>
+          </Link>
+        </Stack>
       ) : (
-        <form className="auth__form" onSubmit={handleSubmit} noValidate>
-          {error && <p className="auth__error" role="alert">{error}</p>}
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Stack spacing={2}>
+            {error ? (
+              <Alert severity="error" role="alert">
+                {error}
+              </Alert>
+            ) : null}
 
-          <label className="field">
-            <span className="field__label">Email</span>
-            <input
+            <TextField
+              label="Email"
               type="email"
               name="email"
               autoComplete="email"
@@ -56,17 +61,19 @@ export default function ForgotPassword() {
               }}
               required
             />
-          </label>
 
-          <button type="submit" className="btn btn-primary btn-lg auth__submit">
-            Send Reset Link
-          </button>
+            <Button type="submit" variant="contained" size="large" fullWidth>
+              Send Reset Link
+            </Button>
 
-          <p className="auth__switch">
-            Remember your password?{' '}
-            <Link to="/login" className="auth__link">Log in</Link>
-          </p>
-        </form>
+            <Typography variant="body2" align="center" color="text.secondary">
+              Remember your password?{' '}
+              <Link component={RouterLink} to="/login" fontWeight={600} underline="hover">
+                Log in
+              </Link>
+            </Typography>
+          </Stack>
+        </Box>
       )}
     </AuthLayout>
   )

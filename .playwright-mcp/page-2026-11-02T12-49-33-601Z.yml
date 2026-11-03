@@ -1,0 +1,97 @@
+- generic [ref=f89e1]:
+  - generic [ref=f89e3]:
+    - banner [ref=f89e4]:
+      - generic [ref=f89e6]:
+        - link [ref=f89e78] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f89e8]: CREWUP
+        - navigation [ref=f89e79]:
+          - link [ref=f89e80] [cursor=pointer]:
+            - /url: /#how-it-works
+            - text: How It Works
+          - link [ref=f89e81] [cursor=pointer]:
+            - /url: /jobs
+            - text: Find Work
+          - link [ref=f89e82] [cursor=pointer]:
+            - /url: /dashboard/contractors
+            - text: Find Crew
+          - link [ref=f89e83] [cursor=pointer]:
+            - /url: /#pricing
+            - text: Pricing
+          - link [ref=f89e84] [cursor=pointer]:
+            - /url: /#resources
+            - text: Resources
+        - generic [ref=f89e22]:
+          - button [ref=f89e85] [cursor=pointer]
+          - generic [ref=f89e26]:
+            - button [ref=f89e86] [cursor=pointer]
+            - button [ref=f89e87] [cursor=pointer]:
+              - paragraph [ref=f89e36]: Khushi
+    - main [ref=f89e37]:
+      - generic [ref=f89e38]:
+        - generic [ref=f89e39]:
+          - text: Find Work
+          - heading [level=1] [ref=f89e88]: Browse open jobs
+          - paragraph [ref=f89e41]: Search projects by category, location, and keywords, then apply with a proposal.
+          - generic [ref=f89e42]: Showing projects posted by general contractors.
+        - generic [ref=f89e44]:
+          - generic [ref=f89e46]:
+            - searchbox [ref=f89e90]
+            - group [aria-hidden]
+          - generic [ref=f89e50]:
+            - combobox [expanded] [ref=f89e91] [cursor=pointer]: All categories
+            - textbox [aria-hidden]
+            - group [aria-hidden]
+          - generic [ref=f89e52]:
+            - combobox [ref=f89e92] [cursor=pointer]: All locations
+            - textbox [aria-hidden]
+            - group [aria-hidden]
+          - button [ref=f89e93] [cursor=pointer]: Search
+        - generic [ref=f89e55]:
+          - combobox [ref=f89e94] [cursor=pointer]: Popular categories
+          - textbox [aria-hidden]
+          - group [aria-hidden]
+        - paragraph [ref=f89e57]: 0 open jobs
+        - generic [ref=f89e77]: No open jobs match those filters yet. Try another category or location.
+    - generic [ref=f89e60]:
+      - generic [ref=f89e61]:
+        - heading [level=2] [ref=f89e95]: Ready To Build Better Together?
+        - paragraph [ref=f89e63]: Join thousands of contractors and subcontractors using CrewUp to find work, fill crews, and grow lasting partnerships.
+      - generic [ref=f89e64]:
+        - link [ref=f89e96] [cursor=pointer]:
+          - /url: /jobs
+          - text: Find Work
+        - link [ref=f89e97] [cursor=pointer]:
+          - /url: /dashboard/find-contractors
+          - text: Find Contractors
+  - listbox [ref=f89e100]:
+    - option "All categories" [active] [selected] [ref=f89e101] [cursor=pointer]
+    - menuitem "Project types" [disabled]
+    - option "Residential Construction" [ref=f89e102] [cursor=pointer]
+    - option "Commercial Construction" [ref=f89e103] [cursor=pointer]
+    - option "Industrial Construction" [ref=f89e104] [cursor=pointer]
+    - option "Infrastructure Construction" [ref=f89e105] [cursor=pointer]
+    - option "Renovation and Remodeling" [ref=f89e106] [cursor=pointer]
+    - menuitem "Trade categories" [disabled]
+    - option "Electrical" [ref=f89e107] [cursor=pointer]
+    - option "Plumbing" [ref=f89e108] [cursor=pointer]
+    - option "Painting and Finishing" [ref=f89e109] [cursor=pointer]
+    - option "Concrete and Foundation" [ref=f89e110] [cursor=pointer]
+    - option "Masonry and Brickwork" [ref=f89e111] [cursor=pointer]
+    - option "HVAC" [ref=f89e112] [cursor=pointer]
+    - option "Roofing and Waterproofing" [ref=f89e113] [cursor=pointer]
+    - option "Flooring and Tiling" [ref=f89e114] [cursor=pointer]
+    - option "Steel and Metalwork" [ref=f89e115] [cursor=pointer]
+    - option "Carpentry" [ref=f89e116] [cursor=pointer]
+    - option "Excavation and Site Preparation" [ref=f89e117] [cursor=pointer]
+    - option "Glass, Windows and Facades" [ref=f89e118] [cursor=pointer]
+    - option "Insulation" [ref=f89e119] [cursor=pointer]
+    - option "Drywall" [ref=f89e120] [cursor=pointer]
+    - option "Landscaping" [ref=f89e121] [cursor=pointer]
+    - option "Fencing" [ref=f89e122] [cursor=pointer]
+    - option "Fire protection" [ref=f89e123] [cursor=pointer]
+    - option "Elevators" [ref=f89e124] [cursor=pointer]
+    - option "Solar" [ref=f89e125] [cursor=pointer]
+    - option "Paving" [ref=f89e126] [cursor=pointer]
+    - option "Cleaning" [ref=f89e127] [cursor=pointer]
+    - option "Heavy equipment" [ref=f89e128] [cursor=pointer]

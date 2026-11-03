@@ -1,0 +1,20 @@
+- generic [ref=f16e3]:
+  - complementary [ref=f16e4]:
+    - generic [ref=f16e9]:
+      - strong [ref=f16e10]: CrewUp
+      - generic [ref=f16e11]: Admin
+    - navigation [ref=f16e12]:
+      - link "Dashboard" [ref=f16e13] [cursor=pointer]:
+        - /url: /
+      - link "Users" [ref=f16e18] [cursor=pointer]:
+        - /url: /users
+      - link "Projects" [ref=f16e25] [cursor=pointer]:
+        - /url: /projects
+      - link "Proposals" [ref=f16e29] [cursor=pointer]:
+        - /url: /proposals
+    - button "Log out" [ref=f16e34] [cursor=pointer]
+  - main [ref=f16e39]:
+    - generic [ref=f16e41]:
+      - heading "Platform overview" [level=1] [ref=f16e42]
+      - paragraph [ref=f16e43]: Signed in as Playwright Test
+    - paragraph [ref=f16e44]: Loading…

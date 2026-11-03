@@ -1,7 +1,18 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
+import {
+  Alert,
+  Box,
+  Button,
+  Link,
+  MenuItem,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { ArrowBack, CheckCircle, DeleteOutlined } from '@mui/icons-material'
 import { deleteProject, fetchProject, updateProject } from '../api/admin'
-import Icon from '../components/Icon'
 
 const STATUSES = ['draft', 'open', 'in_progress', 'completed', 'cancelled']
 const POSTED_BY_ROLES = ['contractor', 'subcontractor']
@@ -48,6 +59,17 @@ function formFromProject(project) {
     trades: (project.trades || []).join(', '),
     description: project.description || '',
   }
+}
+
+function MetaItem({ label, value }) {
+  return (
+    <Box>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography fontWeight={700}>{value}</Typography>
+    </Box>
+  )
 }
 
 export default function ProjectDetail() {
@@ -132,13 +154,22 @@ export default function ProjectDetail() {
     }
   }
 
+  const backLink = (
+    <Link
+      component={RouterLink}
+      to="/projects"
+      underline="hover"
+      sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mb: 2, color: 'text.secondary', fontWeight: 600 }}
+    >
+      <ArrowBack sx={{ fontSize: 15 }} /> Back to Projects
+    </Link>
+  )
+
   if (loading) {
     return (
       <>
-        <Link to="/projects" className="admin-back-link">
-          <Icon name="arrowLeft" size={15} /> Back to Projects
-        </Link>
-        <p className="admin-empty">Loading project…</p>
+        {backLink}
+        <Typography color="text.secondary">Loading project…</Typography>
       </>
     )
   }
@@ -146,148 +177,186 @@ export default function ProjectDetail() {
   if (error && !project) {
     return (
       <>
-        <Link to="/projects" className="admin-back-link">
-          <Icon name="arrowLeft" size={15} /> Back to Projects
-        </Link>
-        <p className="admin-error">{error}</p>
+        {backLink}
+        <Alert severity="error">{error}</Alert>
       </>
     )
   }
 
+  const proposalCount = project.proposalCount ?? project.bidsCount
+
   return (
     <>
-      <Link to="/projects" className="admin-back-link">
-        <Icon name="arrowLeft" size={15} /> Back to Projects
-      </Link>
+      {backLink}
 
-      <div className="admin-topbar">
-        <div>
-          <h1>{project.title}</h1>
-          <p>
-            {project.proposalCount ?? project.bidsCount} proposal
-            {(project.proposalCount ?? project.bidsCount) === 1 ? '' : 's'} · Created {formatDate(project.createdAt)}
-          </p>
-        </div>
-        <button
-          type="button"
-          className="admin-btn admin-btn--danger admin-btn--sm"
+      <Stack direction="row" sx={{ alignItems: 'flex-start', justifyContent: 'space-between', mb: 3, gap: 2 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontSize: '1.6rem', mb: 0.5 }}>
+            {project.title}
+          </Typography>
+          <Typography color="text.secondary">
+            {proposalCount} proposal{proposalCount === 1 ? '' : 's'} · Created {formatDate(project.createdAt)}
+          </Typography>
+        </Box>
+        <Button
+          variant="outlined"
+          color="error"
+          size="small"
+          startIcon={<DeleteOutlined fontSize="small" />}
           disabled={deleting}
           onClick={onDelete}
         >
-          <Icon name="trash" size={14} />
           {deleting ? 'Deleting…' : 'Delete project'}
-        </button>
-      </div>
+        </Button>
+      </Stack>
 
-      {error ? <p className="admin-error">{error}</p> : null}
+      {error ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      ) : null}
 
-      <form className="admin-card" onSubmit={onSave}>
-        <h2>Project details</h2>
+      <Paper
+        component="form"
+        onSubmit={onSave}
+        elevation={0}
+        sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '16px', p: { xs: 2.5, sm: 3.5 } }}
+      >
+        <Typography variant="h5" sx={{ fontSize: '1.15rem', mb: 2.5 }}>
+          Project details
+        </Typography>
 
-        <div className="admin-detail-meta">
-          <div>
-            <span>Posted by</span>
-            <strong>{project.createdBy?.fullName || 'Unknown'}</strong>
-          </div>
-          <div>
-            <span>Email</span>
-            <strong>{project.createdBy?.workEmail || '—'}</strong>
-          </div>
-          <div>
-            <span>Account type</span>
-            <strong>{(project.createdBy?.contractorType || '—').replace(/_/g, ' ')}</strong>
-          </div>
-          <div>
-            <span>Bids</span>
-            <strong>{project.bidsCount}</strong>
-          </div>
-          <div>
-            <span>Last updated</span>
-            <strong>{formatDate(project.updatedAt)}</strong>
-          </div>
-        </div>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(5, 1fr)' },
+            gap: 2,
+            mb: 3,
+            pb: 3,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <MetaItem label="Posted by" value={project.createdBy?.fullName || 'Unknown'} />
+          <MetaItem label="Email" value={project.createdBy?.workEmail || '—'} />
+          <MetaItem
+            label="Account type"
+            value={(project.createdBy?.contractorType || '—').replace(/_/g, ' ')}
+          />
+          <MetaItem label="Bids" value={project.bidsCount} />
+          <MetaItem label="Last updated" value={formatDate(project.updatedAt)} />
+        </Box>
 
-        <div className="admin-form-grid">
-          <label className="admin-field">
-            Title
-            <input value={form.title} onChange={(e) => set('title', e.target.value)} required />
-          </label>
-          <label className="admin-field">
-            Status
-            <select value={form.status} onChange={(e) => set('status', e.target.value)}>
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s.replace('_', ' ')}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="admin-field">
-            Posted by role
-            <select value={form.postedByRole} onChange={(e) => set('postedByRole', e.target.value)}>
-              {POSTED_BY_ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="admin-field">
-            Location
-            <input value={form.location} onChange={(e) => set('location', e.target.value)} placeholder="Austin, TX" />
-          </label>
-          <label className="admin-field">
-            Project type / category
-            <input value={form.projectType} onChange={(e) => set('projectType', e.target.value)} />
-          </label>
-          <label className="admin-field">
-            Service
-            <input value={form.service} onChange={(e) => set('service', e.target.value)} />
-          </label>
-          <label className="admin-field">
-            Budget
-            <input value={form.budget} onChange={(e) => set('budget', e.target.value)} placeholder="$5,000" />
-          </label>
-          <label className="admin-field">
-            Vacancies
-            <input
-              type="number"
-              min={1}
-              max={1000}
-              value={form.vacancies}
-              onChange={(e) => set('vacancies', e.target.value)}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+            gap: 2.5,
+          }}
+        >
+          <TextField label="Title" value={form.title} onChange={(e) => set('title', e.target.value)} required />
+
+          <TextField
+            select
+            label="Status"
+            value={form.status}
+            onChange={(e) => set('status', e.target.value)}
+          >
+            {STATUSES.map((s) => (
+              <MenuItem key={s} value={s} sx={{ textTransform: 'capitalize' }}>
+                {s.replace('_', ' ')}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            select
+            label="Posted by role"
+            value={form.postedByRole}
+            onChange={(e) => set('postedByRole', e.target.value)}
+          >
+            {POSTED_BY_ROLES.map((r) => (
+              <MenuItem key={r} value={r} sx={{ textTransform: 'capitalize' }}>
+                {r}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            label="Location"
+            value={form.location}
+            onChange={(e) => set('location', e.target.value)}
+            placeholder="Austin, TX"
+          />
+
+          <TextField
+            label="Project type / category"
+            value={form.projectType}
+            onChange={(e) => set('projectType', e.target.value)}
+          />
+
+          <TextField label="Service" value={form.service} onChange={(e) => set('service', e.target.value)} />
+
+          <TextField
+            label="Budget"
+            value={form.budget}
+            onChange={(e) => set('budget', e.target.value)}
+            placeholder="$5,000"
+          />
+
+          <TextField
+            label="Vacancies"
+            type="number"
+            value={form.vacancies}
+            onChange={(e) => set('vacancies', e.target.value)}
+            slotProps={{ htmlInput: { min: 1, max: 1000 } }}
+          />
+
+          <TextField
+            label="Due date"
+            type="date"
+            value={form.dueDate}
+            onChange={(e) => set('dueDate', e.target.value)}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+
+          <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
+            <TextField
+              label="Trades (comma separated)"
+              value={form.trades}
+              onChange={(e) => set('trades', e.target.value)}
+              placeholder="Electrical, Plumbing"
+              fullWidth
             />
-          </label>
-          <label className="admin-field">
-            Due date
-            <input type="date" value={form.dueDate} onChange={(e) => set('dueDate', e.target.value)} />
-          </label>
-          <label className="admin-field admin-form-grid--full">
-            Trades (comma separated)
-            <input value={form.trades} onChange={(e) => set('trades', e.target.value)} placeholder="Electrical, Plumbing" />
-          </label>
-          <label className="admin-field admin-form-grid--full">
-            Description
-            <textarea
-              rows={6}
+          </Box>
+
+          <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
+            <TextField
+              label="Description"
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               placeholder="No description was added for this project."
+              multiline
+              rows={6}
+              fullWidth
             />
-          </label>
-        </div>
+          </Box>
+        </Box>
 
-        <div className="admin-form-actions">
-          <button type="submit" className="admin-btn" disabled={saving}>
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'center', mt: 3 }}>
+          <Button type="submit" variant="contained" disabled={saving}>
             {saving ? 'Saving…' : 'Save changes'}
-          </button>
+          </Button>
           {saved ? (
-            <span className="admin-form-actions__saved">
-              <Icon name="check" size={14} /> Saved
-            </span>
+            <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', color: 'success.main' }}>
+              <CheckCircle sx={{ fontSize: 18 }} />
+              <Typography fontWeight={600} color="success.main">
+                Saved
+              </Typography>
+            </Stack>
           ) : null}
-        </div>
-      </form>
+        </Stack>
+      </Paper>
     </>
   )
 }

@@ -1,5 +1,20 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
+import {
+  Alert,
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  FormControlLabel,
+  IconButton,
+  InputAdornment,
+  Link,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { Visibility, VisibilityOff } from '@mui/icons-material'
 import AuthLayout from '../components/AuthLayout'
 import { login, saveSession } from '../api/auth'
 
@@ -44,16 +59,17 @@ export default function Login() {
   }
 
   return (
-    <AuthLayout
-      title="Welcome back"
-      subtitle="Log in to manage projects, crews, and opportunities."
-    >
-      <form className="auth__form" onSubmit={handleSubmit} noValidate>
-        {error && <p className="auth__error" role="alert">{error}</p>}
+    <AuthLayout title="Welcome back" subtitle="Log in to manage projects, crews, and opportunities.">
+      <Box component="form" onSubmit={handleSubmit} noValidate>
+        <Stack spacing={2}>
+          {error ? (
+            <Alert severity="error" role="alert">
+              {error}
+            </Alert>
+          ) : null}
 
-        <label className="field">
-          <span className="field__label">Email</span>
-          <input
+          <TextField
+            label="Email"
             type="email"
             name="email"
             autoComplete="email"
@@ -62,64 +78,65 @@ export default function Login() {
             onChange={update('email')}
             required
           />
-        </label>
 
-        <label className="field">
-          <span className="field__label">Password</span>
-          <div className="field__password">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              autoComplete="current-password"
-              placeholder="Enter your password"
-              value={form.password}
-              onChange={update('password')}
-              required
+          <TextField
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            name="password"
+            autoComplete="current-password"
+            placeholder="Enter your password"
+            value={form.password}
+            onChange={update('password')}
+            required
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      onClick={() => setShowPassword((v) => !v)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+
+          <Stack
+            direction="row"
+            sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}
+          >
+            <FormControlLabel
+              control={<Checkbox checked={form.remember} onChange={update('remember')} size="small" />}
+              label={<Typography variant="body2">Remember me</Typography>}
             />
-            <button
-              type="button"
-              className="field__toggle"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-            >
-              {showPassword ? 'Hide' : 'Show'}
-            </button>
-          </div>
-        </label>
+            <Link component={RouterLink} to="/forgot-password" variant="body2" fontWeight={600} underline="hover">
+              Forgot password?
+            </Link>
+          </Stack>
 
-        <div className="auth__row">
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={form.remember}
-              onChange={update('remember')}
-            />
-            <span>Remember me</span>
-          </label>
-          <Link to="/forgot-password" className="auth__link">
-            Forgot password?
-          </Link>
-        </div>
+          <Button type="submit" variant="contained" size="large" disabled={loading} fullWidth>
+            {loading ? 'Logging in…' : 'Log In'}
+          </Button>
 
-        <button
-          type="submit"
-          className="btn btn-primary btn-lg auth__submit"
-          disabled={loading}
-        >
-          {loading ? 'Logging in…' : 'Log In'}
-        </button>
+          <Divider sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>or</Divider>
 
-        <div className="auth__divider"><span>or</span></div>
+          <Button variant="outlined" size="large" disabled fullWidth>
+            Continue with Google
+          </Button>
 
-        <button type="button" className="btn btn-outline btn-lg auth__social" disabled>
-          Continue with Google
-        </button>
-
-        <p className="auth__switch">
-          Don&apos;t have an account?{' '}
-          <Link to="/signup" className="auth__link">Sign up</Link>
-        </p>
-      </form>
+          <Typography variant="body2" align="center" color="text.secondary">
+            Don&apos;t have an account?{' '}
+            <Link component={RouterLink} to="/signup" fontWeight={600} underline="hover">
+              Sign up
+            </Link>
+          </Typography>
+        </Stack>
+      </Box>
     </AuthLayout>
   )
 }

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { AppBar, Avatar, Badge, Box, IconButton, Stack, Toolbar, Typography } from '@mui/material'
+import { ExpandMore, Menu as MenuIcon, NotificationsNoneOutlined } from '@mui/icons-material'
 import Logo from './Logo'
 import Sidebar from './Sidebar'
 import AccountDrawer from './AccountDrawer'
 import ThemeToggle from './ThemeToggle'
-import Icon from './Icon'
 import { clearSession, getSession, mediaUrl } from '../api/auth'
 import { connectSocket, disconnectSocket } from '../api/socket'
 
@@ -54,9 +55,7 @@ export default function DashboardLayout() {
 
     function onUnreadCount(payload) {
       if (typeof payload?.count === 'number') {
-        window.dispatchEvent(
-          new CustomEvent('crewup-unread', { detail: { count: payload.count } })
-        )
+        window.dispatchEvent(new CustomEvent('crewup-unread', { detail: { count: payload.count } }))
       }
     }
 
@@ -89,65 +88,101 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className="dash-shell">
-      <header className="dash-topbar">
-        <div className="dash-topbar__left">
-          <button
-            type="button"
-            className="dash-topbar__menu"
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+        bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#0b1a24' : '#f2f8fd'),
+      }}
+    >
+      <AppBar
+        position="sticky"
+        color="inherit"
+        elevation={0}
+        sx={{ bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider', zIndex: 50 }}
+      >
+        <Toolbar sx={{ gap: 1.5, px: { xs: 1.5, sm: 2.5 } }}>
+          <IconButton
             aria-label="Open menu"
             onClick={() => setMobileOpen(true)}
+            sx={{ display: { xs: 'inline-flex', md: 'none' } }}
           >
-            <span /><span /><span />
-          </button>
-          <Link to="/" className="dash-topbar__logo" aria-label="CrewUp home">
+            <MenuIcon />
+          </IconButton>
+          <Box
+            component={RouterLink}
+            to="/"
+            aria-label="CrewUp home"
+            sx={{ display: 'inline-flex', textDecoration: 'none', color: 'inherit' }}
+          >
             <Logo markSize={32} />
-          </Link>
-        </div>
+          </Box>
 
-        <div className="dash-topbar__user">
-          <ThemeToggle />
-          <button type="button" className="user-bar__bell" aria-label="Notifications">
-            <Icon name="bell" size={19} />
-            {unread > 0 ? <span className="user-bar__badge" aria-hidden="true" /> : null}
-          </button>
+          <Box sx={{ flex: 1 }} />
 
-          <button
-            type="button"
-            className="user-bar__profile"
-            aria-expanded={accountOpen}
-            aria-haspopup="dialog"
-            onClick={() => setAccountOpen(true)}
-          >
-            <div className="user-bar__avatar-wrap">
-              {photo ? (
-                <img src={photo} alt="" className="user-bar__avatar" width="40" height="40" />
-              ) : (
-                <span className="user-bar__avatar user-bar__avatar--fallback">
+          <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
+            <ThemeToggle />
+            <IconButton aria-label="Notifications" size="small" sx={{ color: 'text.secondary' }}>
+              <Badge variant="dot" color="primary" invisible={unread <= 0}>
+                <NotificationsNoneOutlined fontSize="small" />
+              </Badge>
+            </IconButton>
+
+            <Stack
+              direction="row"
+              spacing={1}
+              onClick={() => setAccountOpen(true)}
+              aria-expanded={accountOpen}
+              aria-haspopup="dialog"
+              role="button"
+              tabIndex={0}
+              sx={{
+                alignItems: 'center',
+                cursor: 'pointer',
+                borderRadius: 2,
+                px: 1,
+                py: 0.5,
+                '&:hover': { bgcolor: 'action.hover' },
+              }}
+            >
+              <Badge
+                overlap="circular"
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                badgeContent={
+                  <Box
+                    sx={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      bgcolor: 'success.main',
+                      border: '2px solid',
+                      borderColor: 'background.paper',
+                    }}
+                  />
+                }
+              >
+                <Avatar src={photo || undefined} sx={{ width: 40, height: 40, fontWeight: 700 }}>
                   {initials(user.fullName)}
-                </span>
-              )}
-              <span className="user-bar__online" aria-hidden="true" />
-            </div>
-            <span className="user-bar__name">{user.fullName}</span>
-            <Icon name="chevronDown" size={16} className="user-bar__chevron-icon" />
-          </button>
-        </div>
-      </header>
+                </Avatar>
+              </Badge>
+              <Typography fontWeight={600} fontSize="0.92rem" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                {user.fullName}
+              </Typography>
+              <ExpandMore sx={{ fontSize: 18, color: 'text.secondary', display: { xs: 'none', sm: 'block' } }} />
+            </Stack>
+          </Stack>
+        </Toolbar>
+      </AppBar>
 
-      <AccountDrawer
-        user={user}
-        open={accountOpen}
-        onClose={() => setAccountOpen(false)}
-        onLogout={handleLogout}
-      />
+      <AccountDrawer user={user} open={accountOpen} onClose={() => setAccountOpen(false)} onLogout={handleLogout} />
 
-      <div className="dash-body">
+      <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
-        <div className="dash-content">
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           <Outlet context={{ user }} />
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   )
 }

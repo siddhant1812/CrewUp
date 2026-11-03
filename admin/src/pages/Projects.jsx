@@ -1,9 +1,41 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import {
+  Alert,
+  Box,
+  Chip,
+  IconButton,
+  InputAdornment,
+  MenuItem,
+  Pagination,
+  Paper,
+  Select,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { DeleteOutlined, Search } from '@mui/icons-material'
 import { deleteProject, fetchProjects, updateProjectStatus } from '../api/admin'
-import Icon from '../components/Icon'
 
 const STATUSES = ['draft', 'open', 'in_progress', 'completed', 'cancelled']
+
+const STATUS_STYLES = {
+  open: { bgcolor: 'success.light', color: 'success.main' },
+  completed: { bgcolor: 'success.light', color: 'success.main' },
+  cancelled: { bgcolor: 'error.light', color: 'error.main' },
+  in_progress: { bgcolor: 'primary.light', color: 'primary.dark' },
+  draft: { bgcolor: 'primary.light', color: 'primary.dark' },
+}
+
+function statusChipSx(status) {
+  return STATUS_STYLES[status] || { bgcolor: 'grey.200', color: 'grey.700' }
+}
 
 function formatDate(value) {
   if (!value) return '—'
@@ -82,122 +114,146 @@ export default function Projects() {
 
   return (
     <>
-      <div className="admin-topbar">
-        <div>
-          <h1>Projects</h1>
-          <p>{total} total projects, across every contractor and subcontractor</p>
-        </div>
-      </div>
+      <Stack direction="row" sx={{ alignItems: 'flex-start', justifyContent: 'space-between', mb: 3 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontSize: '1.6rem', mb: 0.5 }}>
+            Projects
+          </Typography>
+          <Typography color="text.secondary">{total} total projects, across every contractor and subcontractor</Typography>
+        </Box>
+      </Stack>
 
-      {error ? <p className="admin-error">{error}</p> : null}
-      {notice ? <p className="admin-notice">{notice}</p> : null}
+      {error ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      ) : null}
+      {notice ? (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {notice}
+        </Alert>
+      ) : null}
 
-      <form className="admin-toolbar" onSubmit={onSearch}>
-        <label className="admin-search">
-          <Icon name="search" size={16} />
-          <input
-            type="search"
-            placeholder="Search title or location"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-        </label>
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="">All statuses</option>
+      <Stack component="form" direction="row" spacing={1.5} onSubmit={onSearch} sx={{ mb: 2.5, flexWrap: 'wrap' }}>
+        <TextField
+          placeholder="Search title or location"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          size="small"
+          sx={{ flex: 1, minWidth: 220 }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        <Select value={status} onChange={(e) => setStatus(e.target.value)} size="small" displayEmpty sx={{ minWidth: 180 }}>
+          <MenuItem value="">All statuses</MenuItem>
           {STATUSES.map((s) => (
-            <option key={s} value={s}>
+            <MenuItem key={s} value={s} sx={{ textTransform: 'capitalize' }}>
               {s.replace('_', ' ')}
-            </option>
+            </MenuItem>
           ))}
-        </select>
-        <button type="submit" className="admin-btn admin-btn--sm">
-          Search
-        </button>
-      </form>
+        </Select>
+        <IconButton type="submit" aria-label="Search" sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '10px' }}>
+          <Search fontSize="small" />
+        </IconButton>
+      </Stack>
 
-      <div className="admin-table-wrap">
+      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider' }}>
         {loading ? (
-          <p className="admin-empty">Loading…</p>
+          <Typography color="text.secondary" sx={{ p: 3 }}>
+            Loading…
+          </Typography>
         ) : projects.length === 0 ? (
-          <p className="admin-empty">No projects match those filters.</p>
+          <Typography color="text.secondary" sx={{ p: 3 }}>
+            No projects match those filters.
+          </Typography>
         ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Project</th>
-                <th>Posted by</th>
-                <th>Status</th>
-                <th>Bids</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Project</TableCell>
+                <TableCell>Posted by</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Bids</TableCell>
+                <TableCell>Created</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {projects.map((p) => (
-                <tr
+                <TableRow
                   key={p.id}
-                  className="admin-table__row--clickable"
+                  hover
                   onClick={() => navigate(`/projects/${p.id}`)}
+                  sx={{ cursor: 'pointer' }}
                 >
-                  <td>
-                    <div className="admin-table__name">{p.title}</div>
-                    <div className="admin-table__sub">
+                  <TableCell>
+                    <Typography fontWeight={600}>{p.title}</Typography>
+                    <Typography variant="body2" color="text.secondary">
                       {[p.projectType, p.location].filter(Boolean).join(' · ') || '—'}
-                    </div>
-                  </td>
-                  <td>
-                    <div>{p.createdBy?.fullName || 'Unknown'}</div>
-                    <div className="admin-table__sub">{p.createdBy?.workEmail || ''}</div>
-                  </td>
-                  <td>
-                    <span className={`admin-pill admin-pill--${p.status}`}>{p.status.replace('_', ' ')}</span>
-                  </td>
-                  <td>{p.bidsCount}</td>
-                  <td>{formatDate(p.createdAt)}</td>
-                  <td onClick={(e) => e.stopPropagation()}>
-                    <div className="admin-actions">
-                      <select
-                        className="admin-inline-select"
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography>{p.createdBy?.fullName || 'Unknown'}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {p.createdBy?.workEmail || ''}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={p.status.replace('_', ' ')}
+                      size="small"
+                      sx={{ fontWeight: 600, textTransform: 'capitalize', ...statusChipSx(p.status) }}
+                    />
+                  </TableCell>
+                  <TableCell>{p.bidsCount}</TableCell>
+                  <TableCell>{formatDate(p.createdAt)}</TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                      <Select
                         value={p.status}
                         disabled={busy === p.id}
                         onChange={(e) => onStatusChange(p, e.target.value)}
+                        size="small"
+                        sx={{ minWidth: 140 }}
                       >
                         {STATUSES.map((s) => (
-                          <option key={s} value={s}>
+                          <MenuItem key={s} value={s} sx={{ textTransform: 'capitalize' }}>
                             {s.replace('_', ' ')}
-                          </option>
+                          </MenuItem>
                         ))}
-                      </select>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--danger admin-btn--sm"
+                      </Select>
+                      <IconButton
+                        aria-label="Delete project"
+                        color="error"
+                        size="small"
                         disabled={busy === p.id}
                         onClick={() => onDelete(p)}
                       >
-                        <Icon name="trash" size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                        <DeleteOutlined fontSize="small" />
+                      </IconButton>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
-      </div>
+      </TableContainer>
 
       {pages > 1 ? (
-        <div className="admin-pager">
-          <span>
+        <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mt: 2.5 }}>
+          <Typography variant="body2" color="text.secondary">
             Page {page} of {pages}
-          </span>
-          <div className="admin-pager__pages">
-            {Array.from({ length: Math.min(7, pages) }, (_, i) => i + 1).map((n) => (
-              <button key={n} type="button" className={page === n ? 'is-active' : ''} onClick={() => setPage(n)}>
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
+          </Typography>
+          <Pagination count={pages} page={page} onChange={(_, value) => setPage(value)} color="primary" shape="rounded" />
+        </Stack>
       ) : null}
     </>
   )

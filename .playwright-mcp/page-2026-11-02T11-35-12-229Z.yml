@@ -1,0 +1,59 @@
+- generic [ref=f57e3]:
+  - banner [ref=f57e4]:
+    - generic [ref=f57e5]:
+      - link "CrewUp home" [ref=f57e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f57e7]: CREWUP
+      - generic [ref=f57e13]:
+        - button "Switch to dark mode" [ref=f57e14] [cursor=pointer]
+        - button "Notifications" [ref=f57e17] [cursor=pointer]
+        - button "MT MUI Test User2" [ref=f57e21] [cursor=pointer]:
+          - generic [ref=f57e22]: MT
+          - paragraph [ref=f57e26]: MUI Test User2
+  - generic [ref=f57e29]:
+    - generic [ref=f57e32]:
+      - generic [ref=f57e33]:
+        - generic [ref=f57e34]: CU
+        - list [ref=f57e36]:
+          - link "Dashboard" [ref=f57e37] [cursor=pointer]:
+            - /url: /dashboard
+          - link "My Projects" [ref=f57e44] [cursor=pointer]:
+            - /url: /dashboard/projects
+          - link "Browse Jobs" [ref=f57e50] [cursor=pointer]:
+            - /url: /jobs
+          - link "Messages" [ref=f57e57] [cursor=pointer]:
+            - /url: /dashboard/messages
+          - link "Find Crew" [ref=f57e63] [cursor=pointer]:
+            - /url: /dashboard/contractors
+          - link "Billing" [ref=f57e72] [cursor=pointer]:
+            - /url: /dashboard/billing
+          - link "Settings" [ref=f57e78] [cursor=pointer]:
+            - /url: /dashboard/settings/account
+      - button [ref=f57e85] [cursor=pointer]:
+        - paragraph [ref=f57e89]: Log Out
+    - generic [ref=f57e91]:
+      - generic [ref=f57e92]:
+        - generic [ref=f57e93]:
+          - heading "Welcome back, MUI!" [level=4] [ref=f57e94]
+          - paragraph [ref=f57e95]: Post jobs, review bids, and hire crew from one place.
+        - link "Post a project" [ref=f57e96] [cursor=pointer]:
+          - /url: /dashboard/projects
+      - generic [ref=f57e97]:
+        - generic [ref=f57e98]:
+          - heading "—" [level=4] [ref=f57e99]
+          - paragraph [ref=f57e100]: Active Projects
+        - generic [ref=f57e101]:
+          - heading "—" [level=4] [ref=f57e102]
+          - paragraph [ref=f57e103]: Messages
+        - generic [ref=f57e104]:
+          - heading "—" [level=4] [ref=f57e105]
+          - paragraph [ref=f57e106]: Saved Crew
+        - generic [ref=f57e107]:
+          - heading "—" [level=4] [ref=f57e108]
+          - paragraph [ref=f57e109]: Invites Sent
+      - generic [ref=f57e110]:
+        - generic [ref=f57e111]:
+          - heading "Recent Projects" [level=6] [ref=f57e115]
+          - link "View all" [ref=f57e116] [cursor=pointer]:
+            - /url: /dashboard/projects
+        - paragraph [ref=f57e117]: Loading…

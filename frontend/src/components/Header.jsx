@@ -1,5 +1,21 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import {
+  AppBar,
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Container,
+  Divider,
+  Drawer,
+  IconButton,
+  Link,
+  Stack,
+  Toolbar,
+  Typography,
+} from '@mui/material'
+import { Close, ExpandMore, Menu as MenuIcon, NotificationsNoneOutlined } from '@mui/icons-material'
 import ThemeToggle from './ThemeToggle'
 import Logo from './Logo'
 import AccountDrawer from './AccountDrawer'
@@ -26,53 +42,84 @@ function initials(name) {
     .join('')
 }
 
-function Avatar({ user }) {
-  const src = mediaUrl(user.profilePhoto)
-  if (src) {
-    return <img src={src} alt="" className="user-bar__avatar" width="40" height="40" />
+function isRouterLink(href) {
+  return href.startsWith('/dashboard') || href === '/jobs'
+}
+
+function NavLink({ link, onClick, sx }) {
+  const common = {
+    underline: 'none',
+    color: 'text.primary',
+    sx: {
+      fontWeight: 600,
+      fontSize: '0.92rem',
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 0.4,
+      transition: 'color 0.15s ease',
+      '&:hover': { color: 'primary.main' },
+      ...sx,
+    },
+  }
+  if (isRouterLink(link.href)) {
+    return (
+      <Link component={RouterLink} to={link.href} onClick={onClick} {...common}>
+        {link.label}
+      </Link>
+    )
   }
   return (
-    <span className="user-bar__avatar user-bar__avatar--fallback">
-      {initials(user.fullName)}
-    </span>
+    <Link href={link.href} onClick={onClick} {...common}>
+      {link.label}
+      {link.dropdown ? <ExpandMore sx={{ fontSize: 16 }} /> : null}
+    </Link>
   )
 }
 
-function UserMenu({ user, accountOpen, onOpenAccount }) {
+function Avatar40({ user }) {
+  const src = mediaUrl(user.profilePhoto)
   return (
-    <div className="user-bar">
-      <button type="button" className="user-bar__bell" aria-label="Notifications">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M10 19a2 2 0 0 0 4 0"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-          />
-        </svg>
-      </button>
+    <Avatar src={src || undefined} sx={{ width: 40, height: 40, fontSize: '1rem', fontWeight: 700 }}>
+      {initials(user.fullName)}
+    </Avatar>
+  )
+}
 
-      <button
-        type="button"
-        className="user-bar__profile"
-        aria-expanded={accountOpen}
-        aria-haspopup="dialog"
+function UserMenu({ user, onOpenAccount }) {
+  return (
+    <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
+      <IconButton aria-label="Notifications" size="small" sx={{ color: 'text.secondary' }}>
+        <NotificationsNoneOutlined fontSize="small" />
+      </IconButton>
+
+      <Button
         onClick={onOpenAccount}
+        aria-haspopup="dialog"
+        sx={{ textTransform: 'none', color: 'text.primary', px: 1, gap: 1 }}
       >
-        <span className="user-bar__avatar-wrap">
-          <Avatar user={user} />
-          <span className="user-bar__online" aria-hidden="true" />
-        </span>
-        <span className="user-bar__name">{user.fullName}</span>
-      </button>
-    </div>
+        <Badge
+          overlap="circular"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          badgeContent={
+            <Box
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                bgcolor: 'success.main',
+                border: '2px solid',
+                borderColor: 'background.paper',
+              }}
+            />
+          }
+        >
+          <Avatar40 user={user} />
+        </Badge>
+        <Typography fontWeight={600} fontSize="0.92rem" sx={{ display: { xs: 'none', md: 'block' } }}>
+          {user.fullName}
+        </Typography>
+      </Button>
+    </Stack>
   )
 }
 
@@ -102,103 +149,107 @@ export default function Header({ menuOpen, setMenuOpen }) {
   const links = navLinks(user)
 
   return (
-    <header className="header">
-      <div className="container header__row">
-        <Link to="/" aria-label="CrewUp home">
-          <Logo markSize={32} />
-        </Link>
+    <AppBar
+      position="sticky"
+      color="inherit"
+      elevation={0}
+      sx={{ borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}
+    >
+      <Container maxWidth="lg" disableGutters>
+        <Toolbar sx={{ px: { xs: 2, sm: 3 }, gap: 2, minHeight: 72 }}>
+          <Box
+            component={RouterLink}
+            to="/"
+            aria-label="CrewUp home"
+            sx={{ display: 'inline-flex', mr: 1, textDecoration: 'none', color: 'inherit' }}
+          >
+            <Logo markSize={32} />
+          </Box>
 
-        <nav className="header__nav" aria-label="Primary">
-          {links.map((l) =>
-            l.href.startsWith('/dashboard') || l.href === '/jobs' ? (
-              <Link key={l.label} to={l.href} className="header__link">
-                {l.label}
-              </Link>
-            ) : (
-              <a key={l.label} href={l.href} className="header__link">
-                {l.label}
-                {l.dropdown && (
-                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
-                    <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                )}
-              </a>
-            )
-          )}
-        </nav>
+          <Stack
+            component="nav"
+            aria-label="Primary"
+            direction="row"
+            spacing={3}
+            sx={{ display: { xs: 'none', lg: 'flex' }, flex: 1 }}
+          >
+            {links.map((l) => (
+              <NavLink key={l.label} link={l} />
+            ))}
+          </Stack>
 
-        <div className="header__actions">
-          <ThemeToggle />
-          {user ? (
-            <UserMenu
-              user={user}
-              accountOpen={accountOpen}
-              onOpenAccount={() => setAccountOpen(true)}
-            />
-          ) : (
-            <>
-              <Link to="/login" className="link-login">Log In</Link>
-              <Link to="/signup" className="btn btn-primary btn-sm">Sign Up</Link>
-            </>
-          )}
-        </div>
+          <Box sx={{ flex: { xs: 1, lg: 0 } }} />
 
-        <button
-          type="button"
-          className={`burger${menuOpen ? ' open' : ''}`}
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((v) => !v)}
-        >
-          <span /><span /><span />
-        </button>
-      </div>
-
-      {menuOpen && (
-        <div className="header__drawer">
-          {links.map((l) =>
-            l.href.startsWith('/dashboard') || l.href === '/jobs' ? (
-              <Link key={l.label} to={l.href} onClick={() => setMenuOpen(false)}>
-                {l.label}
-              </Link>
-            ) : (
-              <a key={l.label} href={l.href} onClick={() => setMenuOpen(false)}>
-                {l.label}
-              </a>
-            )
-          )}
-          <div className="header__drawer-actions">
+          <Stack
+            direction="row"
+            spacing={1.5}
+            sx={{ alignItems: 'center', display: { xs: 'none', sm: 'flex' } }}
+          >
+            <ThemeToggle />
             {user ? (
-              <>
-                <button
-                  type="button"
-                  className="user-bar user-bar--drawer"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    setAccountOpen(true)
-                  }}
-                >
-                  <span className="user-bar__avatar-wrap">
-                    <Avatar user={user} />
-                    <span className="user-bar__online" aria-hidden="true" />
-                  </span>
-                  <span className="user-bar__name">{user.fullName}</span>
-                </button>
-                <button type="button" className="btn btn-outline" onClick={handleLogout}>
-                  Log out
-                </button>
-              </>
+              <UserMenu user={user} onOpenAccount={() => setAccountOpen(true)} />
             ) : (
               <>
-                <Link to="/login" onClick={() => setMenuOpen(false)}>Log In</Link>
-                <Link to="/signup" className="btn btn-primary" onClick={() => setMenuOpen(false)}>
+                <Button component={RouterLink} to="/login" sx={{ textTransform: 'none', fontWeight: 600 }}>
+                  Log In
+                </Button>
+                <Button component={RouterLink} to="/signup" variant="contained" size="small">
                   Sign Up
-                </Link>
+                </Button>
               </>
             )}
-          </div>
-        </div>
-      )}
+          </Stack>
+
+          <IconButton
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+            sx={{ display: { xs: 'inline-flex', lg: 'none' } }}
+          >
+            {menuOpen ? <Close /> : <MenuIcon />}
+          </IconButton>
+        </Toolbar>
+      </Container>
+
+      <Drawer anchor="top" open={menuOpen} onClose={() => setMenuOpen(false)} sx={{ display: { lg: 'none' } }}>
+        <Stack sx={{ p: 2.5, pt: 9 }} spacing={1.5}>
+          {links.map((l) => (
+            <NavLink key={l.label} link={l} onClick={() => setMenuOpen(false)} sx={{ py: 1, fontSize: '1rem' }} />
+          ))}
+          <Divider sx={{ my: 1 }} />
+          {user ? (
+            <>
+              <Button
+                onClick={() => {
+                  setMenuOpen(false)
+                  setAccountOpen(true)
+                }}
+                sx={{ justifyContent: 'flex-start', textTransform: 'none', gap: 1.5 }}
+              >
+                <Avatar40 user={user} />
+                <Typography fontWeight={600}>{user.fullName}</Typography>
+              </Button>
+              <Button variant="outlined" onClick={handleLogout}>
+                Log out
+              </Button>
+            </>
+          ) : (
+            <Stack spacing={1.5}>
+              <Button component={RouterLink} to="/login" onClick={() => setMenuOpen(false)} variant="outlined">
+                Log In
+              </Button>
+              <Button
+                component={RouterLink}
+                to="/signup"
+                onClick={() => setMenuOpen(false)}
+                variant="contained"
+              >
+                Sign Up
+              </Button>
+            </Stack>
+          )}
+        </Stack>
+      </Drawer>
 
       {user ? (
         <AccountDrawer
@@ -208,6 +259,6 @@ export default function Header({ menuOpen, setMenuOpen }) {
           onLogout={handleLogout}
         />
       ) : null}
-    </header>
+    </AppBar>
   )
 }

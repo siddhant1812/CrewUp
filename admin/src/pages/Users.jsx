@@ -1,11 +1,46 @@
 import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  InputAdornment,
+  MenuItem,
+  Pagination,
+  Paper,
+  Select,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material'
+import {
+  AdminPanelSettingsOutlined,
+  BlockOutlined,
+  CheckCircleOutlined,
+  DeleteOutlined,
+  Search,
+  VpnKeyOutlined,
+} from '@mui/icons-material'
 import { deleteUser, fetchUsers, resetUserPassword, updateUser } from '../api/admin'
-import Icon from '../components/Icon'
 
 function formatDate(value) {
   if (!value) return '—'
   return new Date(value).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+const STATUS_COLOR = {
+  active: 'success',
+  deactivated: 'warning',
+  deleted: 'error',
 }
 
 export default function Users() {
@@ -101,132 +136,204 @@ export default function Users() {
 
   return (
     <>
-      <div className="admin-topbar">
-        <div>
-          <h1>Users</h1>
-          <p>{total} total accounts</p>
-        </div>
-      </div>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" sx={{ fontSize: '1.5rem' }}>
+          Users
+        </Typography>
+        <Typography color="text.secondary">{total} total accounts</Typography>
+      </Box>
 
-      {error ? <p className="admin-error">{error}</p> : null}
-      {notice ? <p className="admin-notice">{notice}</p> : null}
+      {error ? (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      ) : null}
+      {notice ? (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {notice}
+        </Alert>
+      ) : null}
 
-      <form className="admin-toolbar" onSubmit={onSearch}>
-        <label className="admin-search">
-          <Icon name="search" size={16} />
-          <input
-            type="search"
-            placeholder="Search name, email, or company"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-        </label>
-        <select value={contractorType} onChange={(e) => setContractorType(e.target.value)}>
-          <option value="">All account types</option>
-          <option value="general_contractor">Contractor</option>
-          <option value="subcontractor">Subcontractor</option>
-          <option value="find_work">Find work</option>
-        </select>
-        <select value={accountStatus} onChange={(e) => setAccountStatus(e.target.value)}>
-          <option value="">All statuses</option>
-          <option value="active">Active</option>
-          <option value="deactivated">Deactivated</option>
-          <option value="deleted">Deleted</option>
-        </select>
-        <button type="submit" className="admin-btn admin-btn--sm">
+      <Stack
+        component="form"
+        onSubmit={onSearch}
+        direction="row"
+        useFlexGap
+        sx={{ flexWrap: 'wrap', gap: 1.5, mb: 2.5 }}
+      >
+        <TextField
+          type="search"
+          placeholder="Search name, email, or company"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          size="small"
+          sx={{ flex: '1 1 260px' }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search fontSize="small" />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        <Select
+          value={contractorType}
+          onChange={(e) => setContractorType(e.target.value)}
+          size="small"
+          displayEmpty
+          sx={{ minWidth: 180 }}
+        >
+          <MenuItem value="">All account types</MenuItem>
+          <MenuItem value="general_contractor">Contractor</MenuItem>
+          <MenuItem value="subcontractor">Subcontractor</MenuItem>
+          <MenuItem value="find_work">Find work</MenuItem>
+        </Select>
+        <Select
+          value={accountStatus}
+          onChange={(e) => setAccountStatus(e.target.value)}
+          size="small"
+          displayEmpty
+          sx={{ minWidth: 160 }}
+        >
+          <MenuItem value="">All statuses</MenuItem>
+          <MenuItem value="active">Active</MenuItem>
+          <MenuItem value="deactivated">Deactivated</MenuItem>
+          <MenuItem value="deleted">Deleted</MenuItem>
+        </Select>
+        <Button type="submit" variant="contained" size="small">
           Search
-        </button>
-      </form>
+        </Button>
+      </Stack>
 
-      <div className="admin-table-wrap">
+      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '14px' }}>
         {loading ? (
-          <p className="admin-empty">Loading…</p>
+          <Typography sx={{ p: 3 }} color="text.secondary">
+            Loading…
+          </Typography>
         ) : users.length === 0 ? (
-          <p className="admin-empty">No users match those filters.</p>
+          <Typography sx={{ p: 3 }} color="text.secondary">
+            No users match those filters.
+          </Typography>
         ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Plan</th>
-                <th>Joined</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Plan</TableCell>
+                <TableCell>Joined</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {users.map((u) => (
-                <tr key={u.id}>
-                  <td>
-                    <div className="admin-table__name">
-                      {u.fullName} {u.role === 'admin' ? <span className="admin-pill admin-pill--admin">Admin</span> : null}
-                    </div>
-                    <div className="admin-table__sub">{u.workEmail}</div>
-                  </td>
-                  <td>{(u.contractorType || '').replace(/_/g, ' ')}</td>
-                  <td>
-                    <span className={`admin-pill admin-pill--${u.accountStatus}`}>{u.accountStatus}</span>
-                  </td>
-                  <td>{u.plan}</td>
-                  <td>{formatDate(u.createdAt)}</td>
-                  <td>
-                    <div className="admin-actions">
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--outline admin-btn--sm"
-                        disabled={busy === u.id}
-                        onClick={() => toggleStatus(u)}
+                <TableRow key={u.id} hover>
+                  <TableCell>
+                    <Stack direction="row" sx={{ alignItems: 'center', gap: 0.75 }}>
+                      <Typography fontWeight={600}>{u.fullName}</Typography>
+                      {u.role === 'admin' ? <Chip size="small" color="secondary" label="Admin" /> : null}
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary">
+                      {u.workEmail}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{(u.contractorType || '').replace(/_/g, ' ')}</TableCell>
+                  <TableCell>
+                    <Chip
+                      size="small"
+                      label={u.accountStatus}
+                      color={STATUS_COLOR[u.accountStatus] || 'default'}
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell>{u.plan}</TableCell>
+                  <TableCell>{formatDate(u.createdAt)}</TableCell>
+                  <TableCell>
+                    <Stack direction="row" sx={{ gap: 0.5 }}>
+                      <Tooltip title={u.accountStatus === 'active' ? 'Deactivate account' : 'Activate account'}>
+                        <span>
+                          <IconButton
+                            size="small"
+                            disabled={busy === u.id}
+                            onClick={() => toggleStatus(u)}
+                            sx={{ '&:hover': { bgcolor: 'warning.light' } }}
+                          >
+                            {u.accountStatus === 'active' ? (
+                              <BlockOutlined fontSize="small" />
+                            ) : (
+                              <CheckCircleOutlined fontSize="small" />
+                            )}
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip
+                        title={
+                          u.id === me.id
+                            ? "You can't change your own admin access"
+                            : u.role === 'admin'
+                              ? 'Revoke admin access'
+                              : 'Make admin'
+                        }
                       >
-                        {u.accountStatus === 'active' ? 'Deactivate' : 'Activate'}
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--outline admin-btn--sm"
-                        disabled={busy === u.id || u.id === me.id}
-                        onClick={() => toggleAdmin(u)}
-                        title={u.id === me.id ? "You can't change your own admin access" : ''}
-                      >
-                        {u.role === 'admin' ? 'Revoke admin' : 'Make admin'}
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--outline admin-btn--sm"
-                        disabled={busy === u.id}
-                        onClick={() => doResetPassword(u)}
-                      >
-                        <Icon name="key" size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--danger admin-btn--sm"
-                        disabled={busy === u.id || u.id === me.id}
-                        onClick={() => doDelete(u)}
-                      >
-                        <Icon name="trash" size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                        <span>
+                          <IconButton
+                            size="small"
+                            disabled={busy === u.id || u.id === me.id}
+                            onClick={() => toggleAdmin(u)}
+                            color={u.role === 'admin' ? 'secondary' : 'default'}
+                            sx={{ '&:hover': { bgcolor: 'primary.light' } }}
+                          >
+                            <AdminPanelSettingsOutlined fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title="Reset password">
+                        <span>
+                          <IconButton
+                            size="small"
+                            disabled={busy === u.id}
+                            onClick={() => doResetPassword(u)}
+                            sx={{ '&:hover': { bgcolor: 'action.selected' } }}
+                          >
+                            <VpnKeyOutlined fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={u.id === me.id ? "You can't delete your own account" : 'Delete account'}>
+                        <span>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            disabled={busy === u.id || u.id === me.id}
+                            onClick={() => doDelete(u)}
+                            sx={{ '&:hover': { bgcolor: 'error.light' } }}
+                          >
+                            <DeleteOutlined fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
-      </div>
+      </TableContainer>
 
       {pages > 1 ? (
-        <div className="admin-pager">
-          <span>
-            Page {page} of {pages}
-          </span>
-          <div className="admin-pager__pages">
-            {Array.from({ length: Math.min(7, pages) }, (_, i) => i + 1).map((n) => (
-              <button key={n} type="button" className={page === n ? 'is-active' : ''} onClick={() => setPage(n)}>
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
+        <Stack direction="row" sx={{ justifyContent: 'center', mt: 3 }}>
+          <Pagination
+            count={Math.min(7, pages)}
+            page={page}
+            onChange={(e, value) => setPage(value)}
+            color="primary"
+            shape="rounded"
+          />
+        </Stack>
       ) : null}
     </>
   )
