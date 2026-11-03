@@ -33,7 +33,10 @@ function buildPermissions(user) {
     inviteContractors: poster,
     manageTeam: contractor,
     applyToJobs: worker,
-    browseJobs: true,
+    // Pure general contractors only post work, they don't look for it — so
+    // Browse Jobs is for workers, subcontractors (who bid on GC-posted work),
+    // and admins, not plain GC accounts.
+    browseJobs: worker,
     message: true,
     viewContractors: true,
     saveContractors: true,

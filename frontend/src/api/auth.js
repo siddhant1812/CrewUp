@@ -72,7 +72,7 @@ function fallbackPermissions(user) {
     inviteContractors: contractor,
     manageTeam: contractor,
     applyToJobs: worker,
-    browseJobs: true,
+    browseJobs: worker,
     message: true,
     viewContractors: true,
     saveContractors: true,

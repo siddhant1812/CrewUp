@@ -11,7 +11,7 @@ const SIDEBAR_WIDTH = 232
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', icon: 'home', end: true },
   { to: '/dashboard/projects', label: 'My Projects', icon: 'folder', permission: 'manageProjects' },
-  { to: '/jobs', label: 'Browse Jobs', icon: 'search', permission: 'browseJobs' },
+  
   { to: '/dashboard/messages', label: 'Messages', icon: 'message', badgeKey: 'messages' },
   { to: '/dashboard/contractors', label: 'Find Crew', icon: 'users', permission: 'hire' },
   { to: '/dashboard/contractors', label: 'Companies', icon: 'users', hideIf: 'hire' },

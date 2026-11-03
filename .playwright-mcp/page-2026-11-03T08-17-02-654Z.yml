@@ -1,0 +1,224 @@
+- generic [ref=f1e3]:
+  - banner [ref=f1e4]:
+    - generic [ref=f1e6]:
+      - link "CrewUp home" [ref=f1e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f1e8]: CREWUP
+      - navigation "Primary" [ref=f1e14]:
+        - link "How It Works" [ref=f1e15] [cursor=pointer]:
+          - /url: /#how-it-works
+        - link "Find Work" [ref=f1e16] [cursor=pointer]:
+          - /url: /jobs
+        - link "Companies" [ref=f1e17] [cursor=pointer]:
+          - /url: /dashboard/contractors
+        - link "Pricing" [ref=f1e18] [cursor=pointer]:
+          - /url: /#pricing
+        - link "Resources" [ref=f1e19] [cursor=pointer]:
+          - /url: /#resources
+      - generic [ref=f1e22]:
+        - button "Switch to dark mode" [ref=f1e23] [cursor=pointer]
+        - link "Log In" [ref=f1e26] [cursor=pointer]:
+          - /url: /login
+        - link "Sign Up" [ref=f1e27] [cursor=pointer]:
+          - /url: /signup
+  - main [ref=f1e28]:
+    - generic [ref=f1e31]:
+      - generic [ref=f1e32]: SHEET A-01 · FIELD NETWORK
+      - generic [ref=f1e33]:
+        - generic [ref=f1e34]:
+          - heading "Post the job. Find the crew. Get it built." [level=1] [ref=f1e35]: Post the job.Find the crew.Get it built.
+          - paragraph [ref=f1e36]: CrewUp connects general contractors with licensed subcontractors by trade and location, so job-site gaps get filled in days, not weeks.
+          - generic [ref=f1e37]:
+            - link "Post a project" [ref=f1e38] [cursor=pointer]:
+              - /url: /dashboard/projects
+            - link "Browse open jobs" [ref=f1e39] [cursor=pointer]:
+              - /url: /jobs
+        - generic [ref=f1e41]:
+          - generic [ref=f1e42]:
+            - paragraph [ref=f1e43]: WO-2291
+            - generic [ref=f1e44]: Open
+          - paragraph [ref=f1e45]: Framing Crew — 6 Person
+          - generic [ref=f1e46]:
+            - generic [ref=f1e47]:
+              - paragraph [ref=f1e48]: Location
+              - paragraph [ref=f1e49]: Austin, TX
+            - generic [ref=f1e50]:
+              - paragraph [ref=f1e51]: Trade
+              - paragraph [ref=f1e52]: Framing
+            - generic [ref=f1e53]:
+              - paragraph [ref=f1e54]: Start
+              - paragraph [ref=f1e55]: Mon, Jun 9
+          - paragraph [ref=f1e56]: 4 crews applied
+    - region "Platform statistics" [ref=f1e57]:
+      - generic [ref=f1e59]:
+        - generic [ref=f1e60]:
+          - paragraph [ref=f1e62]: 5,000+
+          - paragraph [ref=f1e63]: Contractors
+        - generic [ref=f1e64]:
+          - paragraph [ref=f1e66]: 10,000+
+          - paragraph [ref=f1e67]: Projects posted
+        - generic [ref=f1e68]:
+          - paragraph [ref=f1e70]: 50+
+          - paragraph [ref=f1e71]: Trades
+        - generic [ref=f1e72]:
+          - paragraph [ref=f1e74]: Nationwide
+          - paragraph [ref=f1e75]: Coverage
+    - generic [ref=f1e78]:
+      - link "Open dashboard" [ref=f1e80] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=f1e81]:
+          - generic [ref=f1e82]: CU
+          - generic [ref=f1e83]:
+            - generic [ref=f1e84]: Dashboard
+            - generic [ref=f1e87]: Projects
+            - generic [ref=f1e90]: Messages
+            - generic [ref=f1e93]: Contractors
+            - generic [ref=f1e96]: Billing
+        - generic [ref=f1e99]:
+          - paragraph [ref=f1e100]: Welcome to CrewUp
+          - generic [ref=f1e101]:
+            - generic [ref=f1e102]:
+              - paragraph [ref=f1e103]: "0"
+              - paragraph [ref=f1e104]: Active Projects
+            - generic [ref=f1e105]:
+              - paragraph [ref=f1e106]: "0"
+              - paragraph [ref=f1e107]: Messages
+            - generic [ref=f1e108]:
+              - paragraph [ref=f1e109]: "0"
+              - paragraph [ref=f1e110]: Saved Contractors
+            - generic [ref=f1e111]:
+              - paragraph [ref=f1e112]: "0"
+              - paragraph [ref=f1e113]: Project Invites
+          - paragraph [ref=f1e114]: Recent Projects
+          - paragraph [ref=f1e115]: No projects yet.
+      - generic [ref=f1e116]:
+        - heading "How a crew comes together" [level=2] [ref=f1e117]
+        - paragraph [ref=f1e118]: Whether you're hiring crew or looking for your next job, CrewUp makes connecting simple, fast, and reliable.
+        - list [ref=f1e119]:
+          - listitem [ref=f1e120]:
+            - generic [ref=f1e121]: "01"
+            - generic [ref=f1e122]:
+              - paragraph [ref=f1e128]: Create Your Profile
+              - paragraph [ref=f1e129]: Sign up as a contractor, subcontractor, or to find work, and showcase your skills, licenses, and experience.
+          - listitem [ref=f1e130]:
+            - generic [ref=f1e131]: "02"
+            - generic [ref=f1e132]:
+              - paragraph [ref=f1e138]: Post or Search Projects
+              - paragraph [ref=f1e139]: Browse jobs in your trade or post projects when you need reliable crew on site.
+          - listitem [ref=f1e140]:
+            - generic [ref=f1e141]: "03"
+            - generic [ref=f1e142]:
+              - paragraph [ref=f1e148]: Connect With the Right Pros
+              - paragraph [ref=f1e149]: Message verified partners, compare quotes, and build relationships that last.
+          - listitem [ref=f1e150]:
+            - generic [ref=f1e151]: "04"
+            - generic [ref=f1e152]:
+              - paragraph [ref=f1e160]: Build Better Together
+              - paragraph [ref=f1e161]: Stay connected, fill labor gaps fast, and grow a crew you can count on.
+    - generic [ref=f1e164]:
+      - img "Construction worker reviewing blueprints on a job site" [ref=f1e166]
+      - generic [ref=f1e168]:
+        - heading "Find your next job" [level=2] [ref=f1e169]
+        - paragraph [ref=f1e170]: Browse projects that match your trade, location, and schedule — then connect directly with general contractors who need your skills.
+        - list [ref=f1e171]:
+          - listitem [ref=f1e172]: Search by trade
+          - listitem [ref=f1e175]: Search by location
+          - listitem [ref=f1e178]: Direct contractor messaging
+          - listitem [ref=f1e181]: Company profiles
+          - listitem [ref=f1e184]: Project alerts
+          - listitem [ref=f1e187]: Mobile friendly
+        - link "Browse jobs" [ref=f1e190] [cursor=pointer]:
+          - /url: /jobs
+    - generic [ref=f1e193]:
+      - generic [ref=f1e194]:
+        - heading "Find your next crew" [level=2] [ref=f1e195]
+        - paragraph [ref=f1e196]: Search verified tradespeople by specialty, location, and availability — then hire with confidence.
+        - paragraph [ref=f1e197]: Trades on the network
+        - generic [ref=f1e198]:
+          - link "Electrical" [ref=f1e199] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Electrical
+          - link "Plumbing" [ref=f1e202] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Plumbing
+          - link "HVAC" [ref=f1e205] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=HVAC
+          - link "Roofing" [ref=f1e208] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Roofing
+          - link "Concrete" [ref=f1e211] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Concrete
+          - link "Framing" [ref=f1e214] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Framing
+          - link "Drywall" [ref=f1e217] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Drywall
+          - link "Painting" [ref=f1e220] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Painting
+          - link "Flooring" [ref=f1e223] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Flooring
+          - link "Excavation" [ref=f1e226] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Excavation
+          - link "Landscaping" [ref=f1e229] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Landscaping
+          - link "Masonry" [ref=f1e232] [cursor=pointer]:
+            - /url: /dashboard/contractors?trade=Masonry
+        - link "Find contractors" [ref=f1e235] [cursor=pointer]:
+          - /url: /dashboard/contractors
+      - img "Two construction workers looking at a tablet together" [ref=f1e237]
+    - generic [ref=f1e240]:
+      - generic [ref=f1e241]:
+        - heading "Rate sheet" [level=2] [ref=f1e242]
+        - paragraph [ref=f1e243]: No hidden fees. Upgrade when you're ready.
+      - paragraph [ref=f1e244]: Loading plans…
+      - paragraph [ref=f1e245]:
+        - text: Manage cards and invoices in
+        - link "Settings → Subscription" [ref=f1e246] [cursor=pointer]:
+          - /url: /dashboard/settings/subscription
+        - text: .
+    - region "Social proof" [ref=f1e247]:
+      - generic [ref=f1e249]:
+        - img [ref=f1e251]:
+          - generic [ref=f1e254]: CREWUP · VERIFIED NETWORK · CREWUP · VERIFIED NETWORK ·
+          - generic [ref=f1e255]: "4.9"
+          - generic [ref=f1e256]: AVG RATING
+        - generic [ref=f1e257]:
+          - generic [ref=f1e258]:
+            - paragraph [ref=f1e259]: 5,000+
+            - paragraph [ref=f1e260]: Active members
+          - generic [ref=f1e261]:
+            - paragraph [ref=f1e262]: 10,000+
+            - paragraph [ref=f1e263]: Connections made
+          - generic [ref=f1e264]:
+            - paragraph [ref=f1e265]: 50+
+            - paragraph [ref=f1e266]: Trades covered
+    - generic [ref=f1e269]:
+      - generic [ref=f1e270]:
+        - heading "Ready to build your next crew?" [level=2] [ref=f1e271]
+        - paragraph [ref=f1e272]: Join thousands of contractors and subcontractors using CrewUp to find work, fill crews, and grow lasting partnerships.
+      - generic [ref=f1e273]:
+        - link "Find work" [ref=f1e274] [cursor=pointer]:
+          - /url: /jobs
+        - link "Find contractors" [ref=f1e275] [cursor=pointer]:
+          - /url: /dashboard/find-contractors
+  - contentinfo [ref=f1e276]:
+    - generic [ref=f1e277]:
+      - generic [ref=f1e278]:
+        - generic [ref=f1e279]:
+          - generic [ref=f1e280]: CREWUP
+          - paragraph [ref=f1e287]: The field network connecting general contractors with licensed trade crews.
+        - generic [ref=f1e288]:
+          - paragraph [ref=f1e289]: Platform
+          - generic [ref=f1e290]:
+            - link "Browse jobs" [ref=f1e291] [cursor=pointer]:
+              - /url: /jobs
+            - link "Find crew" [ref=f1e292] [cursor=pointer]:
+              - /url: /dashboard/contractors
+            - link "Pricing" [ref=f1e293] [cursor=pointer]:
+              - /url: /#pricing
+        - generic [ref=f1e294]:
+          - paragraph [ref=f1e295]: Account
+          - generic [ref=f1e296]:
+            - link "Log in" [ref=f1e297] [cursor=pointer]:
+              - /url: /login
+            - link "Create account" [ref=f1e298] [cursor=pointer]:
+              - /url: /signup
+      - generic [ref=f1e299]:
+        - paragraph [ref=f1e300]: © 2026 CrewUp. All rights reserved.
+        - paragraph [ref=f1e301]: Built for the trades
