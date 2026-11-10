@@ -21,8 +21,12 @@ import {
   Typography,
 } from '@mui/material'
 import {
+  AssignmentTurnedInOutlined,
+  ChatBubbleOutlineOutlined,
   DeleteOutlined,
   FolderOutlined,
+  GroupsOutlined,
+  MailOutlineOutlined,
   SearchOutlined,
 } from '@mui/icons-material'
 import { accountKindOf, canPostProjects, mediaUrl } from '../api/auth'
@@ -254,26 +258,26 @@ function DashboardHome({ user }) {
 
   const statCards = isWorker
     ? [
-        { value: stats.openJobs, label: 'Open Jobs' },
-        { value: stats.myBids, label: 'Your Bids' },
-        { value: stats.messages, label: 'Messages' },
-        { value: stats.projectInvites, label: 'Invites' },
+        { value: stats.openJobs, label: 'Open Jobs', icon: <SearchOutlined fontSize="small" />, color: 'primary' },
+        { value: stats.myBids, label: 'Your Bids', icon: <AssignmentTurnedInOutlined fontSize="small" />, color: 'success' },
+        { value: stats.messages, label: 'Messages', icon: <ChatBubbleOutlineOutlined fontSize="small" />, color: 'info' },
+        { value: stats.projectInvites, label: 'Invites', icon: <MailOutlineOutlined fontSize="small" />, color: 'warning' },
       ]
     : [
-        { value: stats.activeProjects, label: 'Active Projects' },
-        { value: stats.messages, label: 'Messages' },
-        { value: stats.savedContractors, label: 'Saved Crew' },
-        { value: stats.projectInvites, label: 'Invites Sent' },
+        { value: stats.activeProjects, label: 'Active Projects', icon: <FolderOutlined fontSize="small" />, color: 'primary' },
+        { value: stats.messages, label: 'Messages', icon: <ChatBubbleOutlineOutlined fontSize="small" />, color: 'info' },
+        { value: stats.savedContractors, label: 'Saved Crew', icon: <GroupsOutlined fontSize="small" />, color: 'success' },
+        { value: stats.projectInvites, label: 'Invites Sent', icon: <MailOutlineOutlined fontSize="small" />, color: 'warning' },
       ]
 
   return (
-    <>
+    <Stack spacing={3.5}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
-        sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between', gap: 2, mb: 3 }}
+        sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between', gap: 2 }}
       >
         <Box>
-          <Typography variant="h4" sx={{ fontSize: '1.5rem', mb: 0.5 }}>
+          <Typography variant="h4" sx={{ fontSize: '1.6rem', letterSpacing: '-0.015em', mb: 0.5 }}>
             Welcome back, {firstName}!
           </Typography>
           <Typography color="text.secondary">
@@ -283,11 +287,11 @@ function DashboardHome({ user }) {
           </Typography>
         </Box>
         {isWorker ? (
-          <Button component={RouterLink} to="/jobs" variant="contained" size="small">
+          <Button component={RouterLink} to="/jobs" variant="contained" size="medium">
             Browse jobs
           </Button>
         ) : (
-          <Button component={RouterLink} to="/dashboard/projects" variant="contained" size="small">
+          <Button component={RouterLink} to="/dashboard/projects" variant="contained" size="medium">
             Post a project
           </Button>
         )}
@@ -296,24 +300,57 @@ function DashboardHome({ user }) {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-          gap: 2,
-          mb: 3,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: 2.5,
         }}
       >
         {statCards.map((s) => (
-          <Paper key={s.label} variant="outlined" sx={{ p: 2.5, borderRadius: '14px' }}>
-            <Typography variant="h4" sx={{ fontSize: '1.9rem', mb: 0.5 }}>
+          <Paper
+            key={s.label}
+            variant="outlined"
+            sx={{
+              p: 2.75,
+              borderRadius: '16px',
+              transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
+              '&:hover': {
+                transform: 'translateY(-3px)',
+                borderColor: `${s.color}.main`,
+                boxShadow: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? '0 10px 28px rgba(0, 0, 0, 0.35)'
+                    : '0 10px 28px rgba(16, 30, 40, 0.08)',
+              },
+            }}
+          >
+            <Box
+              sx={{
+                width: 38,
+                height: 38,
+                borderRadius: '10px',
+                bgcolor: `${s.color}.light`,
+                color: (theme) =>
+                  s.color === 'primary'
+                    ? theme.palette.primary.dark
+                    : theme.palette[s.color]?.main || theme.palette.primary.dark,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 1.5,
+              }}
+            >
+              {s.icon}
+            </Box>
+            <Typography variant="h4" sx={{ fontSize: '1.9rem', letterSpacing: '-0.02em', mb: 0.5 }}>
               {loading ? '—' : s.value}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" fontWeight={500}>
               {s.label}
             </Typography>
           </Paper>
         ))}
       </Box>
 
-      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '14px' }}>
+      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
         <SectionHeader
           icon={isWorker ? <SearchOutlined fontSize="small" /> : <FolderOutlined fontSize="small" />}
           title={isWorker ? 'Jobs for you' : 'Recent Projects'}
@@ -338,7 +375,7 @@ function DashboardHome({ user }) {
           />
         )}
       </Paper>
-    </>
+    </Stack>
   )
 }
 
@@ -463,7 +500,7 @@ function ProjectsSection({ user }) {
   const categories = categoriesFor(user.contractorType)
 
   return (
-    <Stack spacing={2.5}>
+    <Stack spacing={3}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         sx={{ alignItems: { sm: 'center' }, justifyContent: 'space-between', gap: 1.5 }}
@@ -489,7 +526,7 @@ function ProjectsSection({ user }) {
           component="form"
           onSubmit={handleCreate}
           variant="outlined"
-          sx={{ p: { xs: 2, sm: 3 }, borderRadius: '14px' }}
+          sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}
         >
           <Box
             sx={{
@@ -615,7 +652,7 @@ function ProjectsSection({ user }) {
         </Paper>
       ) : null}
 
-      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '14px' }}>
+      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
         <SectionHeader icon={<FolderOutlined fontSize="small" />} title="Your projects" meta={`${projects.length} total`} />
         {error ? <Alert severity="error">{error}</Alert> : null}
         {loading ? (
@@ -636,7 +673,7 @@ function ProjectsSection({ user }) {
         )}
       </Paper>
 
-      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '14px' }}>
+      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
         <SectionHeader icon={<SearchOutlined fontSize="small" />} title="Open jobs to bid on">
           <Button component={RouterLink} to="/jobs" size="small">
             Browse all

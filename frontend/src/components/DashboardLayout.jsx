@@ -1,7 +1,28 @@
 import { useEffect, useState } from 'react'
 import { Link as RouterLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { AppBar, Avatar, Badge, Box, IconButton, Stack, Toolbar, Typography } from '@mui/material'
-import { ExpandMore, Menu as MenuIcon, NotificationsNoneOutlined } from '@mui/icons-material'
+import {
+  AppBar,
+  Avatar,
+  Badge,
+  Box,
+  Divider,
+  IconButton,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Stack,
+  Toolbar,
+  Typography,
+} from '@mui/material'
+import {
+  CreditCardOutlined,
+  ExpandMore,
+  Logout,
+  Menu as MenuIcon,
+  NotificationsNoneOutlined,
+  PersonOutlineOutlined,
+  SettingsOutlined,
+} from '@mui/icons-material'
 import Logo from './Logo'
 import Sidebar from './Sidebar'
 import AccountDrawer from './AccountDrawer'
@@ -24,6 +45,7 @@ export default function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [unread, setUnread] = useState(0)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [menuAnchor, setMenuAnchor] = useState(null)
 
   useEffect(() => {
     setAccountOpen(false)
@@ -132,9 +154,9 @@ export default function DashboardLayout() {
             <Stack
               direction="row"
               spacing={1}
-              onClick={() => setAccountOpen(true)}
-              aria-expanded={accountOpen}
-              aria-haspopup="dialog"
+              onClick={(e) => setMenuAnchor(e.currentTarget)}
+              aria-expanded={Boolean(menuAnchor)}
+              aria-haspopup="menu"
               role="button"
               tabIndex={0}
               sx={{
@@ -143,7 +165,9 @@ export default function DashboardLayout() {
                 borderRadius: 2,
                 px: 1,
                 py: 0.5,
+                transition: 'background-color 0.18s ease, transform 0.12s ease',
                 '&:hover': { bgcolor: 'action.hover' },
+                '&:active': { transform: 'scale(0.98)' },
               }}
             >
               <Badge
@@ -169,8 +193,74 @@ export default function DashboardLayout() {
               <Typography fontWeight={600} fontSize="0.92rem" sx={{ display: { xs: 'none', sm: 'block' } }}>
                 {user.fullName}
               </Typography>
-              <ExpandMore sx={{ fontSize: 18, color: 'text.secondary', display: { xs: 'none', sm: 'block' } }} />
+              <ExpandMore
+                sx={{
+                  fontSize: 18,
+                  color: 'text.secondary',
+                  display: { xs: 'none', sm: 'block' },
+                  transition: 'transform 0.18s ease',
+                  transform: menuAnchor ? 'rotate(180deg)' : 'none',
+                }}
+              />
             </Stack>
+
+            <Menu
+              anchorEl={menuAnchor}
+              open={Boolean(menuAnchor)}
+              onClose={() => setMenuAnchor(null)}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+              <Box sx={{ px: 1.5, py: 1, maxWidth: 240 }}>
+                <Typography fontWeight={700} fontSize="0.92rem" noWrap>
+                  {user.fullName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" noWrap>
+                  {user.workEmail}
+                </Typography>
+              </Box>
+              <Divider sx={{ my: 0.5 }} />
+              <MenuItem
+                onClick={() => {
+                  setMenuAnchor(null)
+                  setAccountOpen(true)
+                }}
+              >
+                <ListItemIcon>
+                  <PersonOutlineOutlined fontSize="small" />
+                </ListItemIcon>
+                View profile
+              </MenuItem>
+              <MenuItem
+                component={RouterLink}
+                to="/dashboard/settings/account"
+                onClick={() => setMenuAnchor(null)}
+              >
+                <ListItemIcon>
+                  <SettingsOutlined fontSize="small" />
+                </ListItemIcon>
+                Settings
+              </MenuItem>
+              <MenuItem component={RouterLink} to="/dashboard/billing" onClick={() => setMenuAnchor(null)}>
+                <ListItemIcon>
+                  <CreditCardOutlined fontSize="small" />
+                </ListItemIcon>
+                Billing
+              </MenuItem>
+              <Divider sx={{ my: 0.5 }} />
+              <MenuItem
+                onClick={() => {
+                  setMenuAnchor(null)
+                  handleLogout()
+                }}
+                sx={{ color: 'error.main' }}
+              >
+                <ListItemIcon>
+                  <Logout fontSize="small" color="error" />
+                </ListItemIcon>
+                Log out
+              </MenuItem>
+            </Menu>
           </Stack>
         </Toolbar>
       </AppBar>

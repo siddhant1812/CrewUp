@@ -63,7 +63,7 @@ function SidebarContent({ links, unread, pathname, onClose, onLogout }) {
           </Box>
         </Box>
 
-        <List sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <List sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
           {links.map((item) => {
             const active = isLinkActive(item, pathname)
             const badge = item.badgeKey === 'messages' && unread > 0 ? unread : null
@@ -75,14 +75,28 @@ function SidebarContent({ links, unread, pathname, onClose, onLogout }) {
                 onClick={onClose}
                 selected={active}
                 sx={{
+                  position: 'relative',
                   borderRadius: '12px',
                   color: active ? 'primary.main' : 'text.secondary',
                   fontWeight: active ? 600 : 500,
+                  transition: 'background-color 0.18s ease, color 0.18s ease, transform 0.12s ease',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    left: -8,
+                    top: '20%',
+                    bottom: '20%',
+                    width: 3,
+                    borderRadius: 999,
+                    bgcolor: 'primary.main',
+                    opacity: active ? 1 : 0,
+                    transition: 'opacity 0.18s ease',
+                  },
                   '&.Mui-selected': {
                     bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#214158' : '#e7f4fd'),
-                    '&:hover': { bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#214158' : '#e7f4fd') },
+                    '&:hover': { bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#254a63' : '#dcf0fc') },
                   },
-                  '&:hover': { bgcolor: 'action.hover' },
+                  '&:hover': { bgcolor: 'action.hover', transform: 'translateX(2px)' },
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 34, color: 'inherit' }}>

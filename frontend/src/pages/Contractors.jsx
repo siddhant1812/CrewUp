@@ -220,6 +220,7 @@ export default function Contractors() {
         onSubmit={onSearch}
         direction="row"
         spacing={1.5}
+        useFlexGap
         sx={{ flexWrap: 'wrap', mb: 2 }}
       >
         <TextField

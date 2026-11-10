@@ -44,7 +44,12 @@ export function createAppTheme(mode) {
     components: {
       MuiButton: {
         styleOverrides: {
-          root: { borderRadius: 10, paddingTop: 10, paddingBottom: 10 },
+          root: {
+            borderRadius: 10,
+            paddingTop: 10,
+            paddingBottom: 10,
+            transition: 'background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease',
+          },
         },
       },
       MuiPaper: {
@@ -57,7 +62,60 @@ export function createAppTheme(mode) {
       },
       MuiOutlinedInput: {
         styleOverrides: {
-          root: { borderRadius: 10 },
+          root: { borderRadius: 10, transition: 'box-shadow 0.15s ease, border-color 0.15s ease' },
+        },
+      },
+      MuiListItemButton: {
+        styleOverrides: {
+          root: {
+            transition: 'background-color 0.15s ease, color 0.15s ease',
+          },
+        },
+      },
+      MuiMenu: {
+        defaultProps: {
+          transitionDuration: 160,
+        },
+        styleOverrides: {
+          paper: {
+            borderRadius: 14,
+            marginTop: 6,
+            minWidth: 200,
+            boxShadow: '0 16px 40px rgba(16, 30, 40, 0.16)',
+          },
+          list: { padding: 6 },
+        },
+      },
+      MuiMenuItem: {
+        styleOverrides: {
+          root: {
+            borderRadius: 9,
+            margin: '1px 0',
+            padding: '9px 12px',
+            fontSize: '0.92rem',
+            transition: 'background-color 0.15s ease',
+          },
+        },
+      },
+      MuiPopover: {
+        defaultProps: {
+          transitionDuration: 160,
+        },
+      },
+      MuiTooltip: {
+        defaultProps: { arrow: true },
+        styleOverrides: {
+          tooltip: { borderRadius: 8, fontSize: '0.75rem' },
+        },
+      },
+      MuiTableRow: {
+        styleOverrides: {
+          root: { transition: 'background-color 0.15s ease' },
+        },
+      },
+      MuiDrawer: {
+        styleOverrides: {
+          paper: { transition: 'transform 0.22s cubic-bezier(0.4, 0, 0.2, 1)' },
         },
       },
     },
