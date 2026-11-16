@@ -1,6 +1,6 @@
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { Box, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { Box, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material'
 import { LogoutOutlined } from '@mui/icons-material'
 import { canDo, clearSession, getSession } from '../api/auth'
 import { fetchUnreadCount } from '../api/messages'
@@ -44,24 +44,53 @@ function SidebarContent({ links, unread, pathname, onClose, onLogout }) {
       }}
     >
       <Box>
-        <Box sx={{ px: 0.5, pb: 2 }}>
+        <Stack
+          direction="row"
+          spacing={1.25}
+          sx={{
+            alignItems: 'center',
+            px: 0.75,
+            py: 1,
+            mb: 1.5,
+            borderRadius: '12px',
+            transition: 'background-color 0.15s ease',
+            '&:hover': { bgcolor: 'action.hover' },
+          }}
+        >
           <Box
             sx={{
-              width: 44,
-              height: 44,
-              borderRadius: '12px',
+              width: 40,
+              height: 40,
+              borderRadius: '10px',
               bgcolor: 'primary.main',
               color: '#fff',
               display: 'grid',
               placeItems: 'center',
               fontWeight: 800,
-              fontSize: '0.92rem',
+              fontSize: '0.86rem',
               letterSpacing: '0.02em',
+              flexShrink: 0,
             }}
           >
             CU
           </Box>
-        </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography fontWeight={700} fontSize="0.88rem" noWrap>
+              My workspace
+            </Typography>
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+              Personal account
+            </Typography>
+          </Box>
+        </Stack>
+
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', px: 0.75, mb: 1, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '0.68rem' }}
+        >
+          Workspace
+        </Typography>
 
         <List sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
           {links.map((item) => {

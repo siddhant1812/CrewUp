@@ -4,6 +4,7 @@ import {
   Avatar as MuiAvatar,
   Box,
   Button,
+  Checkbox,
   Chip,
   CircularProgress,
   Dialog,
@@ -26,9 +27,12 @@ import {
   AddOutlined,
   ArchiveOutlined,
   AttachFileOutlined,
+  CheckBoxOutlined,
   CloseOutlined,
+  DeleteOutlineOutlined,
   DescriptionOutlined,
   DoneAllOutlined,
+  EditOutlined,
   InfoOutlined,
   InsertDriveFileOutlined,
   SearchOutlined,
@@ -39,6 +43,8 @@ import {
 import { getSession, mediaUrl } from '../api/auth'
 import {
   createConversation,
+  deleteMessages,
+  editMessage,
   fetchContacts,
   fetchConversation,
   fetchConversations,
@@ -114,7 +120,7 @@ function initials(name = '') {
 
 function displayName(user) {
   if (!user) return 'Unknown'
-  return user.company || user.fullName || 'Unknown'
+  return user.fullName || user.company || 'Unknown'
 }
 
 function Avatar({ user, size = 44 }) {
@@ -173,6 +179,11 @@ export default function Messages() {
   const [draft, setDraft] = useState('')
   const [pendingFiles, setPendingFiles] = useState([])
   const [sending, setSending] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [editDraft, setEditDraft] = useState('')
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState(() => new Set())
+  const [bulkDeleting, setBulkDeleting] = useState(false)
 
   const [showNew, setShowNew] = useState(false)
   const [contacts, setContacts] = useState([])
@@ -254,6 +265,13 @@ export default function Messages() {
       if (!silent) setThreadLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    setSelectMode(false)
+    setSelectedIds(new Set())
+    setEditingId(null)
+    setEditDraft('')
+  }, [activeId])
 
   useEffect(() => {
     let cancelled = false
@@ -338,9 +356,30 @@ export default function Messages() {
       loadConversations({ silent: true })
     }
 
+    function onMessageEdited(payload) {
+      if (!payload?.conversationId || !payload.message) return
+      if (payload.conversationId === activeId) {
+        setMessages((prev) => prev.map((m) => (m.id === payload.message.id ? payload.message : m)))
+      }
+    }
+
+    function onMessageDeleted(payload) {
+      if (!payload?.conversationId || !Array.isArray(payload.ids)) return
+      if (payload.conversationId === activeId) {
+        setMessages((prev) =>
+          prev.map((m) => (payload.ids.includes(m.id) ? { ...m, deleted: true, text: '', attachments: [] } : m))
+        )
+      }
+      setConversations((prev) =>
+        prev.map((c) => (c.id === payload.conversationId ? { ...c, preview: payload.preview ?? c.preview } : c))
+      )
+    }
+
     socket.on('message:new', onNewMessage)
     socket.on('typing', onTyping)
     socket.on('conversation:new', onNewConversation)
+    socket.on('message:edited', onMessageEdited)
+    socket.on('message:deleted', onMessageDeleted)
 
     const fallback = setInterval(() => {
       loadConversations({ silent: true })
@@ -350,6 +389,8 @@ export default function Messages() {
       socket.off('message:new', onNewMessage)
       socket.off('typing', onTyping)
       socket.off('conversation:new', onNewConversation)
+      socket.off('message:edited', onMessageEdited)
+      socket.off('message:deleted', onMessageDeleted)
       clearInterval(fallback)
     }
   }, [activeId, loadConversations, me?.id])
@@ -398,7 +439,7 @@ export default function Messages() {
       const data = await sendMessage(activeId, { text, files: pendingFiles })
       setDraft('')
       setPendingFiles([])
-      setMessages((prev) => [...prev, data.message])
+      setMessages((prev) => (prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]))
       await loadConversations({ silent: true })
       const detail = await fetchConversation(activeId)
       setActive(detail.conversation)
@@ -452,7 +493,7 @@ export default function Messages() {
     setSendError('')
     try {
       const data = await sendMessage(activeId, { files: [...fileList] })
-      setMessages((prev) => [...prev, data.message])
+      setMessages((prev) => (prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]))
       const detail = await fetchConversation(activeId)
       setSharedFiles(detail.sharedFiles || [])
       await loadConversations({ silent: true })
@@ -460,6 +501,72 @@ export default function Messages() {
       setSendError(err.message || 'Upload failed.')
     } finally {
       setSending(false)
+    }
+  }
+
+  function startEdit(item) {
+    setEditingId(item.id)
+    setEditDraft(item.text)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setEditDraft('')
+  }
+
+  async function saveEdit(id) {
+    const text = editDraft.trim()
+    if (!text) return
+    try {
+      const data = await editMessage(id, text)
+      setMessages((prev) => prev.map((m) => (m.id === id ? data.message : m)))
+      setEditingId(null)
+      setEditDraft('')
+    } catch (err) {
+      setSendError(err.message || 'Failed to edit message.')
+    }
+  }
+
+  async function deleteOne(id) {
+    if (!window.confirm('Delete this message?')) return
+    try {
+      await deleteMessages([id])
+      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, deleted: true, text: '', attachments: [] } : m)))
+    } catch (err) {
+      setSendError(err.message || 'Failed to delete message.')
+    }
+  }
+
+  function toggleSelectMode() {
+    setSelectMode((v) => !v)
+    setSelectedIds(new Set())
+  }
+
+  function toggleSelected(id) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  async function deleteSelected() {
+    if (selectedIds.size === 0) return
+    if (!window.confirm(`Delete ${selectedIds.size} selected message${selectedIds.size > 1 ? 's' : ''}?`)) return
+    const ids = [...selectedIds]
+    setBulkDeleting(true)
+    try {
+      await deleteMessages(ids)
+      setMessages((prev) =>
+        prev.map((m) => (ids.includes(m.id) ? { ...m, deleted: true, text: '', attachments: [] } : m))
+      )
+      setSelectedIds(new Set())
+      setSelectMode(false)
+    } catch (err) {
+      setSendError(err.message || 'Failed to delete messages.')
+    } finally {
+      setBulkDeleting(false)
     }
   }
 
@@ -676,16 +783,54 @@ export default function Messages() {
                     </Typography>
                   </Box>
                 </Stack>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={tab === 'archive' ? <UnarchiveOutlined /> : <ArchiveOutlined />}
-                  onClick={handleArchive}
-                  sx={{ flexShrink: 0 }}
-                >
-                  {tab === 'archive' ? 'Unarchive' : 'Archive'}
-                </Button>
+                <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+                  <Button
+                    variant={selectMode ? 'contained' : 'outlined'}
+                    size="small"
+                    startIcon={<CheckBoxOutlined />}
+                    onClick={toggleSelectMode}
+                  >
+                    {selectMode ? 'Cancel' : 'Select'}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={tab === 'archive' ? <UnarchiveOutlined /> : <ArchiveOutlined />}
+                    onClick={handleArchive}
+                  >
+                    {tab === 'archive' ? 'Unarchive' : 'Archive'}
+                  </Button>
+                </Stack>
               </Stack>
+
+              {selectMode ? (
+                <Stack
+                  direction="row"
+                  sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 1,
+                    px: 2,
+                    py: 1,
+                    bgcolor: 'action.hover',
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    {selectedIds.size} selected
+                  </Typography>
+                  <Button
+                    size="small"
+                    color="error"
+                    startIcon={<DeleteOutlineOutlined />}
+                    disabled={selectedIds.size === 0 || bulkDeleting}
+                    onClick={deleteSelected}
+                  >
+                    {bulkDeleting ? 'Deleting…' : 'Delete selected'}
+                  </Button>
+                </Stack>
+              ) : null}
 
               <Box ref={feedRef} sx={{ flex: 1, overflowY: 'auto', p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {threadLoading ? (
@@ -728,14 +873,46 @@ export default function Messages() {
                     )
                   }
                   const isMe = item.from === 'me'
+                  const canModify = Boolean(item.canModify)
+                  const isEditing = editingId === item.id
+                  const isSelected = selectedIds.has(item.id)
                   return (
                     <Stack
                       key={item.id}
                       direction="row"
-                      spacing={1}
-                      sx={{ alignItems: 'flex-end', justifyContent: isMe ? 'flex-end' : 'flex-start' }}
+                      spacing={0.5}
+                      sx={{
+                        alignItems: 'center',
+                        justifyContent: isMe ? 'flex-end' : 'flex-start',
+                        '&:hover .msg-actions': { opacity: 1 },
+                      }}
                     >
                       {!isMe ? <Avatar user={other} size={28} /> : null}
+
+                      {selectMode && canModify ? (
+                        <Checkbox
+                          size="small"
+                          checked={isSelected}
+                          onChange={() => toggleSelected(item.id)}
+                        />
+                      ) : null}
+
+                      {!selectMode && canModify && !isEditing ? (
+                        <Stack
+                          direction="row"
+                          spacing={0.25}
+                          className="msg-actions"
+                          sx={{ opacity: 0, transition: 'opacity 0.15s ease' }}
+                        >
+                          <IconButton size="small" aria-label="Edit message" onClick={() => startEdit(item)}>
+                            <EditOutlined sx={{ fontSize: 15 }} />
+                          </IconButton>
+                          <IconButton size="small" aria-label="Delete message" onClick={() => deleteOne(item.id)}>
+                            <DeleteOutlineOutlined sx={{ fontSize: 15 }} />
+                          </IconButton>
+                        </Stack>
+                      ) : null}
+
                       <Paper
                         elevation={0}
                         sx={{
@@ -743,47 +920,85 @@ export default function Messages() {
                           px: 1.5,
                           py: 1,
                           borderRadius: '14px',
-                          bgcolor: isMe ? 'primary.main' : (theme) => (theme.palette.mode === 'dark' ? 'action.selected' : 'grey.100'),
-                          color: isMe ? 'primary.contrastText' : 'text.primary',
+                          bgcolor: item.deleted
+                            ? 'action.hover'
+                            : isMe
+                              ? 'primary.main'
+                              : (theme) => (theme.palette.mode === 'dark' ? 'action.selected' : 'grey.100'),
+                          color: item.deleted ? 'text.secondary' : isMe ? 'primary.contrastText' : 'text.primary',
                         }}
                       >
-                        {item.text ? (
-                          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                            {item.text}
+                        {item.deleted ? (
+                          <Typography variant="body2" sx={{ fontStyle: 'italic', opacity: 0.8 }}>
+                            This message was deleted
                           </Typography>
-                        ) : null}
-                        {item.attachments?.length > 0 ? (
-                          <Stack spacing={0.5} sx={{ mt: item.text ? 1 : 0 }}>
-                            {item.attachments.map((f) => (
-                              <Stack
-                                key={`${item.id}-${f.url}`}
-                                direction="row"
-                                spacing={1}
-                                sx={{ alignItems: 'center', justifyContent: 'space-between' }}
-                              >
-                                <Typography
-                                  component="a"
-                                  href={mediaUrl(f.url)}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  variant="body2"
-                                  sx={{ color: 'inherit', textDecoration: 'underline' }}
-                                >
-                                  {f.name}
-                                </Typography>
-                                <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                                  {f.sizeLabel}
-                                </Typography>
+                        ) : isEditing ? (
+                          <Stack spacing={1} sx={{ minWidth: 220 }}>
+                            <TextField
+                              size="small"
+                              value={editDraft}
+                              onChange={(e) => setEditDraft(e.target.value)}
+                              autoFocus
+                              multiline
+                              sx={{ '& .MuiOutlinedInput-root': { bgcolor: 'background.paper', color: 'text.primary' } }}
+                            />
+                            <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+                              <Button size="small" onClick={cancelEdit} sx={{ color: 'inherit' }}>
+                                Cancel
+                              </Button>
+                              <Button size="small" variant="contained" onClick={() => saveEdit(item.id)}>
+                                Save
+                              </Button>
+                            </Stack>
+                          </Stack>
+                        ) : (
+                          <>
+                            {item.text ? (
+                              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                                {item.text}
+                              </Typography>
+                            ) : null}
+                            {item.attachments?.length > 0 ? (
+                              <Stack spacing={0.5} sx={{ mt: item.text ? 1 : 0 }}>
+                                {item.attachments.map((f) => (
+                                  <Stack
+                                    key={`${item.id}-${f.url}`}
+                                    direction="row"
+                                    spacing={1}
+                                    sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+                                  >
+                                    <Typography
+                                      component="a"
+                                      href={mediaUrl(f.url)}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      variant="body2"
+                                      sx={{ color: 'inherit', textDecoration: 'underline' }}
+                                    >
+                                      {f.name}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                                      {f.sizeLabel}
+                                    </Typography>
+                                  </Stack>
+                                ))}
                               </Stack>
-                            ))}
+                            ) : null}
+                          </>
+                        )}
+                        {!item.deleted && !isEditing ? (
+                          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', justifyContent: 'flex-end', mt: 0.5 }}>
+                            {item.edited ? (
+                              <Typography variant="caption" sx={{ opacity: 0.8, fontStyle: 'italic' }}>
+                                edited ·
+                              </Typography>
+                            ) : null}
+                            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                              {formatTime(item.time)}
+                            </Typography>
+                            {isMe && item.read ? <DoneAllOutlined sx={{ fontSize: 14, opacity: 0.85 }} /> : null}
                           </Stack>
                         ) : null}
-                        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', justifyContent: 'flex-end', mt: 0.5 }}>
-                          <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                            {formatTime(item.time)}
-                          </Typography>
-                          {isMe && item.read ? <DoneAllOutlined sx={{ fontSize: 14, opacity: 0.85 }} /> : null}
-                        </Stack>
                       </Paper>
                     </Stack>
                   )

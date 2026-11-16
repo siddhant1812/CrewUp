@@ -29,7 +29,7 @@ import {
   MailOutlineOutlined,
   SearchOutlined,
 } from '@mui/icons-material'
-import { accountKindOf, canPostProjects, mediaUrl } from '../api/auth'
+import { accountKindOf, canDo, canPostProjects, mediaUrl } from '../api/auth'
 import { categoriesFor } from '../data/categories'
 import {
   createProject,
@@ -220,7 +220,7 @@ function DashboardHome({ user }) {
     activeProjects: 0,
     openJobs: 0,
     myBids: 0,
-    messages: 0,
+    unreadMessages: 0,
     savedContractors: 0,
     projectInvites: 0,
   })
@@ -239,7 +239,7 @@ function DashboardHome({ user }) {
           activeProjects: data.stats?.activeProjects || 0,
           openJobs: data.stats?.openJobs || 0,
           myBids: data.stats?.myBids || 0,
-          messages: data.stats?.messages || 0,
+          unreadMessages: data.stats?.unreadMessages || 0,
           savedContractors: data.stats?.savedContractors || 0,
           projectInvites: data.stats?.projectInvites || 0,
         })
@@ -260,12 +260,12 @@ function DashboardHome({ user }) {
     ? [
         { value: stats.openJobs, label: 'Open Jobs', icon: <SearchOutlined fontSize="small" />, color: 'primary' },
         { value: stats.myBids, label: 'Your Bids', icon: <AssignmentTurnedInOutlined fontSize="small" />, color: 'success' },
-        { value: stats.messages, label: 'Messages', icon: <ChatBubbleOutlineOutlined fontSize="small" />, color: 'info' },
+        { value: stats.unreadMessages, label: 'Messages', icon: <ChatBubbleOutlineOutlined fontSize="small" />, color: 'info', to: '/dashboard/messages' },
         { value: stats.projectInvites, label: 'Invites', icon: <MailOutlineOutlined fontSize="small" />, color: 'warning' },
       ]
     : [
         { value: stats.activeProjects, label: 'Active Projects', icon: <FolderOutlined fontSize="small" />, color: 'primary' },
-        { value: stats.messages, label: 'Messages', icon: <ChatBubbleOutlineOutlined fontSize="small" />, color: 'info' },
+        { value: stats.unreadMessages, label: 'Messages', icon: <ChatBubbleOutlineOutlined fontSize="small" />, color: 'info', to: '/dashboard/messages' },
         { value: stats.savedContractors, label: 'Saved Crew', icon: <GroupsOutlined fontSize="small" />, color: 'success' },
         { value: stats.projectInvites, label: 'Invites Sent', icon: <MailOutlineOutlined fontSize="small" />, color: 'warning' },
       ]
@@ -308,9 +308,14 @@ function DashboardHome({ user }) {
           <Paper
             key={s.label}
             variant="outlined"
+            {...(s.to ? { component: RouterLink, to: s.to } : {})}
             sx={{
+              display: 'block',
               p: 2.75,
               borderRadius: '16px',
+              textDecoration: 'none',
+              color: 'inherit',
+              cursor: s.to ? 'pointer' : 'default',
               transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
               '&:hover': {
                 transform: 'translateY(-3px)',
@@ -496,6 +501,7 @@ function ProjectsSection({ user }) {
   }
 
   const canPost = canPostProjects(user)
+  const canBrowseJobs = canDo('browseJobs', user)
   const isContractor = user.contractorType === 'general_contractor'
   const categories = categoriesFor(user.contractorType)
 
@@ -652,38 +658,38 @@ function ProjectsSection({ user }) {
         </Paper>
       ) : null}
 
-      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
-        <SectionHeader icon={<FolderOutlined fontSize="small" />} title="Your projects" meta={`${projects.length} total`} />
-        {error ? <Alert severity="error">{error}</Alert> : null}
-        {loading ? (
-          <Typography color="text.secondary" sx={{ py: 3 }}>
-            Loading projects…
-          </Typography>
-        ) : (
-          <ProjectsTable
-            projects={projects}
-            emptyLabel={
-              canPost
-                ? `No projects yet for ${user.fullName}. Create your first project above.`
-                : 'You have not posted projects. This list is for jobs you create as a general contractor.'
-            }
-            onDelete={canPost ? handleDelete : undefined}
-            onStatus={canPost ? handleStatus : undefined}
-          />
-        )}
-      </Paper>
+      {canPost ? (
+        <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
+          <SectionHeader icon={<FolderOutlined fontSize="small" />} title="Your projects" meta={`${projects.length} total`} />
+          {error ? <Alert severity="error">{error}</Alert> : null}
+          {loading ? (
+            <Typography color="text.secondary" sx={{ py: 3 }}>
+              Loading projects…
+            </Typography>
+          ) : (
+            <ProjectsTable
+              projects={projects}
+              emptyLabel={`No projects yet for ${user.fullName}. Create your first project above.`}
+              onDelete={handleDelete}
+              onStatus={handleStatus}
+            />
+          )}
+        </Paper>
+      ) : null}
 
-      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
-        <SectionHeader icon={<SearchOutlined fontSize="small" />} title="Open jobs to bid on">
-          <Button component={RouterLink} to="/jobs" size="small">
-            Browse all
-          </Button>
-        </SectionHeader>
-        <ProjectsTable
-          projects={openJobs}
-          emptyLabel="No open jobs from other users yet. When someone posts a project, you can apply from here."
-        />
-      </Paper>
+      {canBrowseJobs ? (
+        <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
+          <SectionHeader icon={<SearchOutlined fontSize="small" />} title="Open jobs to bid on">
+            <Button component={RouterLink} to="/jobs" size="small">
+              Browse all
+            </Button>
+          </SectionHeader>
+          <ProjectsTable
+            projects={openJobs}
+            emptyLabel="No open jobs from other users yet. When someone posts a project, you can apply from here."
+          />
+        </Paper>
+      ) : null}
     </Stack>
   )
 }

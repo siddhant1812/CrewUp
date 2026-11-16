@@ -57,6 +57,20 @@ export function markConversationRead(id) {
   })
 }
 
+export function editMessage(id, text) {
+  return authRequest(`/api/messages/${id}`, {
+    method: 'PATCH',
+    data: { text },
+  })
+}
+
+export function deleteMessages(ids) {
+  return authRequest('/api/messages', {
+    method: 'DELETE',
+    data: { ids },
+  })
+}
+
 export function toggleArchive(id) {
   return authRequest(`/api/messages/conversations/${id}/archive`, {
     method: 'PATCH',

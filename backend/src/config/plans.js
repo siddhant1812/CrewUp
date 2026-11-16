@@ -54,39 +54,46 @@ const PLANS = {
   },
 };
 
-function stripeReady() {
+// True once real Razorpay plan IDs + API keys are set in the environment.
+function razorpayReady() {
   return Boolean(
-    process.env.STRIPE_SECRET_KEY &&
-      process.env.STRIPE_PRICE_PRO &&
-      process.env.STRIPE_PRICE_BUSINESS
+    process.env.RAZORPAY_KEY_ID &&
+      process.env.RAZORPAY_KEY_SECRET &&
+      process.env.RAZORPAY_PLAN_PRO &&
+      process.env.RAZORPAY_PLAN_BUSINESS
   );
 }
 
-function priceIdForPlan(planId) {
-  if (planId === "pro") return process.env.STRIPE_PRICE_PRO || "";
-  if (planId === "business") return process.env.STRIPE_PRICE_BUSINESS || "";
+// Fake-checkout fallback used while real Razorpay keys aren't configured.
+// On by default in dev so the subscribe flow is testable out of the box;
+// set RAZORPAY_DEMO_MODE=false to turn it off explicitly (e.g. in prod).
+function razorpayDemoMode() {
+  if (razorpayReady()) return false;
+  return process.env.RAZORPAY_DEMO_MODE !== "false";
+}
+
+function razorpayPlanIdForPlan(planId) {
+  if (planId === "pro") return process.env.RAZORPAY_PLAN_PRO || "";
+  if (planId === "business") return process.env.RAZORPAY_PLAN_BUSINESS || "";
   return "";
 }
 
-function planIdFromPrice(priceId) {
-  if (!priceId) return "starter";
-  if (priceId === process.env.STRIPE_PRICE_PRO) return "pro";
-  if (priceId === process.env.STRIPE_PRICE_BUSINESS) return "business";
+function planIdFromRazorpayPlan(razorpayPlanId) {
+  if (!razorpayPlanId) return "starter";
+  if (razorpayPlanId === process.env.RAZORPAY_PLAN_PRO) return "pro";
+  if (razorpayPlanId === process.env.RAZORPAY_PLAN_BUSINESS) return "business";
   return "starter";
 }
 
 function publicPlans() {
-  return Object.values(PLANS).map((plan) => ({
-    ...plan,
-    stripePriceId: priceIdForPlan(plan.id) || null,
-    checkoutEnabled: plan.id === "starter" || Boolean(priceIdForPlan(plan.id)),
-  }));
+  return Object.values(PLANS);
 }
 
 module.exports = {
   PLANS,
-  stripeReady,
-  priceIdForPlan,
-  planIdFromPrice,
+  razorpayReady,
+  razorpayDemoMode,
+  razorpayPlanIdForPlan,
+  planIdFromRazorpayPlan,
   publicPlans,
 };

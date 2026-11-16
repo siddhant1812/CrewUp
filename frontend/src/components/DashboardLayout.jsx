@@ -141,6 +141,11 @@ export default function DashboardLayout() {
             <Logo markSize={32} />
           </Box>
 
+          <Divider orientation="vertical" flexItem sx={{ my: 1.25, display: { xs: 'none', sm: 'block' } }} />
+          <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
+            Workspace
+          </Typography>
+
           <Box sx={{ flex: 1 }} />
 
           <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>

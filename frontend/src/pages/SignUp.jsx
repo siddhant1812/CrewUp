@@ -20,7 +20,6 @@ import {
 import { PersonOutlineOutlined, Visibility, VisibilityOff } from '@mui/icons-material'
 import AuthLayout from '../components/AuthLayout'
 import { signup, saveSession } from '../api/auth'
-import { startCheckout } from '../api/billing'
 
 const ROLES = [
   { id: 'general_contractor', label: 'Contractor' },
@@ -112,16 +111,8 @@ export default function SignUp() {
       const data = await signup(body)
       saveSession(data.token, data.user, true)
       if (requestedPlan === 'pro' || requestedPlan === 'business') {
-        try {
-          const checkout = await startCheckout(requestedPlan)
-          if (checkout.url) {
-            window.location.href = checkout.url
-            return
-          }
-        } catch {
-          navigate('/dashboard/settings/subscription')
-          return
-        }
+        navigate('/dashboard/settings/subscription')
+        return
       }
       navigate('/dashboard')
     } catch (err) {

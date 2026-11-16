@@ -1,23 +1,33 @@
+const crypto = require("crypto");
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const {
   PLANS,
-  stripeReady,
-  priceIdForPlan,
-  planIdFromPrice,
+  razorpayReady,
+  razorpayDemoMode,
+  razorpayPlanIdForPlan,
+  planIdFromRazorpayPlan,
   publicPlans,
 } = require("../config/plans");
 
-function getStripe() {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) return null;
-  // Lazy require so the server still boots without the package in odd setups
-  const Stripe = require("stripe");
-  return new Stripe(key);
+function getRazorpay() {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) return null;
+  // Lazy require so the server still boots without the package/keys in odd setups
+  const Razorpay = require("razorpay");
+  return new Razorpay({ key_id: keyId, key_secret: keySecret });
 }
 
-function frontendUrl() {
-  return (process.env.FRONTEND_URL || "http://localhost:5174").replace(/\/$/, "");
+// created/authenticated/pending: checkout started but not yet actively billing.
+// halted: a renewal charge failed and Razorpay is retrying.
+// cancelled/completed/expired: no further billing will happen.
+function mapRazorpayStatus(status) {
+  if (status === "active") return "active";
+  if (status === "paused") return "paused";
+  if (status === "halted") return "past_due";
+  if (status === "cancelled" || status === "completed" || status === "expired") return "canceled";
+  return "incomplete";
 }
 
 function ensureDb(res) {
@@ -40,9 +50,12 @@ function billingPayload(user) {
     priceLabel: plan.priceLabel,
     period: plan.period,
     subscriptionStatus: user.subscriptionStatus || "none",
+    currentPeriodStart: user.currentPeriodStart,
     currentPeriodEnd: user.currentPeriodEnd,
     cancelAtPeriodEnd: Boolean(user.cancelAtPeriodEnd),
-    stripeReady: stripeReady(),
+    paymentGateway: user.paymentGateway || "",
+    razorpayReady: razorpayReady(),
+    razorpayDemo: razorpayDemoMode(),
     paymentMethod: hasCard
       ? {
           brand: user.paymentMethodBrand || "card",
@@ -54,71 +67,11 @@ function billingPayload(user) {
   };
 }
 
-async function applyPaymentMethod(user, stripe, paymentMethod) {
-  if (!paymentMethod) return;
-  try {
-    const pm =
-      typeof paymentMethod === "string"
-        ? await stripe.paymentMethods.retrieve(paymentMethod)
-        : paymentMethod;
-    if (pm?.card) {
-      user.paymentMethodBrand = pm.card.brand || "";
-      user.paymentMethodLast4 = pm.card.last4 || "";
-      user.paymentMethodExpMonth = pm.card.exp_month || null;
-      user.paymentMethodExpYear = pm.card.exp_year || null;
-    }
-  } catch (err) {
-    console.error("applyPaymentMethod:", err.message);
-  }
-}
-
-async function applySubscription(user, stripe, subscription) {
-  if (!subscription) return;
-
-  const priceId = subscription.items?.data?.[0]?.price?.id || "";
-  const planId = planIdFromPrice(priceId);
-  const status = subscription.status || "none";
-
-  user.stripeSubscriptionId = subscription.id || "";
-  user.stripePriceId = priceId;
-  user.plan = status === "canceled" || status === "unpaid" ? "starter" : planId;
-  user.subscriptionStatus = status;
-  user.cancelAtPeriodEnd = Boolean(subscription.cancel_at_period_end);
-  user.currentPeriodEnd = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000)
-    : null;
-
-  const pm = subscription.default_payment_method;
-  if (pm) {
-    await applyPaymentMethod(user, stripe, pm);
-  }
-}
-
-async function getOrCreateCustomer(user, stripe) {
-  if (user.stripeCustomerId) {
-    try {
-      await stripe.customers.retrieve(user.stripeCustomerId);
-      return user.stripeCustomerId;
-    } catch {
-      user.stripeCustomerId = "";
-    }
-  }
-
-  const customer = await stripe.customers.create({
-    email: user.workEmail,
-    name: user.fullName,
-    metadata: { userId: String(user._id) },
-  });
-
-  user.stripeCustomerId = customer.id;
-  await user.save();
-  return customer.id;
-}
-
 async function listPlans(_req, res) {
   return res.json({
     success: true,
-    stripeReady: stripeReady(),
+    razorpayReady: razorpayReady(),
+    razorpayDemo: razorpayDemoMode(),
     plans: publicPlans(),
   });
 }
@@ -139,7 +92,38 @@ async function getBilling(req, res) {
   }
 }
 
-async function createCheckout(req, res) {
+async function downgradeToStarter(req, res) {
+  const user = await User.findById(req.user._id);
+
+  if (user.paymentGateway === "razorpay" && user.razorpaySubscriptionId) {
+    try {
+      const razorpay = getRazorpay();
+      if (razorpay) {
+        await razorpay.subscriptions.cancel(user.razorpaySubscriptionId, true);
+        user.cancelAtPeriodEnd = true;
+        await user.save();
+        return res.json({
+          success: true,
+          billing: billingPayload(user),
+          message: "You'll move to Starter at the end of the current billing period.",
+        });
+      }
+    } catch (error) {
+      console.error("downgradeToStarter:", error);
+    }
+  }
+
+  user.plan = "starter";
+  user.subscriptionStatus = user.razorpaySubscriptionId ? "canceled" : "none";
+  user.cancelAtPeriodEnd = false;
+  user.currentPeriodStart = null;
+  user.currentPeriodEnd = null;
+  await user.save();
+
+  return res.json({ success: true, billing: billingPayload(user) });
+}
+
+async function createRazorpaySubscription(req, res) {
   try {
     if (!ensureDb(res)) return;
 
@@ -155,35 +139,25 @@ async function createCheckout(req, res) {
       return downgradeToStarter(req, res);
     }
 
-    const stripe = getStripe();
-    if (!stripe || !stripeReady()) {
+    const razorpay = getRazorpay();
+    if (!razorpay || !razorpayReady()) {
       return res.status(503).json({
         success: false,
         message:
-          "Stripe is not configured. Add STRIPE_SECRET_KEY, STRIPE_PRICE_PRO, and STRIPE_PRICE_BUSINESS",
+          "Razorpay is not configured. Add RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, RAZORPAY_PLAN_PRO, and RAZORPAY_PLAN_BUSINESS",
       });
     }
 
+    const razorpayPlanId = razorpayPlanIdForPlan(planId);
     const user = await User.findById(req.user._id);
-    const customerId = await getOrCreateCustomer(user, stripe);
-    const priceId = priceIdForPlan(planId);
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer: customerId,
-      client_reference_id: String(user._id),
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${frontendUrl()}/dashboard/settings/subscription?billing=success`,
-      cancel_url: `${frontendUrl()}/dashboard/settings/subscription?billing=cancel`,
-      payment_method_collection: "always",
-      allow_promotion_codes: true,
-      subscription_data: {
-        metadata: {
-          userId: String(user._id),
-          plan: planId,
-        },
-      },
-      metadata: {
+    // Razorpay subscriptions don't have a true "forever" option; a large cycle
+    // count behaves like one for a monthly plan (10 years of renewals).
+    const subscription = await razorpay.subscriptions.create({
+      plan_id: razorpayPlanId,
+      customer_notify: 1,
+      total_count: 120,
+      notes: {
         userId: String(user._id),
         plan: planId,
       },
@@ -191,78 +165,284 @@ async function createCheckout(req, res) {
 
     return res.json({
       success: true,
-      url: session.url,
+      subscriptionId: subscription.id,
+      keyId: process.env.RAZORPAY_KEY_ID,
+      plan: planId,
+      prefill: {
+        name: user.fullName || "",
+        email: user.workEmail || "",
+      },
     });
   } catch (error) {
-    console.error("createCheckout:", error);
+    console.error("createRazorpaySubscription:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to start checkout.",
+      message: error.message || "Failed to start Razorpay checkout.",
     });
   }
 }
 
-async function createPortal(req, res) {
+// Demo-only stand-in for the real Razorpay flow above: no Razorpay API call,
+// no money moves. Lets the "Pay now" dialog simulate a successful payment
+// while real API keys aren't working yet. Gated behind RAZORPAY_DEMO_MODE so
+// it can never run unless someone explicitly turns it on in backend/.env.
+async function demoRazorpaySubscribe(req, res) {
   try {
     if (!ensureDb(res)) return;
 
-    const stripe = getStripe();
-    if (!stripe) {
+    if (!razorpayDemoMode()) {
       return res.status(503).json({
         success: false,
-        message: "Stripe is not configured.",
+        message: "Demo checkout is not enabled.",
+      });
+    }
+
+    const planId = String(req.body.plan || "").toLowerCase();
+    if (!PLANS[planId] || planId === "starter") {
+      return res.status(400).json({
+        success: false,
+        message: "Choose Pro or Business.",
       });
     }
 
     const user = await User.findById(req.user._id);
-    if (!user.stripeCustomerId) {
-      return res.status(400).json({
+    const periodStart = new Date();
+    const periodEnd = new Date();
+    periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+    user.paymentGateway = "razorpay";
+    user.razorpaySubscriptionId = `demo_sub_${user._id}_${Date.now()}`;
+    user.razorpayPlanId = `demo_plan_${planId}`;
+    user.plan = planId;
+    user.subscriptionStatus = "active";
+    user.cancelAtPeriodEnd = false;
+    user.currentPeriodStart = periodStart;
+    user.currentPeriodEnd = periodEnd;
+
+    // A new (fake) card entered at checkout replaces what's on file; otherwise
+    // keep an already-saved card, or fall back to a default demo card.
+    const card = req.body.card;
+    if (card && card.number) {
+      const digits = String(card.number).replace(/\D/g, "");
+      user.paymentMethodBrand = digits.startsWith("4")
+        ? "Visa"
+        : /^5[1-5]/.test(digits)
+          ? "Mastercard"
+          : /^3[47]/.test(digits)
+            ? "Amex"
+            : "Card";
+      user.paymentMethodLast4 = digits.slice(-4) || "4242";
+      const [mm, yy] = String(card.expiry || "")
+        .split("/")
+        .map((s) => s.trim());
+      user.paymentMethodExpMonth = Number(mm) || 12;
+      user.paymentMethodExpYear = yy
+        ? yy.length === 2
+          ? 2000 + Number(yy)
+          : Number(yy)
+        : periodEnd.getFullYear() + 3;
+    } else if (!user.paymentMethodLast4) {
+      user.paymentMethodBrand = "Visa (demo)";
+      user.paymentMethodLast4 = "4242";
+      user.paymentMethodExpMonth = 12;
+      user.paymentMethodExpYear = periodEnd.getFullYear() + 3;
+    }
+    await user.save();
+
+    return res.json({ success: true, billing: billingPayload(user) });
+  } catch (error) {
+    console.error("demoRazorpaySubscribe:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Demo checkout failed.",
+    });
+  }
+}
+
+async function verifyRazorpayPayment(req, res) {
+  try {
+    if (!ensureDb(res)) return;
+
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      return res.status(503).json({
         success: false,
-        message: "Add a paid plan first so we can save a payment method.",
+        message: "Razorpay is not configured.",
       });
     }
 
-    const portal = await stripe.billingPortal.sessions.create({
-      customer: user.stripeCustomerId,
-      return_url: `${frontendUrl()}/dashboard/settings/subscription`,
-    });
+    const {
+      razorpay_payment_id: paymentId,
+      razorpay_subscription_id: subscriptionId,
+      razorpay_signature: signature,
+    } = req.body;
 
-    return res.json({
-      success: true,
-      url: portal.url,
-    });
+    if (!paymentId || !subscriptionId || !signature) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing Razorpay payment details.",
+      });
+    }
+
+    const expected = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${paymentId}|${subscriptionId}`)
+      .digest("hex");
+
+    if (expected !== signature) {
+      return res.status(400).json({
+        success: false,
+        message: "Could not verify payment with Razorpay.",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    const subscription = await razorpay.subscriptions.fetch(subscriptionId);
+    applyRazorpaySubscription(user, subscription);
+    user.cancelAtPeriodEnd = false;
+    await user.save();
+
+    try {
+      const payment = await razorpay.payments.fetch(paymentId);
+      applyRazorpayPaymentMethod(user, payment);
+      await user.save();
+    } catch (err) {
+      console.error("verifyRazorpayPayment (fetch payment method):", err.message);
+    }
+
+    return res.json({ success: true, billing: billingPayload(user) });
   } catch (error) {
-    console.error("createPortal:", error);
+    console.error("verifyRazorpayPayment:", error);
     return res.status(500).json({
       success: false,
-      message: error.message || "Failed to open billing portal.",
+      message: error.message || "Failed to confirm Razorpay payment.",
     });
   }
+}
+
+function applyRazorpaySubscription(user, subscription) {
+  if (!subscription) return;
+
+  const planId = planIdFromRazorpayPlan(subscription.plan_id);
+  const status = mapRazorpayStatus(subscription.status);
+
+  user.paymentGateway = "razorpay";
+  user.razorpaySubscriptionId = subscription.id || "";
+  user.razorpayPlanId = subscription.plan_id || "";
+  user.plan = status === "canceled" ? "starter" : planId;
+  user.subscriptionStatus = status;
+  user.currentPeriodStart = subscription.current_start
+    ? new Date(subscription.current_start * 1000)
+    : null;
+  user.currentPeriodEnd = subscription.current_end
+    ? new Date(subscription.current_end * 1000)
+    : null;
+}
+
+function applyRazorpayPaymentMethod(user, payment) {
+  if (!payment) return;
+  if (payment.method === "card" && payment.card) {
+    user.paymentMethodBrand = payment.card.network || payment.card.type || "card";
+    user.paymentMethodLast4 = payment.card.last4 || "";
+    user.paymentMethodExpMonth = Number(payment.card.expiry_month) || null;
+    user.paymentMethodExpYear = Number(payment.card.expiry_year) || null;
+  } else {
+    // UPI, netbanking, wallet, etc. don't carry card-style details to show.
+    user.paymentMethodBrand = payment.method || "";
+    user.paymentMethodLast4 = "";
+    user.paymentMethodExpMonth = null;
+    user.paymentMethodExpYear = null;
+  }
+}
+
+async function findUserFromRazorpay(entity) {
+  const userId = entity?.notes?.userId;
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+    const byId = await User.findById(userId);
+    if (byId) return byId;
+  }
+  if (entity?.id) {
+    return User.findOne({ razorpaySubscriptionId: entity.id });
+  }
+  return null;
+}
+
+async function razorpayWebhook(req, res) {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  if (!secret) {
+    return res.status(503).json({ success: false, message: "Razorpay webhook is not configured." });
+  }
+
+  const signature = req.headers["x-razorpay-signature"];
+  const rawBody = Buffer.isBuffer(req.body) ? req.body.toString("utf8") : req.body;
+
+  const Razorpay = require("razorpay");
+  const valid = Razorpay.validateWebhookSignature(rawBody, signature, secret);
+  if (!valid) {
+    console.error("Razorpay webhook signature failed");
+    return res.status(400).json({ success: false, message: "Invalid webhook signature." });
+  }
+
+  const event = typeof rawBody === "string" ? JSON.parse(rawBody) : rawBody;
+
+  try {
+    switch (event.event) {
+      case "subscription.activated":
+      case "subscription.charged":
+      case "subscription.updated":
+      case "subscription.halted":
+      case "subscription.paused":
+      case "subscription.resumed":
+      case "subscription.cancelled":
+      case "subscription.completed": {
+        const subscription = event.payload?.subscription?.entity;
+        const user = await findUserFromRazorpay(subscription);
+        if (!user) break;
+        applyRazorpaySubscription(user, subscription);
+        if (event.event === "subscription.cancelled" || event.event === "subscription.completed") {
+          user.cancelAtPeriodEnd = false;
+        }
+        const payment = event.payload?.payment?.entity;
+        if (payment) applyRazorpayPaymentMethod(user, payment);
+        await user.save();
+        break;
+      }
+      default:
+        break;
+    }
+  } catch (error) {
+    console.error("razorpayWebhook handler:", error);
+    return res.status(500).json({ success: false, message: "Webhook handler failed." });
+  }
+
+  return res.json({ received: true });
 }
 
 async function cancelSubscription(req, res) {
   try {
     if (!ensureDb(res)) return;
 
-    const stripe = getStripe();
     const user = await User.findById(req.user._id);
 
-    if (!user.stripeSubscriptionId || !stripe) {
-      user.plan = "starter";
-      user.subscriptionStatus = "canceled";
-      user.cancelAtPeriodEnd = false;
-      user.stripeSubscriptionId = "";
-      user.stripePriceId = "";
+    if (user.paymentGateway === "razorpay" && user.razorpaySubscriptionId) {
+      const razorpay = getRazorpay();
+      if (!razorpay) {
+        return res.status(503).json({ success: false, message: "Razorpay is not configured." });
+      }
+      await razorpay.subscriptions.cancel(user.razorpaySubscriptionId, true);
+      user.cancelAtPeriodEnd = true;
       await user.save();
       return res.json({ success: true, billing: billingPayload(user) });
     }
 
-    const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
-      cancel_at_period_end: true,
-    });
-    await applySubscription(user, stripe, subscription);
+    user.plan = "starter";
+    user.subscriptionStatus = "canceled";
+    user.cancelAtPeriodEnd = false;
+    user.currentPeriodStart = null;
+    user.currentPeriodEnd = null;
+    user.razorpaySubscriptionId = "";
+    user.razorpayPlanId = "";
     await user.save();
-
     return res.json({ success: true, billing: billingPayload(user) });
   } catch (error) {
     console.error("cancelSubscription:", error);
@@ -277,23 +457,23 @@ async function resumeSubscription(req, res) {
   try {
     if (!ensureDb(res)) return;
 
-    const stripe = getStripe();
     const user = await User.findById(req.user._id);
 
-    if (!stripe || !user.stripeSubscriptionId) {
+    if (user.paymentGateway === "razorpay" && user.razorpaySubscriptionId) {
+      // Razorpay has no API to undo a scheduled cancel-at-cycle-end: once
+      // requested, the subscription stops renewing. The caller should start a
+      // fresh subscription instead.
       return res.status(400).json({
         success: false,
-        message: "No subscription to resume.",
+        message:
+          "Razorpay can't resume a subscription that's scheduled to cancel — start a new subscription instead.",
       });
     }
 
-    const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
-      cancel_at_period_end: false,
+    return res.status(400).json({
+      success: false,
+      message: "No subscription to resume.",
     });
-    await applySubscription(user, stripe, subscription);
-    await user.save();
-
-    return res.json({ success: true, billing: billingPayload(user) });
   } catch (error) {
     console.error("resumeSubscription:", error);
     return res.status(500).json({
@@ -303,164 +483,14 @@ async function resumeSubscription(req, res) {
   }
 }
 
-async function downgradeToStarter(req, res) {
-  const stripe = getStripe();
-  const user = await User.findById(req.user._id);
-
-  if (stripe && user.stripeSubscriptionId) {
-    try {
-      await stripe.subscriptions.update(user.stripeSubscriptionId, {
-        cancel_at_period_end: true,
-      });
-      user.cancelAtPeriodEnd = true;
-      await user.save();
-      return res.json({
-        success: true,
-        billing: billingPayload(user),
-        message: "You'll move to Starter at the end of the current billing period.",
-      });
-    } catch (error) {
-      console.error("downgradeToStarter:", error);
-    }
-  }
-
-  user.plan = "starter";
-  user.subscriptionStatus = user.stripeSubscriptionId ? "canceled" : "none";
-  user.cancelAtPeriodEnd = false;
-  await user.save();
-
-  return res.json({ success: true, billing: billingPayload(user) });
-}
-
-async function findUserFromStripe(object) {
-  const metaId = object?.metadata?.userId || object?.client_reference_id;
-  if (metaId && mongoose.Types.ObjectId.isValid(metaId)) {
-    const byId = await User.findById(metaId);
-    if (byId) return byId;
-  }
-  if (object?.customer) {
-    const customerId =
-      typeof object.customer === "string" ? object.customer : object.customer.id;
-    if (customerId) {
-      return User.findOne({ stripeCustomerId: customerId });
-    }
-  }
-  if (object?.subscription) {
-    const subId =
-      typeof object.subscription === "string"
-        ? object.subscription
-        : object.subscription.id;
-    if (subId) return User.findOne({ stripeSubscriptionId: subId });
-  }
-  return null;
-}
-
-async function stripeWebhook(req, res) {
-  const stripe = getStripe();
-  if (!stripe) {
-    return res.status(503).json({ success: false, message: "Stripe is not configured." });
-  }
-
-  const signature = req.headers["stripe-signature"];
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  let event;
-  try {
-    if (secret) {
-      event = stripe.webhooks.constructEvent(req.body, signature, secret);
-    } else {
-      event = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-      if (Buffer.isBuffer(req.body)) {
-        event = JSON.parse(req.body.toString("utf8"));
-      }
-    }
-  } catch (err) {
-    console.error("Webhook signature failed:", err.message);
-    return res.status(400).json({ success: false, message: "Invalid webhook signature." });
-  }
-
-  try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object;
-        const user = await findUserFromStripe(session);
-        if (!user) break;
-        if (session.customer) {
-          user.stripeCustomerId =
-            typeof session.customer === "string" ? session.customer : session.customer.id;
-        }
-        if (session.subscription) {
-          const subId =
-            typeof session.subscription === "string"
-              ? session.subscription
-              : session.subscription.id;
-          const subscription = await stripe.subscriptions.retrieve(subId, {
-            expand: ["default_payment_method"],
-          });
-          await applySubscription(user, stripe, subscription);
-        }
-        await user.save();
-        break;
-      }
-      case "customer.subscription.updated":
-      case "customer.subscription.created":
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object;
-        const user = await findUserFromStripe(subscription);
-        if (!user) break;
-        if (event.type === "customer.subscription.deleted") {
-          user.plan = "starter";
-          user.subscriptionStatus = "canceled";
-          user.stripeSubscriptionId = "";
-          user.stripePriceId = "";
-          user.cancelAtPeriodEnd = false;
-        } else {
-          await applySubscription(user, stripe, subscription);
-        }
-        await user.save();
-        break;
-      }
-      case "invoice.paid":
-      case "invoice.payment_failed": {
-        const invoice = event.data.object;
-        const user = await findUserFromStripe(invoice);
-        if (!user || !invoice.subscription) break;
-        const subId =
-          typeof invoice.subscription === "string"
-            ? invoice.subscription
-            : invoice.subscription.id;
-        const subscription = await stripe.subscriptions.retrieve(subId, {
-          expand: ["default_payment_method"],
-        });
-        await applySubscription(user, stripe, subscription);
-        await user.save();
-        break;
-      }
-      case "payment_method.attached": {
-        const pm = event.data.object;
-        const user = await User.findOne({ stripeCustomerId: pm.customer });
-        if (!user) break;
-        await applyPaymentMethod(user, stripe, pm);
-        await user.save();
-        break;
-      }
-      default:
-        break;
-    }
-  } catch (error) {
-    console.error("stripeWebhook handler:", error);
-    return res.status(500).json({ success: false, message: "Webhook handler failed." });
-  }
-
-  return res.json({ received: true });
-}
-
 module.exports = {
   listPlans,
   getBilling,
-  createCheckout,
-  createPortal,
+  downgradeToStarter,
+  createRazorpaySubscription,
+  demoRazorpaySubscribe,
+  verifyRazorpayPayment,
+  razorpayWebhook,
   cancelSubscription,
   resumeSubscription,
-  stripeWebhook,
 };

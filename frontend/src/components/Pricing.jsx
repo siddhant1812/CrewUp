@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
-import { Box, Button, Container, Link, Paper, Stack, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Link, Paper, Stack, Typography } from '@mui/material'
 import { getSession } from '../api/auth'
-import { fetchPlans, startCheckout } from '../api/billing'
+import { fetchBilling, fetchPlans } from '../api/billing'
+import { openRazorpayCheckout, RazorpayDemoDialog } from './RazorpayCheckout'
 
 function Check() {
   return (
@@ -16,8 +17,11 @@ function Check() {
 export default function Pricing() {
   const session = getSession()
   const [plans, setPlans] = useState([])
+  const [billing, setBilling] = useState(null)
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [demoPlan, setDemoPlan] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -28,13 +32,21 @@ export default function Pricing() {
       } catch (err) {
         if (!cancelled) setError(err.message || 'Could not load plans.')
       }
+      if (session?.user) {
+        try {
+          const me = await fetchBilling()
+          if (!cancelled) setBilling(me.billing)
+        } catch {
+          // Not fatal here — buttons just fall back to the signed-out labels.
+        }
+      }
     })()
     return () => {
       cancelled = true
     }
   }, [])
 
-  async function handleCta(plan) {
+  function handleCta(plan) {
     if (plan.id === 'starter') {
       window.location.href = session?.user ? '/dashboard/settings/subscription' : '/signup'
       return
@@ -43,19 +55,28 @@ export default function Pricing() {
       window.location.href = `/signup?plan=${plan.id}`
       return
     }
-    setBusy(plan.id)
-    setError('')
-    try {
-      const data = await startCheckout(plan.id)
-      if (data.url) {
-        window.location.href = data.url
-        return
-      }
-      window.location.href = '/dashboard/settings/subscription'
-    } catch (err) {
-      setError(err.message || 'Checkout failed.')
-      setBusy('')
+    if (billing?.razorpayReady) {
+      setBusy(plan.id)
+      setError('')
+      openRazorpayCheckout(plan.id, {
+        onSuccess: (b, message) => {
+          setBilling(b)
+          setNotice(message || 'Payment successful. Plan updated.')
+          setBusy('')
+        },
+        onError: (message) => {
+          setError(message)
+          setBusy('')
+        },
+        onClose: () => setBusy(''),
+      })
+      return
     }
+    if (billing?.razorpayDemo) {
+      setDemoPlan(plan)
+      return
+    }
+    window.location.href = '/dashboard/settings/subscription'
   }
 
   return (
@@ -73,8 +94,15 @@ export default function Pricing() {
           </Typography>
         </Box>
 
+        {notice ? (
+          <Alert severity="success" sx={{ mb: 2, maxWidth: 480, mx: 'auto' }}>
+            {notice}
+          </Alert>
+        ) : null}
         {error ? (
-          <Typography sx={{ color: 'error.main', textAlign: 'center', mb: 2 }}>{error}</Typography>
+          <Alert severity="error" sx={{ mb: 2, maxWidth: 480, mx: 'auto' }}>
+            {error}
+          </Alert>
         ) : null}
 
         <Box
@@ -85,79 +113,86 @@ export default function Pricing() {
             alignItems: 'stretch',
           }}
         >
-          {plans.map((p) => (
-            <Paper
-              key={p.id}
-              elevation={0}
-              sx={{
-                position: 'relative',
-                border: '1px solid',
-                borderColor: p.popular ? 'primary.main' : 'divider',
-                borderRadius: '16px',
-                p: p.popular ? '2.25rem 1.5rem 1.5rem' : '1.75rem 1.5rem 1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                boxShadow: p.popular ? '0 12px 36px rgba(67, 168, 240, 0.15)' : 'none',
-              }}
-            >
-              {p.popular ? (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bgcolor: 'primary.main',
-                    color: '#fff',
-                    textAlign: 'center',
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                    p: '0.4rem',
-                    borderRadius: '16px 16px 0 0',
-                  }}
-                >
-                  Most Popular
-                </Box>
-              ) : null}
-              <Typography sx={{ fontSize: '1.05rem', fontWeight: 700, color: 'secondary.main', mb: 0.75 }}>
-                {p.name}
-              </Typography>
-              <Stack direction="row" sx={{ alignItems: 'baseline', gap: 0.25, mb: 1 }}>
-                <Typography sx={{ fontSize: '2.4rem', fontWeight: 700, letterSpacing: '-0.03em', color: 'secondary.main', lineHeight: 1 }}>
-                  {p.priceLabel}
-                </Typography>
-                {p.period ? (
-                  <Typography sx={{ color: 'text.secondary', fontWeight: 500 }}>{p.period}</Typography>
-                ) : null}
-              </Stack>
-              <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem', mb: 2.25 }}>{p.blurb}</Typography>
-              <Stack spacing={1} sx={{ flex: 1, mb: 2.5 }}>
-                {p.features.map((f) => (
-                  <Stack key={f} direction="row" spacing={1} sx={{ alignItems: 'flex-start', fontSize: '0.92rem' }}>
-                    <Check />
-                    <span>{f}</span>
-                  </Stack>
-                ))}
-              </Stack>
-              <Button
-                variant={p.popular ? 'contained' : 'outlined'}
-                size="large"
-                fullWidth
-                onClick={() => handleCta(p)}
-                disabled={busy === p.id}
+          {plans.map((p) => {
+            const current = billing && billing.plan === p.id
+            const busyHere = busy === p.id
+            let label = `Start ${p.name} Plan`
+            if (p.id === 'starter') {
+              label = session?.user ? (current ? 'Current / Starter' : 'Switch to Starter') : 'Get Started'
+            } else if (current) {
+              label = `Current / ${p.name}`
+            } else if (busyHere) {
+              label = 'Redirecting…'
+            }
+
+            return (
+              <Paper
+                key={p.id}
+                elevation={0}
+                sx={{
+                  position: 'relative',
+                  border: '1px solid',
+                  borderColor: p.popular ? 'primary.main' : 'divider',
+                  borderRadius: '16px',
+                  p: p.popular ? '2.25rem 1.5rem 1.5rem' : '1.75rem 1.5rem 1.5rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxShadow: p.popular ? '0 12px 36px rgba(67, 168, 240, 0.15)' : 'none',
+                }}
               >
-                {busy === p.id
-                  ? 'Redirecting…'
-                  : p.id === 'starter'
-                    ? session?.user
-                      ? 'Current / Starter'
-                      : 'Get Started'
-                    : `Start ${p.name} Plan`}
-              </Button>
-            </Paper>
-          ))}
+                {p.popular ? (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bgcolor: 'primary.main',
+                      color: '#fff',
+                      textAlign: 'center',
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      p: '0.4rem',
+                      borderRadius: '16px 16px 0 0',
+                    }}
+                  >
+                    Most Popular
+                  </Box>
+                ) : null}
+                <Typography sx={{ fontSize: '1.05rem', fontWeight: 700, color: 'secondary.main', mb: 0.75 }}>
+                  {p.name}
+                </Typography>
+                <Stack direction="row" sx={{ alignItems: 'baseline', gap: 0.25, mb: 1 }}>
+                  <Typography sx={{ fontSize: '2.4rem', fontWeight: 700, letterSpacing: '-0.03em', color: 'secondary.main', lineHeight: 1 }}>
+                    {p.priceLabel}
+                  </Typography>
+                  {p.period ? (
+                    <Typography sx={{ color: 'text.secondary', fontWeight: 500 }}>{p.period}</Typography>
+                  ) : null}
+                </Stack>
+                <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem', mb: 2.25 }}>{p.blurb}</Typography>
+                <Stack spacing={1} sx={{ flex: 1, mb: 2.5 }}>
+                  {p.features.map((f) => (
+                    <Stack key={f} direction="row" spacing={1} sx={{ alignItems: 'flex-start', fontSize: '0.92rem' }}>
+                      <Check />
+                      <span>{f}</span>
+                    </Stack>
+                  ))}
+                </Stack>
+                <Button
+                  variant={p.popular && !current ? 'contained' : 'outlined'}
+                  size="large"
+                  fullWidth
+                  onClick={() => handleCta(p)}
+                  disabled={current || busyHere}
+                >
+                  {label}
+                </Button>
+              </Paper>
+            )
+          })}
         </Box>
 
         {!plans.length && !error ? (
@@ -172,6 +207,17 @@ export default function Pricing() {
           .
         </Typography>
       </Container>
+      {demoPlan ? (
+        <RazorpayDemoDialog
+          plan={demoPlan}
+          onClose={() => setDemoPlan(null)}
+          onSuccess={(b) => {
+            setBilling(b)
+            setDemoPlan(null)
+            setNotice('Payment successful. Plan updated.')
+          }}
+        />
+      ) : null}
     </Box>
   )
 }

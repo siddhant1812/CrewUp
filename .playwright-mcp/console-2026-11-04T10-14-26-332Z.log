@@ -1,2 +1,0 @@
-[    9436ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ https://accounts.google.com/v3/signin/identifier?emr=1&ltmpl=default&nojavascript=1&rm=false&service=mail&ss=1&flowName=WebLiteSignIn&flowEntry=ServiceLogin&ifkv=AdVBglfxuiONvkE9M_elSrpVlJHQKO_CQE9KzeJAx-4Q7qmtzTCFHZXCgu6kaLRexYO4elccVJhIOQ&dsh=S355461408%3A1793787271945439:0
-[    9601ms] [WARNING] The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127 @ :0

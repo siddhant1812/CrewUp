@@ -134,24 +134,36 @@ const userSchema = new mongoose.Schema(
         "past_due",
         "canceled",
         "unpaid",
+        "paused",
       ],
       default: "none",
     },
 
-    stripeCustomerId: {
+    paymentGateway: {
+      type: String,
+      enum: ["", "razorpay"],
+      default: "",
+    },
+
+    razorpayCustomerId: {
       type: String,
       default: "",
       index: true,
     },
 
-    stripeSubscriptionId: {
+    razorpaySubscriptionId: {
       type: String,
       default: "",
     },
 
-    stripePriceId: {
+    razorpayPlanId: {
       type: String,
       default: "",
+    },
+
+    currentPeriodStart: {
+      type: Date,
+      default: null,
     },
 
     currentPeriodEnd: {

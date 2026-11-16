@@ -9,6 +9,8 @@ const {
   createConversation,
   listMessages,
   sendMessage,
+  editMessage,
+  deleteMessages,
   markRead,
   toggleArchive,
 } = require("../controllers/messageController");
@@ -36,5 +38,7 @@ router.post("/conversations/:id/messages", (req, res) => {
 });
 router.patch("/conversations/:id/read", markRead);
 router.patch("/conversations/:id/archive", toggleArchive);
+router.patch("/:id", editMessage);
+router.delete("/", deleteMessages);
 
 module.exports = router;

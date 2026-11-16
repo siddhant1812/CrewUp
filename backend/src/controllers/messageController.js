@@ -175,25 +175,31 @@ function formatMessage(message, userId) {
   const readByOthers = (message.readBy || []).some(
     (id) => String(id) !== String(userId)
   );
+  const deleted = Boolean(message.deleted);
 
   return {
     id: String(message._id),
     from: message.type === "system" ? "system" : fromMe ? "me" : "them",
-    text: message.text || "",
+    text: deleted ? "" : message.text || "",
     type: message.type,
     systemPayload: message.systemPayload || null,
-    attachments: (message.attachments || []).map((a) => ({
-      name: a.originalName,
-      url: a.url,
-      mimeType: a.mimeType,
-      size: a.size,
-      sizeLabel: formatBytes(a.size),
-    })),
+    attachments: deleted
+      ? []
+      : (message.attachments || []).map((a) => ({
+          name: a.originalName,
+          url: a.url,
+          mimeType: a.mimeType,
+          size: a.size,
+          sizeLabel: formatBytes(a.size),
+        })),
     time: message.createdAt,
     read: fromMe ? readByOthers : (message.readBy || []).some(
       (id) => String(id) === String(userId)
     ),
     sender: formatUser(message.sender),
+    edited: Boolean(message.edited) && !deleted,
+    deleted,
+    canModify: fromMe && !deleted,
   };
 }
 
@@ -679,6 +685,148 @@ async function sendMessage(req, res) {
   }
 }
 
+async function recomputeLastMessage(conversation) {
+  const latest = await Message.findOne({
+    conversation: conversation._id,
+    deleted: { $ne: true },
+  }).sort({ createdAt: -1 });
+
+  if (!latest) {
+    conversation.lastMessage = undefined;
+    return;
+  }
+
+  conversation.lastMessage = {
+    text:
+      latest.text ||
+      (latest.attachments?.length === 1
+        ? `Sent ${latest.attachments[0].originalName}`
+        : latest.attachments?.length
+          ? `Sent ${latest.attachments.length} files`
+          : ""),
+    sender: latest.sender,
+    createdAt: latest.createdAt,
+  };
+}
+
+function emitToParticipants(conversation, event, buildPayload) {
+  for (const participant of conversation.participants) {
+    const id = participantId(participant);
+    emitToUser(id, event, buildPayload(id));
+  }
+}
+
+async function editMessage(req, res) {
+  try {
+    if (!ensureDb(res)) return;
+
+    const message = await Message.findById(req.params.id);
+    if (!message) {
+      return res.status(404).json({ success: false, message: "Message not found." });
+    }
+
+    if (String(message.sender) !== String(req.user._id)) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only edit your own messages.",
+      });
+    }
+
+    if (message.deleted) {
+      return res.status(400).json({ success: false, message: "This message was deleted." });
+    }
+
+    const text = String(req.body.text || "").trim();
+    if (!text) {
+      return res.status(400).json({ success: false, message: "Message text is required." });
+    }
+
+    message.text = text;
+    message.edited = true;
+    message.editedAt = new Date();
+    await message.save();
+
+    const conversation = await Conversation.findById(message.conversation);
+    if (conversation && String(conversation.lastMessage?.sender) === String(message.sender)) {
+      await recomputeLastMessage(conversation);
+      await conversation.save();
+    }
+
+    const populated = await Message.findById(message._id).populate(
+      "sender",
+      "fullName company contractorType profilePhoto profileImage location createdAt"
+    );
+
+    if (conversation) {
+      emitToParticipants(conversation, "message:edited", (id) => ({
+        conversationId: String(conversation._id),
+        message: formatMessage(populated, id),
+      }));
+    }
+
+    return res.json({ success: true, message: formatMessage(populated, req.user._id) });
+  } catch (error) {
+    console.error("editMessage:", error);
+    return res.status(500).json({ success: false, message: "Failed to edit message." });
+  }
+}
+
+async function deleteMessages(req, res) {
+  try {
+    if (!ensureDb(res)) return;
+
+    const rawIds = Array.isArray(req.body.ids)
+      ? req.body.ids
+      : [req.body.id].filter(Boolean);
+    const validIds = rawIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
+    if (!validIds.length) {
+      return res.status(400).json({ success: false, message: "No valid message ids given." });
+    }
+
+    const messages = await Message.find({ _id: { $in: validIds } });
+    const own = messages.filter((m) => String(m.sender) === String(req.user._id));
+
+    if (!own.length) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only delete your own messages.",
+      });
+    }
+
+    const now = new Date();
+    const idsByConversation = new Map();
+    for (const m of own) {
+      m.deleted = true;
+      m.deletedAt = now;
+      await m.save();
+      const key = String(m.conversation);
+      if (!idsByConversation.has(key)) idsByConversation.set(key, []);
+      idsByConversation.get(key).push(String(m._id));
+    }
+
+    for (const [conversationId, ids] of idsByConversation) {
+      const conversation = await Conversation.findById(conversationId);
+      if (!conversation) continue;
+      await recomputeLastMessage(conversation);
+      await conversation.save();
+
+      emitToParticipants(conversation, "message:deleted", () => ({
+        conversationId,
+        ids,
+        preview: conversation.lastMessage?.text || "",
+      }));
+    }
+
+    return res.json({
+      success: true,
+      ids: own.map((m) => String(m._id)),
+    });
+  } catch (error) {
+    console.error("deleteMessages:", error);
+    return res.status(500).json({ success: false, message: "Failed to delete messages." });
+  }
+}
+
 async function markRead(req, res) {
   try {
     if (!ensureDb(res)) return;
@@ -774,6 +922,8 @@ module.exports = {
   createConversation,
   listMessages,
   sendMessage,
+  editMessage,
+  deleteMessages,
   markRead,
   toggleArchive,
 };

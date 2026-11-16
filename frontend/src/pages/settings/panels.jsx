@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   Alert,
   Box,
@@ -25,12 +25,12 @@ import { DeleteOutlineOutlined as DeleteOutline } from '@mui/icons-material'
 import { mediaUrl, updateSessionUser } from '../../api/auth'
 import {
   cancelSubscription,
+  downgradeToStarter,
   fetchBilling,
   fetchPlans,
-  openBillingPortal,
   resumeSubscription,
-  startCheckout,
 } from '../../api/billing'
+import { openRazorpayCheckout } from '../../components/RazorpayCheckout'
 import PhoneInput, { isValidPhone } from '../../components/PhoneInput'
 import CardHead from '../../components/CardHead'
 import Icon from '../../components/Icon'
@@ -581,7 +581,7 @@ export function PaymentsPanel() {
       <PageHead
         title="Payment & Payouts"
         crumb="Payment & Payouts"
-        lead="Cards on file come from Stripe. Payout details are stored on your account."
+        lead="Cards on file come from Razorpay. Payout details are stored on your account."
       />
       {loading ? <Loading /> : null}
       {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
@@ -965,6 +965,7 @@ function statusLabel(status) {
     canceled: 'Canceled',
     unpaid: 'Unpaid',
     incomplete: 'Incomplete',
+    paused: 'Paused',
   }
   return map[status] || status || 'Free'
 }
@@ -985,7 +986,7 @@ function PlanCheck() {
 }
 
 export function SubscriptionPanel({ standalone = false }) {
-  const [params, setParams] = useSearchParams()
+  const navigate = useNavigate()
   const [billing, setBilling] = useState(null)
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
@@ -1010,29 +1011,11 @@ export function SubscriptionPanel({ standalone = false }) {
     load()
   }, [])
 
-  useEffect(() => {
-    const flag = params.get('billing')
-    if (flag === 'success') {
-      setNotice('Payment method saved and subscription updated.')
-      params.delete('billing')
-      setParams(params, { replace: true })
-      load()
-    } else if (flag === 'cancel') {
-      setNotice('Checkout was canceled. Your plan was not changed.')
-      params.delete('billing')
-      setParams(params, { replace: true })
-    }
-  }, [params, setParams])
-
-  async function checkout(planId) {
-    setBusy(planId)
+  async function downgrade() {
+    setBusy('starter')
     setError('')
     try {
-      const data = await startCheckout(planId)
-      if (data.url) {
-        window.location.href = data.url
-        return
-      }
+      const data = await downgradeToStarter()
       if (data.billing) setBilling(data.billing)
       if (data.message) setNotice(data.message)
     } catch (err) {
@@ -1040,6 +1023,23 @@ export function SubscriptionPanel({ standalone = false }) {
     } finally {
       setBusy('')
     }
+  }
+
+  async function checkoutRazorpay(planId) {
+    setBusy(planId)
+    setError('')
+    await openRazorpayCheckout(planId, {
+      onSuccess: (b, message) => {
+        setBilling(b)
+        setNotice(message || 'Payment method saved and subscription updated.')
+        setBusy('')
+      },
+      onError: (message) => {
+        setError(message)
+        setBusy('')
+      },
+      onClose: () => setBusy(''),
+    })
   }
 
   const card = billing?.paymentMethod
@@ -1083,21 +1083,29 @@ export function SubscriptionPanel({ standalone = false }) {
                     {billing.period}
                   </Typography>
                   {billing.currentPeriodEnd ? (
-                    <Typography variant="body2" color="text.secondary">
-                      {billing.cancelAtPeriodEnd ? 'Ends' : 'Renews'} {formatDate(billing.currentPeriodEnd)}
-                    </Typography>
+                    <>
+                      {billing.currentPeriodStart ? (
+                        <Typography variant="body2" color="text.secondary">
+                          Started {formatDate(billing.currentPeriodStart)}
+                        </Typography>
+                      ) : null}
+                      <Typography variant="body2" color="text.secondary">
+                        {billing.cancelAtPeriodEnd ? 'Ends' : 'Renews'} {formatDate(billing.currentPeriodEnd)}
+                      </Typography>
+                    </>
                   ) : (
                     <Typography variant="body2" color="text.secondary">
                       Free Starter plan.
                     </Typography>
                   )}
-                  {!billing.stripeReady ? (
-                    <Alert severity="warning" sx={{ mt: 1 }}>
-                      Stripe keys are not set yet. Paid checkout stays disabled until you add them to
-                      backend/.env.
-                    </Alert>
-                  ) : null}
-                  <Box sx={{ pt: 1 }}>
+                  <Stack direction="row" spacing={1} sx={{ pt: 1, flexWrap: 'wrap' }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' })}
+                    >
+                      Change plan
+                    </Button>
                     {paid && !billing.cancelAtPeriodEnd ? (
                       <Button
                         variant="outlined"
@@ -1122,7 +1130,7 @@ export function SubscriptionPanel({ standalone = false }) {
                         Keep my plan
                       </Button>
                     ) : null}
-                  </Box>
+                  </Stack>
                 </Stack>
               </CardContent>
             </Card>
@@ -1131,44 +1139,35 @@ export function SubscriptionPanel({ standalone = false }) {
                 <CardHead icon="card" title="Payment method" />
                 <Box sx={{ mt: 1.5 }}>
                   {card ? (
-                    <Stack spacing={1} sx={{ alignItems: 'flex-start' }}>
-                      <Typography>
-                        <Box component="strong">{card.brand}</Box> ending in {card.last4}
-                      </Typography>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={async () => {
-                          const data = await openBillingPortal()
-                          if (data.url) window.location.href = data.url
-                        }}
-                      >
-                        Update card
-                      </Button>
-                    </Stack>
+                    <Typography>
+                      <Box component="strong">{card.brand}</Box> ending in {card.last4}
+                    </Typography>
                   ) : (
-                    <Empty>No card on file.</Empty>
+                    <Empty>No card on file. Add one when you subscribe.</Empty>
                   )}
                 </Box>
               </CardContent>
             </Card>
           </Box>
           <Box
+            id="plans"
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: `repeat(${plans.length || 1}, 1fr)` },
               gap: 2,
               pt: 1.5,
+              scrollMarginTop: '88px',
             }}
           >
             {plans.map((plan) => {
               const current = billing.plan === plan.id
-              const disabled = current || !!busy || (plan.id !== 'starter' && !billing.stripeReady)
-              let cta = `Start ${plan.name} Plan`
-              if (current && plan.id === 'starter') cta = 'Current / Starter'
-              else if (current) cta = `Current / ${plan.name}`
-              else if (busy === plan.id) cta = 'Redirecting…'
-              else if (plan.id === 'starter') cta = 'Switch to Starter'
+              const isPaidPlan = plan.id !== 'starter'
+              const canRazorpay = isPaidPlan && (billing.razorpayReady || billing.razorpayDemo)
+              const disabled = current || !!busy
+              const busyHere = busy === plan.id
+              let starterCta = 'Switch to Starter'
+              if (current) starterCta = 'Current / Starter'
+              else if (busyHere) starterCta = 'Redirecting…'
 
               return (
                 <Card
@@ -1217,15 +1216,45 @@ export function SubscriptionPanel({ standalone = false }) {
                         </ListItem>
                       ))}
                     </List>
-                    <Button
-                      variant={plan.popular && !current ? 'contained' : 'outlined'}
-                      size="large"
-                      fullWidth
-                      disabled={disabled}
-                      onClick={() => checkout(plan.id)}
-                    >
-                      {cta}
-                    </Button>
+                    {isPaidPlan ? (
+                      <Stack spacing={1}>
+                        {canRazorpay ? (
+                          <Button
+                            variant={plan.popular && !current ? 'contained' : 'outlined'}
+                            size="large"
+                            fullWidth
+                            disabled={disabled}
+                            onClick={() =>
+                              billing.razorpayReady
+                                ? checkoutRazorpay(plan.id)
+                                : navigate(`/dashboard/billing/checkout/${plan.id}`)
+                            }
+                          >
+                            {current
+                              ? `Current / ${plan.name}`
+                              : busyHere
+                                ? 'Redirecting…'
+                                : billing.razorpayReady
+                                  ? 'Pay with Razorpay'
+                                  : `Start ${plan.name} Plan`}
+                          </Button>
+                        ) : (
+                          <Button variant="outlined" size="large" fullWidth disabled>
+                            {current ? `Current / ${plan.name}` : `Start ${plan.name} Plan`}
+                          </Button>
+                        )}
+                      </Stack>
+                    ) : (
+                      <Button
+                        variant="outlined"
+                        size="large"
+                        fullWidth
+                        disabled={disabled}
+                        onClick={downgrade}
+                      >
+                        {starterCta}
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               )

@@ -25,12 +25,14 @@ services:
       - key: REDIS_URL
         sync: false               # leave empty if you don’t use Redis
 
-      # --- Stripe (needed for billing plans) ---
-      - key: STRIPE_SECRET_KEY
+      # --- Razorpay (needed for billing plans) ---
+      - key: RAZORPAY_KEY_ID
         sync: false
-      - key: STRIPE_PRICE_PRO
+      - key: RAZORPAY_KEY_SECRET
         sync: false
-      - key: STRIPE_PRICE_BUSINESS
+      - key: RAZORPAY_PLAN_PRO
         sync: false
-      - key: STRIPE_WEBHOOK_SECRET
+      - key: RAZORPAY_PLAN_BUSINESS
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
         sync: false

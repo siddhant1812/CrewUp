@@ -18,7 +18,7 @@ const settingsRoutes = require("./routes/settingsRoutes");
 const contractorRoutes = require("./routes/contractorRoutes");
 const jobRoutes = require("./routes/jobRoutes");
 const adminRoutes = require("./routes/adminRoutes");
-const { stripeWebhook } = require("./controllers/billingController");
+const { razorpayWebhook } = require("./controllers/billingController");
 
 const app = express();
 
@@ -29,9 +29,9 @@ app.set("trust proxy", 1);
 app.use(securityHeaders());
 app.use(cors({ origin: true, credentials: true }));
 app.post(
-  "/api/billing/webhook",
+  "/api/billing/webhook/razorpay",
   express.raw({ type: "application/json" }),
-  stripeWebhook
+  razorpayWebhook
 );
 app.use(express.json());
 app.use("/api/auth/login", (req, res, next) => authLimiter(req, res, next));

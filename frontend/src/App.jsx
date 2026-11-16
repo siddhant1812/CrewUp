@@ -11,6 +11,8 @@ import ProjectDetail from './pages/ProjectDetail'
 import Messages from './pages/Messages'
 import Contractors from './pages/Contractors'
 import Billing from './pages/Billing'
+import CheckoutCard from './pages/CheckoutCard'
+import CheckoutConfirm from './pages/CheckoutConfirm'
 import SettingsLayout from './pages/settings/SettingsLayout'
 import {
   AccountPanel,
@@ -94,6 +96,8 @@ export default function App() {
           <Route path="contractors" element={<Contractors />} />
           <Route path="messages" element={<Messages />} />
           <Route path="billing" element={<Billing />} />
+          <Route path="billing/checkout/:planId" element={<CheckoutCard />} />
+          <Route path="billing/checkout/:planId/confirm" element={<CheckoutConfirm />} />
           <Route path="settings" element={<SettingsLayout />}>
             <Route index element={<Navigate to="/dashboard/settings/account" replace />} />
             <Route path="account" element={<AccountPanel />} />

@@ -8,15 +8,29 @@ export function fetchBilling() {
   return authRequest('/api/billing/me')
 }
 
-export function startCheckout(plan) {
-  return authRequest('/api/billing/checkout', {
+export function downgradeToStarter() {
+  return authRequest('/api/billing/downgrade', { method: 'POST' })
+}
+
+export function startRazorpaySubscription(plan) {
+  return authRequest('/api/billing/razorpay/subscribe', {
     method: 'POST',
     data: { plan },
   })
 }
 
-export function openBillingPortal() {
-  return authRequest('/api/billing/portal', { method: 'POST' })
+export function verifyRazorpayPayment(payload) {
+  return authRequest('/api/billing/razorpay/verify', {
+    method: 'POST',
+    data: payload,
+  })
+}
+
+export function demoRazorpaySubscribe(plan, card) {
+  return authRequest('/api/billing/razorpay/demo-subscribe', {
+    method: 'POST',
+    data: { plan, card: card || undefined },
+  })
 }
 
 export function cancelSubscription() {
