@@ -1,4 +1,5 @@
 import { API_BASE, request } from './client'
+import posthog, { isPostHogConfigured } from '../posthog'
 
 function storage() {
   if (localStorage.getItem('crewup_token')) return localStorage
@@ -26,6 +27,18 @@ export function login(body) {
   })
 }
 
+export function identifySessionUser(user) {
+  if (!isPostHogConfigured || !user?.id) return
+
+  posthog.identify(user.id, {
+    email: user.workEmail,
+    name: user.fullName,
+    role: user.role,
+    account_kind: user.accountKind,
+    contractor_type: user.contractorType,
+  })
+}
+
 export function saveSession(token, user, remember = true) {
   const store = remember ? localStorage : sessionStorage
   store.setItem('crewup_token', token)
@@ -37,10 +50,12 @@ export function saveSession(token, user, remember = true) {
     localStorage.removeItem('crewup_token')
     localStorage.removeItem('crewup_user')
   }
+  identifySessionUser(user)
   window.dispatchEvent(new Event('crewup-auth'))
 }
 
 export function clearSession() {
+  if (isPostHogConfigured) posthog.reset()
   localStorage.removeItem('crewup_token')
   localStorage.removeItem('crewup_user')
   sessionStorage.removeItem('crewup_token')

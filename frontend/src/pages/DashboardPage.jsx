@@ -39,6 +39,8 @@ import {
   fetchProjects,
   updateProject,
 } from '../api/projects'
+import posthog, { isPostHogConfigured } from '../posthog'
+import posthogLogger from '../posthog-logger'
 
 const TITLES = {
   dashboard: {
@@ -449,6 +451,24 @@ function ProjectsSection({ user }) {
         image: form.image || undefined,
         status: form.status,
       })
+      if (isPostHogConfigured) {
+        posthog.capture('project_created', {
+          project_type: form.projectType,
+          has_service: Boolean(form.service),
+          trades_count: form.trades.split(',').filter((trade) => trade.trim()).length,
+          has_image: Boolean(form.image),
+          vacancies: Number(form.vacancies) || 1,
+          initial_status: form.status,
+        })
+      }
+      posthogLogger.info('project_created', {
+        project_type: form.projectType,
+        has_service: Boolean(form.service),
+        trades_count: form.trades.split(',').filter((trade) => trade.trim()).length,
+        has_image: Boolean(form.image),
+        vacancies: Number(form.vacancies) || 1,
+        initial_status: form.status,
+      })
       setForm({
         title: '',
         location: '',
@@ -489,6 +509,10 @@ function ProjectsSection({ user }) {
       if (data.project) {
         setProjects((prev) => prev.map((p) => (p.id === id ? data.project : p)))
       }
+      if (isPostHogConfigured) {
+        posthog.capture('project_status_updated', { status })
+      }
+      posthogLogger.info('project_status_updated', { status })
     } catch (err) {
       setProjects(previous)
       setError(err.message || 'Could not update status.')

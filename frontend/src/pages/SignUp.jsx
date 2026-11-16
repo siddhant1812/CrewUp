@@ -21,6 +21,7 @@ import { PersonOutlineOutlined, Visibility, VisibilityOff } from '@mui/icons-mat
 import AuthLayout from '../components/AuthLayout'
 import { signup, saveSession } from '../api/auth'
 import { startCheckout } from '../api/billing'
+import posthog, { isPostHogConfigured } from '../posthog'
 
 const ROLES = [
   { id: 'general_contractor', label: 'Contractor' },
@@ -111,10 +112,20 @@ export default function SignUp() {
 
       const data = await signup(body)
       saveSession(data.token, data.user, true)
+      if (isPostHogConfigured) {
+        posthog.capture('signup_completed', {
+          account_type: form.role,
+          profile_photo_added: Boolean(photoFile),
+          requested_paid_plan: requestedPlan === 'pro' || requestedPlan === 'business',
+        })
+      }
       if (requestedPlan === 'pro' || requestedPlan === 'business') {
         try {
           const checkout = await startCheckout(requestedPlan)
           if (checkout.url) {
+            if (isPostHogConfigured) {
+              posthog.capture('checkout_started', { plan_id: requestedPlan, source: 'signup' })
+            }
             window.location.href = checkout.url
             return
           }

@@ -45,6 +45,7 @@ import {
   removeTeam,
   uploadDocument,
 } from '../../api/settings'
+import posthog, { isPostHogConfigured } from '../../posthog'
 
 function PageHead({ title, crumb, lead }) {
   return (
@@ -1030,6 +1031,9 @@ export function SubscriptionPanel({ standalone = false }) {
     try {
       const data = await startCheckout(planId)
       if (data.url) {
+        if (isPostHogConfigured) {
+          posthog.capture('checkout_started', { plan_id: planId, source: 'subscription' })
+        }
         window.location.href = data.url
         return
       }
@@ -1105,6 +1109,9 @@ export function SubscriptionPanel({ standalone = false }) {
                         onClick={async () => {
                           const data = await cancelSubscription()
                           setBilling(data.billing)
+                          if (isPostHogConfigured) {
+                            posthog.capture('subscription_canceled')
+                          }
                         }}
                       >
                         Cancel subscription
@@ -1117,6 +1124,9 @@ export function SubscriptionPanel({ standalone = false }) {
                         onClick={async () => {
                           const data = await resumeSubscription()
                           setBilling(data.billing)
+                          if (isPostHogConfigured) {
+                            posthog.capture('subscription_resumed')
+                          }
                         }}
                       >
                         Keep my plan
