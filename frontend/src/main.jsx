@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './index.css'
 import { applyTheme, getTheme } from './api/theme'
 import AppThemeProvider from './components/AppThemeProvider'
+import './posthog'
 
 applyTheme(getTheme())
 

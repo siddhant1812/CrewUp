@@ -32,6 +32,7 @@ import {
 import { canApplyToJobs, mediaUrl } from '../api/auth'
 import { createConversation } from '../api/messages'
 import { deleteProject, fetchProject, respondProposal, submitProposal } from '../api/projects'
+import posthog, { isPostHogConfigured } from '../posthog'
 
 const STATUS_LABELS = {
   open: 'Bidding',
@@ -241,6 +242,9 @@ export default function ProjectDetail() {
       })
       setProposals([data.proposal])
       setSelected(data.proposal)
+      if (isPostHogConfigured) {
+        posthog.capture('proposal_submitted', { has_timeline: Boolean(form.timeline.trim()) })
+      }
       setForm({ amount: '', timeline: '', proposal: '' })
     } catch (err) {
       setFormError(err.message || 'Could not submit proposal.')
@@ -255,6 +259,9 @@ export default function ProjectDetail() {
       const data = await respondProposal(id, proposalId, status)
       setProposals((prev) => prev.map((p) => (p.id === proposalId ? data.proposal : p)))
       setSelected((cur) => (cur?.id === proposalId ? data.proposal : cur))
+      if (isPostHogConfigured) {
+        posthog.capture('proposal_responded', { response_status: status })
+      }
     } catch (err) {
       setError(err.message || 'Could not update proposal.')
     } finally {
@@ -286,6 +293,9 @@ export default function ProjectDetail() {
         budget: project?.budget || '',
         initialMessage: `Hi ${person.fullName}, I reviewed your proposal on ${project?.title}.`,
       })
+      if (isPostHogConfigured) {
+        posthog.capture('conversation_started', { source: 'accepted_proposal' })
+      }
       navigate('/dashboard/messages')
     } catch (err) {
       setError(err.message || 'Could not start a message.')

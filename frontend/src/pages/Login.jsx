@@ -17,6 +17,8 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import AuthLayout from '../components/AuthLayout'
 import { login, saveSession } from '../api/auth'
+import posthog, { isPostHogConfigured } from '../posthog'
+import posthogLogger from '../posthog-logger'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -49,6 +51,10 @@ export default function Login() {
         password: form.password,
       })
       saveSession(data.token, data.user, form.remember)
+      if (isPostHogConfigured) {
+        posthog.capture('login_completed', { remembered_session: form.remember })
+      }
+      posthogLogger.info('user_login_completed', { remembered_session: form.remember })
       const redirectTo = location.state?.from || '/dashboard'
       navigate(redirectTo)
     } catch (err) {

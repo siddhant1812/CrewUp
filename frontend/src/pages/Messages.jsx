@@ -48,6 +48,7 @@ import {
   toggleArchive,
 } from '../api/messages'
 import { getSocket } from '../api/socket'
+import posthog, { isPostHogConfigured } from '../posthog'
 
 const PAGE_SIZE = 8
 
@@ -399,6 +400,12 @@ export default function Messages() {
       setDraft('')
       setPendingFiles([])
       setMessages((prev) => [...prev, data.message])
+      if (isPostHogConfigured) {
+        posthog.capture('message_sent', {
+          has_text: Boolean(text),
+          attachment_count: pendingFiles.length,
+        })
+      }
       await loadConversations({ silent: true })
       const detail = await fetchConversation(activeId)
       setActive(detail.conversation)
@@ -420,6 +427,13 @@ export default function Messages() {
         projectLocation: newLocation.trim(),
         initialMessage: newMessage.trim(),
       })
+      if (isPostHogConfigured) {
+        posthog.capture('conversation_started', {
+          has_project_context: Boolean(newProject.trim() || newLocation.trim()),
+          has_initial_message: Boolean(newMessage.trim()),
+          source: 'messages',
+        })
+      }
       setShowNew(false)
       setNewProject('')
       setNewLocation('')
@@ -453,6 +467,9 @@ export default function Messages() {
     try {
       const data = await sendMessage(activeId, { files: [...fileList] })
       setMessages((prev) => [...prev, data.message])
+      if (isPostHogConfigured) {
+        posthog.capture('message_sent', { has_text: false, attachment_count: fileList.length })
+      }
       const detail = await fetchConversation(activeId)
       setSharedFiles(detail.sharedFiles || [])
       await loadConversations({ silent: true })

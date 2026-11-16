@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Jobs from './pages/Jobs'
@@ -25,8 +26,10 @@ import {
   SubscriptionPanel,
   UsersPanel,
 } from './pages/settings/panels'
-import { getSession } from './api/auth'
+import { getSession, identifySessionUser } from './api/auth'
 import RequirePermission from './components/RequirePermission'
+
+let initialIdentityRestored = false
 
 function RequireGuest({ children }) {
   const session = getSession()
@@ -41,6 +44,12 @@ function RequireAuth({ children }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    if (initialIdentityRestored) return
+    identifySessionUser(getSession()?.user)
+    initialIdentityRestored = true
+  }, [])
+
   return (
     <BrowserRouter>
       <Routes>
